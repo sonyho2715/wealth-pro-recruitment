@@ -5,8 +5,9 @@ import Header from './components/shared/Header';
 import Navigation from './components/shared/Navigation';
 import Dashboard from './components/Dashboard/Dashboard';
 import ClientInput from './components/ClientInput/ClientInput';
+import Career from './components/Career/Career';
 
-type TabName = 'input' | 'dashboard';
+type TabName = 'input' | 'career' | 'dashboard';
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabName>('input');
@@ -31,9 +32,10 @@ function App() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
         <div className="space-y-6">
           {activeTab === 'input' && <ClientInput />}
+          {activeTab === 'career' && <Career />}
           {activeTab === 'dashboard' && hasData && <Dashboard />}
 
-          {activeTab !== 'input' && !hasData && (
+          {activeTab === 'dashboard' && !hasData && (
             <div className="card-highlight text-center py-16 animate-scale-in">
               <div className="max-w-md mx-auto">
                 <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-teal-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
