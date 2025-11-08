@@ -1,31 +1,37 @@
-# Wealth Blueprint Pro - Modern Financial Planning Platform
+# Wealth Pro Recruitment - Agent Income Potential Platform
 
-A white-labelable, modern financial planning platform built with React, TypeScript, and Tailwind CSS. Designed for financial advisors to analyze client finances, identify insurance gaps, and provide professional recommendations.
+A modern recruitment platform designed to showcase the income potential and career opportunities for aspiring financial advisors. Built with React, TypeScript, and Tailwind CSS.
 
-## 🌟 Features
+## 🎯 Purpose
 
-### Core Functionality
-- **Comprehensive Financial Analysis** - Complete balance sheet, cash flow, and net worth calculations
-- **Risk Assessment** - 8-category risk analysis with actionable recommendations
-- **Insurance Gap Analysis** - Identify life, disability, and liability coverage gaps
-- **Product Recommendations** - Personalized insurance product suggestions
-- **Visual Analytics** - Interactive charts powered by Chart.js
-- **Client Profile Management** - Save and load multiple client profiles
-- **White-Label Ready** - Easy customization for different agents
+This platform helps recruit new agents by demonstrating:
+- **Income Potential** - Step-by-step earnings breakdown
+- **Commission Structures** - Clear compensation models
+- **Career Growth Path** - Advancement opportunities
+- **Success Stories** - Real examples of agent success
+- **Training & Support** - Resources available to new agents
+
+## 🌟 Key Features
+
+### Recruitment-Focused
+- **Income Calculator** - Show potential earnings based on sales volume
+- **Commission Breakdown** - Visual representation of commission tiers
+- **Career Trajectory** - Growth from new agent to team leader
+- **Success Metrics** - Average agent performance data
+- **Onboarding Preview** - What new agents can expect
 
 ### Technical Features
-- **Modern Stack** - React 18 + Vite + TypeScript
-- **Type-Safe** - Full TypeScript coverage for reliability
-- **State Management** - Zustand with local storage persistence
+- **Modern Stack** - React 19 + Vite + TypeScript
+- **Type-Safe** - Full TypeScript coverage
+- **State Management** - Zustand with persistence
 - **Responsive Design** - Mobile-first with Tailwind CSS
 - **Fast Performance** - Optimized builds with code splitting
-- **Component Architecture** - Reusable, maintainable components
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ (current version: 24.5.0)
-- npm or yarn
+- Node.js 24.x
+- npm 11+
 
 ### Installation
 
@@ -43,70 +49,68 @@ npm run build
 npm run preview
 ```
 
-## 🎨 White-Label Customization
+## 📊 Recruitment Modules
 
-See [WHITE-LABEL-GUIDE.md](./WHITE-LABEL-GUIDE.md) for detailed instructions.
+### 1. Income Potential Calculator
+- Monthly earning projections
+- Commission tier breakdowns
+- Bonus opportunity visualization
+- Year-over-year growth scenarios
 
-**Quick customization:**
+### 2. Career Path Overview
+- New Agent (Year 1)
+- Established Agent (Years 2-3)
+- Senior Agent (Years 4-5)
+- Team Leader/Manager (Years 6+)
 
-1. Edit `/src/config/agent.config.ts`
-2. Update agent name, contact info, and branding
-3. Customize colors in `tailwind.config.js`
-4. Add logo to `/public` folder
+### 3. Success Stories
+- Real agent testimonials
+- Income progression examples
+- Work-life balance highlights
+- Support system showcases
 
-## 📊 Platform Modules
-
-### 1. Client Input
-- Comprehensive financial data entry
-- Personal information, assets, liabilities, expenses
-- Insurance status tracking
-
-### 2. Dashboard
-- Net worth overview
-- Financial health score (0-100)
-- Key metrics and critical alerts
-
-### 3. Visual Analysis
-- Asset allocation pie chart
-- Assets vs liabilities bar chart
-- Monthly expense breakdown
-
-### 4. Risk Assessment
-- Overall risk score
-- 8-category analysis with recommendations
-- Critical gap identification
-
-### 5. Insurance Products
-- Priority-based recommendations
-- Cost estimates and coverage suggestions
-- Feature comparisons
+### 4. Training & Resources
+- Initial training program overview
+- Ongoing education opportunities
+- Mentor program details
+- Technology & tools provided
 
 ## 🛠️ Technology Stack
 
-- **Frontend:** React 18 + TypeScript
-- **Build Tool:** Vite
-- **Styling:** Tailwind CSS
+- **Frontend:** React 19 + TypeScript
+- **Build Tool:** Vite 7
+- **Styling:** Tailwind CSS 3
 - **Charts:** Chart.js + react-chartjs-2
-- **State Management:** Zustand
+- **State Management:** Zustand 5
 - **Icons:** Lucide React
 - **Date Handling:** date-fns
-- **PDF Generation:** jsPDF (ready for implementation)
+- **PDF Generation:** jsPDF
 
 ## 📁 Project Structure
 
 ```
-wealth-blueprint-pro/
+wealth-pro-recruitment/
 ├── src/
 │   ├── components/         # React components
-│   ├── config/             # White-label configuration
+│   │   ├── Recruitment/    # Recruitment-specific components
+│   │   ├── Dashboard/      # Dashboard views
+│   │   └── shared/         # Shared components
+│   ├── config/             # Configuration
 │   ├── store/              # State management
 │   ├── types/              # TypeScript definitions
 │   ├── utils/              # Utility functions
 │   └── App.tsx             # Main app
 ├── public/                 # Static assets
-├── tailwind.config.js      # Tailwind config
 └── package.json
 ```
+
+## 🎨 Customization
+
+Update `/src/config/agent.config.ts` for:
+- Company branding
+- Commission structures
+- Income ranges
+- Contact information
 
 ## 📦 Deployment
 
@@ -116,21 +120,40 @@ npm install -g vercel
 vercel --prod
 ```
 
-### Netlify
+### Railway
 ```bash
-npm run build
-# Drag /dist folder to Netlify
+railway up
 ```
 
-### Static Hosting
-Upload contents of `/dist` folder after running `npm run build`
+### GitHub Pages
+```bash
+npm run deploy:github
+```
+
+## 🔜 Upcoming Features (Steps 3 & 4)
+
+### Step 3: Income Potential Showcase
+- [ ] Interactive income calculator
+- [ ] Commission tier visualization
+- [ ] Side-by-side comparison (traditional job vs agent)
+- [ ] First-year earnings projection
+- [ ] Residual income explanation
+
+### Step 4: Career Path & Support
+- [ ] Career progression timeline
+- [ ] Training program details
+- [ ] Mentor matching system
+- [ ] Success metrics dashboard
+- [ ] Application form integration
 
 ## 👤 Author
 
-**Sony Ho** - Professional Financial Consultant
+**Sony Ho** - Financial Services Recruitment
 - Email: mrsonyho@gmail.com
-- Platform: Wealth Blueprint
+- Platform: Wealth Pro Recruitment
 
 ---
 
-© 2025 Wealth Blueprint Platform | Version 2.0 (Modernized)
+© 2025 Wealth Pro Recruitment Platform | Version 1.0
+
+Built with [Claude Code](https://claude.com/claude-code)
