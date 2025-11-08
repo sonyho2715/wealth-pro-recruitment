@@ -23,6 +23,12 @@ const PortfolioAnalysis = lazy(() => import('./PortfolioAnalysis'));
 const BeneficiaryBreakdown = lazy(() => import('./BeneficiaryBreakdown'));
 const WithoutInsuranceCalculator = lazy(() => import('./WithoutInsuranceCalculator'));
 const ComparisonMode = lazy(() => import('./ComparisonMode'));
+// Recruitment components
+const IncomeCalculator = lazy(() => import('../Recruitment/IncomeCalculator'));
+const TraditionalVsAgent = lazy(() => import('../Recruitment/TraditionalVsAgent'));
+const CareerTimeline = lazy(() => import('../Recruitment/CareerTimeline'));
+const TrainingSupport = lazy(() => import('../Recruitment/TrainingSupport'));
+const ApplicationForm = lazy(() => import('../Recruitment/ApplicationForm'));
 import {
   DollarSign,
   TrendingUp,
@@ -41,6 +47,10 @@ import {
   Sparkles,
   BarChart,
   Loader2,
+  Calculator,
+  GraduationCap,
+  Rocket,
+  Send,
 } from 'lucide-react';
 
 // Loading component for Suspense fallback
@@ -55,7 +65,7 @@ function SectionLoader() {
 
 export default function Dashboard() {
   const { currentClient, currentMetrics } = useClientStore();
-  const [activeSection, setActiveSection] = useState<string>('overview');
+  const [activeSection, setActiveSection] = useState<string>('income-calculator');
 
   // Memoize helper functions to avoid recreating them on every render
   const getHealthScoreColor = useCallback((score: number) => {
@@ -74,6 +84,13 @@ export default function Dashboard() {
 
   // Memoize section configuration
   const sections = useMemo(() => [
+    // Recruitment sections (priority for this platform)
+    { id: 'income-calculator', name: 'Income Calculator', icon: <Calculator className="w-4 h-4" /> },
+    { id: 'job-comparison', name: 'Job vs Agent', icon: <TrendingUp className="w-4 h-4" /> },
+    { id: 'career-path', name: 'Career Path', icon: <Rocket className="w-4 h-4" /> },
+    { id: 'training', name: 'Training & Support', icon: <GraduationCap className="w-4 h-4" /> },
+    { id: 'apply', name: 'Apply Now', icon: <Send className="w-4 h-4" /> },
+    // Original financial planning sections
     { id: 'overview', name: 'Overview', icon: <Activity className="w-4 h-4" /> },
     { id: 'actions', name: 'Action Items', icon: <Target className="w-4 h-4" /> },
     { id: 'risk', name: 'Risk Assessment', icon: <Shield className="w-4 h-4" /> },
@@ -465,6 +482,37 @@ export default function Dashboard() {
       {activeSection === 'business' && (
         <Suspense fallback={<SectionLoader />}>
           <BusinessOwnerDashboard />
+        </Suspense>
+      )}
+
+      {/* Recruitment Sections */}
+      {activeSection === 'income-calculator' && (
+        <Suspense fallback={<SectionLoader />}>
+          <IncomeCalculator />
+        </Suspense>
+      )}
+
+      {activeSection === 'job-comparison' && (
+        <Suspense fallback={<SectionLoader />}>
+          <TraditionalVsAgent />
+        </Suspense>
+      )}
+
+      {activeSection === 'career-path' && (
+        <Suspense fallback={<SectionLoader />}>
+          <CareerTimeline />
+        </Suspense>
+      )}
+
+      {activeSection === 'training' && (
+        <Suspense fallback={<SectionLoader />}>
+          <TrainingSupport />
+        </Suspense>
+      )}
+
+      {activeSection === 'apply' && (
+        <Suspense fallback={<SectionLoader />}>
+          <ApplicationForm />
         </Suspense>
       )}
     </div>
