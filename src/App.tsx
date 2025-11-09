@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { agentConfig } from './config/agent.config';
 import { useClientStore } from './store/clientStore';
 import Header from './components/shared/Header';
@@ -6,6 +6,9 @@ import Navigation from './components/shared/Navigation';
 import Dashboard from './components/Dashboard/Dashboard';
 import ClientInput from './components/ClientInput/ClientInput';
 import Career from './components/Career/Career';
+import ErrorBoundary from './components/shared/ErrorBoundary';
+import { initAnalytics } from './utils/analytics';
+import { initErrorTracking } from './utils/error-handler';
 
 type TabName = 'input' | 'career' | 'dashboard';
 
@@ -15,21 +18,28 @@ function App() {
 
   const hasData = currentClient !== null && currentMetrics !== null;
 
+  // Initialize analytics and error tracking on mount
+  useEffect(() => {
+    initAnalytics();
+    initErrorTracking();
+  }, []);
+
   return (
-    <div className="min-h-screen">
-      <Header
-        agentName={agentConfig.agentName}
-        platformName={agentConfig.platformName}
-        platformTagline={agentConfig.platformTagline}
-      />
+    <ErrorBoundary>
+      <div className="min-h-screen">
+        <Header
+          agentName={agentConfig.agentName}
+          platformName={agentConfig.platformName}
+          platformTagline={agentConfig.platformTagline}
+        />
 
-      <Navigation
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        hasData={hasData}
-      />
+        <Navigation
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          hasData={hasData}
+        />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
         <div className="space-y-6">
           {activeTab === 'input' && <ClientInput />}
           {activeTab === 'career' && <Career />}
@@ -102,6 +112,7 @@ function App() {
         </div>
       </footer>
     </div>
+    </ErrorBoundary>
   );
 }
 

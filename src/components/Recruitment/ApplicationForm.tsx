@@ -1,5 +1,9 @@
 import { useState } from 'react';
-import { Send, User, Mail, Phone, Briefcase, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Send, User, Mail, Phone, Briefcase, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { submitApplication, ApplicationFormSchema } from '../../api/recruitment';
+import { trackFormStart, trackFormSubmit, trackFormError } from '../../utils/analytics';
+import { handleError, ErrorCategory } from '../../utils/error-handler';
+import { z } from 'zod';
 
 export default function ApplicationForm() {
   const [formData, setFormData] = useState({
@@ -8,56 +12,64 @@ export default function ApplicationForm() {
     email: '',
     phone: '',
     currentOccupation: '',
-    experience: 'none',
-    hasLicense: 'no',
+    experience: 'none' as 'none' | 'some' | 'experienced',
+    hasLicense: 'no' as 'yes' | 'no',
     motivation: '',
-    availability: 'full-time',
+    availability: 'full-time' as 'full-time' | 'part-time' | 'flexible',
     referralSource: '',
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [formStarted, setFormStarted] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+
+    // Track form start on first interaction
+    if (!formStarted) {
+      trackFormStart('application_form');
+      setFormStarted(true);
+    }
+
     setFormData(prev => ({ ...prev, [name]: value }));
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
+
+    // Clear API error
+    if (apiError) {
+      setApiError(null);
+    }
   };
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
-    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
-    }
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone number is required';
-    } else if (!/^\d{10}$/.test(formData.phone.replace(/\D/g, ''))) {
-      newErrors.phone = 'Please enter a valid 10-digit phone number';
-    }
-    if (!formData.currentOccupation.trim()) newErrors.currentOccupation = 'Current occupation is required';
-    if (!formData.motivation.trim()) newErrors.motivation = 'Please share why you want to join us';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setApiError(null);
+    setLoading(true);
 
-    if (validate()) {
-      // In a real app, this would submit to an API
-      console.log('Form submitted:', formData);
+    try {
+      // Validate with Zod schema
+      const validatedData = ApplicationFormSchema.parse({
+        ...formData,
+        phone: formData.phone.replace(/\D/g, ''), // Clean phone number
+      });
+
+      // Submit to API
+      await submitApplication(validatedData);
+
+      // Track successful submission
+      trackFormSubmit('application_form');
+
+      // Show success message
       setSubmitted(true);
+      setErrors({});
 
-      // Reset form after 5 seconds
+      // Reset form after delay
       setTimeout(() => {
         setSubmitted(false);
         setFormData({
@@ -72,7 +84,31 @@ export default function ApplicationForm() {
           availability: 'full-time',
           referralSource: '',
         });
-      }, 5000);
+        setFormStarted(false);
+      }, 8000);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        // Handle validation errors
+        const newErrors: Record<string, string> = {};
+        error.issues.forEach((err: any) => {
+          const field = err.path[0] as string;
+          newErrors[field] = err.message;
+        });
+        setErrors(newErrors);
+        trackFormError('application_form', 'validation_error');
+      } else {
+        // Handle API errors
+        const errorMessage = error instanceof Error ? error.message : 'Failed to submit application. Please try again.';
+        setApiError(errorMessage);
+        trackFormError('application_form', 'api_error');
+        handleError(error as Error, {
+          category: ErrorCategory.API,
+          severity: 'error',
+          extra: { formData },
+        });
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -367,15 +403,43 @@ export default function ApplicationForm() {
           />
         </div>
 
+        {/* API Error Display */}
+        {apiError && (
+          <div className="p-4 bg-red-50 border-2 border-red-300 rounded-lg">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-red-900 mb-1">Submission Failed</p>
+                <p className="text-sm text-red-700">{apiError}</p>
+                <p className="text-xs text-red-600 mt-2">
+                  Please try again. If the problem persists, contact support at careers@example.com
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Submit Button */}
         <div className="flex items-center justify-between pt-6 border-t-2 border-gray-200">
           <p className="text-sm text-gray-600">* Required fields</p>
           <button
             type="submit"
-            className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all flex items-center gap-2 shadow-lg"
+            disabled={loading}
+            className={`px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all flex items-center gap-2 shadow-lg ${
+              loading ? 'opacity-70 cursor-not-allowed' : ''
+            }`}
           >
-            <Send className="w-5 h-5" />
-            Submit Application
+            {loading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              <>
+                <Send className="w-5 h-5" />
+                Submit Application
+              </>
+            )}
           </button>
         </div>
       </form>
