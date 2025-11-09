@@ -1,62 +1,32 @@
 import { useState } from 'react';
-import { DollarSign, TrendingUp, Calculator, Zap, Award, Target } from 'lucide-react';
-
-interface CommissionTier {
-  name: string;
-  threshold: number;
-  lifeRate: number;
-  renewalRate: number;
-  bonusMultiplier: number;
-  color: string;
-}
-
-const COMMISSION_TIERS: CommissionTier[] = [
-  {
-    name: 'New Agent',
-    threshold: 0,
-    lifeRate: 50,
-    renewalRate: 5,
-    bonusMultiplier: 1.0,
-    color: 'blue',
-  },
-  {
-    name: 'Qualified Agent',
-    threshold: 50000,
-    lifeRate: 70,
-    renewalRate: 7,
-    bonusMultiplier: 1.1,
-    color: 'green',
-  },
-  {
-    name: 'Senior Agent',
-    threshold: 100000,
-    lifeRate: 90,
-    renewalRate: 9,
-    bonusMultiplier: 1.25,
-    color: 'purple',
-  },
-  {
-    name: 'Executive Agent',
-    threshold: 200000,
-    lifeRate: 110,
-    renewalRate: 10,
-    bonusMultiplier: 1.5,
-    color: 'orange',
-  },
-];
+import { DollarSign, TrendingUp, Calculator, Zap, Award, Target, Users, Settings } from 'lucide-react';
+import {
+  COMMISSION_TIERS,
+  TEAM_OVERRIDE_OPTIONS,
+  getTierByProduction,
+  calculateTeamOverride,
+} from '../../config/commission.config';
 
 export default function IncomeCalculator() {
   const [monthlyPolicies, setMonthlyPolicies] = useState(4);
   const [avgPremium, setAvgPremium] = useState(2000);
   const [renewalBook, setRenewalBook] = useState(0);
 
+  // Commission tier override
+  const [tierOverride, setTierOverride] = useState<string>('auto');
+
+  // Team override settings
+  const [teamProduction, setTeamProduction] = useState(0);
+  const [teamOverridePercentage, setTeamOverridePercentage] = useState(0);
+
   // Calculate annual production
   const annualProduction = monthlyPolicies * avgPremium * 12;
 
-  // Determine tier
-  const currentTier = [...COMMISSION_TIERS]
-    .reverse()
-    .find(tier => annualProduction >= tier.threshold) || COMMISSION_TIERS[0];
+  // Determine tier (with override option)
+  const autoTier = getTierByProduction(annualProduction);
+  const currentTier = tierOverride === 'auto'
+    ? autoTier
+    : COMMISSION_TIERS.find(t => t.name === tierOverride) || autoTier;
 
   // Calculate first year commissions
   const firstYearCommission = (annualProduction * currentTier.lifeRate) / 100;
@@ -69,8 +39,11 @@ export default function IncomeCalculator() {
     ? Math.floor(annualProduction / 100000) * 5000 * currentTier.bonusMultiplier
     : 0;
 
+  // Calculate team override income
+  const teamOverrideIncome = calculateTeamOverride(teamProduction, teamOverridePercentage);
+
   // Total first year income
-  const totalFirstYearIncome = firstYearCommission + renewalIncome + productionBonus;
+  const totalFirstYearIncome = firstYearCommission + renewalIncome + productionBonus + teamOverrideIncome;
 
   // Project year 2-5 income (with growing renewal book)
   const projections: Array<{
@@ -78,6 +51,7 @@ export default function IncomeCalculator() {
     newCommission: number;
     renewalIncome: number;
     bonus: number;
+    teamOverride: number;
     total: number;
   }> = [];
   let cumulativeRenewalBook = renewalBook;
@@ -92,13 +66,15 @@ export default function IncomeCalculator() {
     const yearlyBonus = annualProduction >= 100000
       ? Math.floor(annualProduction / 100000) * 5000 * currentTier.bonusMultiplier
       : 0;
+    const yearlyTeamOverride = calculateTeamOverride(teamProduction, teamOverridePercentage);
 
     projections.push({
       year,
       newCommission: yearlyNewCommission,
       renewalIncome: yearlyRenewalIncome,
       bonus: yearlyBonus,
-      total: yearlyNewCommission + yearlyRenewalIncome + yearlyBonus,
+      teamOverride: yearlyTeamOverride,
+      total: yearlyNewCommission + yearlyRenewalIncome + yearlyBonus + yearlyTeamOverride,
     });
   }
 
@@ -204,6 +180,107 @@ export default function IncomeCalculator() {
         </div>
       </div>
 
+      {/* Advanced Settings */}
+      <div className="card bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-300">
+        <div className="flex items-center gap-3 mb-6">
+          <Settings className="w-5 h-5 text-purple-700" />
+          <h3 className="text-lg font-bold text-gray-900">Advanced Commission Settings</h3>
+        </div>
+
+        <div className="space-y-6">
+          {/* Commission Tier Override */}
+          <div>
+            <label className="text-sm font-semibold text-gray-900 mb-2 block">
+              Commission Tier Override
+            </label>
+            <select
+              value={tierOverride}
+              onChange={(e) => setTierOverride(e.target.value)}
+              className="w-full px-4 py-3 bg-white border-2 border-purple-300 rounded-lg text-gray-900 font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              <option value="auto">Auto (Based on Production: {autoTier.name})</option>
+              {COMMISSION_TIERS.map((tier) => (
+                <option key={tier.name} value={tier.name}>
+                  {tier.name} - {tier.lifeRate}% FYC / {tier.renewalRate}% Renewal
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-600 mt-1">
+              Override the automatic tier calculation to test different commission rates
+            </p>
+          </div>
+
+          {/* Team Production */}
+          <div>
+            <div className="flex justify-between mb-2">
+              <label className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                <Users className="w-4 h-4 text-purple-600" />
+                Team Production (Annual Premium)
+              </label>
+              <span className="text-lg font-bold text-purple-700">{formatCurrency(teamProduction)}</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="1000000"
+              step="25000"
+              value={teamProduction}
+              onChange={(e) => setTeamProduction(Number(e.target.value))}
+              className="w-full h-3 bg-purple-200 rounded-lg appearance-none cursor-pointer slider"
+            />
+            <div className="flex justify-between text-xs text-gray-600 mt-1">
+              <span>No Team ($0)</span>
+              <span>Medium Team ($500K)</span>
+              <span>Large Team ($1M+)</span>
+            </div>
+          </div>
+
+          {/* Team Override Percentage */}
+          <div>
+            <div className="flex justify-between mb-2">
+              <label className="text-sm font-semibold text-gray-900">
+                Team Override Percentage
+              </label>
+              <span className="text-lg font-bold text-purple-700">{teamOverridePercentage}%</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="25"
+              step="1"
+              value={teamOverridePercentage}
+              onChange={(e) => setTeamOverridePercentage(Number(e.target.value))}
+              className="w-full h-3 bg-purple-200 rounded-lg appearance-none cursor-pointer slider"
+            />
+            <div className="flex justify-between text-xs text-gray-600 mt-1">
+              <span>None (0%)</span>
+              <span>Standard (10%)</span>
+              <span>Executive (25%)</span>
+            </div>
+            <div className="mt-2 p-3 bg-white rounded-lg">
+              <p className="text-xs text-gray-600">
+                <strong>Quick Select:</strong>
+              </p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {TEAM_OVERRIDE_OPTIONS.map((option) => (
+                  <button
+                    key={option.name}
+                    onClick={() => setTeamOverridePercentage(option.percentage)}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                      teamOverridePercentage === option.percentage
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                    }`}
+                  >
+                    {option.name} ({option.percentage}%)
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Current Tier Display */}
       <div className={`card bg-gradient-to-br from-${currentTier.color}-50 to-${currentTier.color}-100 border-2 border-${currentTier.color}-300`}>
         <div className="flex items-center justify-between">
@@ -291,6 +368,23 @@ export default function IncomeCalculator() {
             </div>
           )}
 
+          {teamOverrideIncome > 0 && (
+            <div className="p-4 bg-orange-50 border-2 border-orange-300 rounded-lg">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-orange-600" />
+                  Team Override Income
+                </span>
+                <span className="text-xl font-bold text-orange-700">
+                  {formatCurrency(teamOverrideIncome)}
+                </span>
+              </div>
+              <p className="text-xs text-gray-600">
+                {formatCurrency(teamProduction)} team production × {teamOverridePercentage}%
+              </p>
+            </div>
+          )}
+
           <div className="p-6 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg text-white">
             <div className="flex justify-between items-center">
               <div>
@@ -325,7 +419,7 @@ export default function IncomeCalculator() {
                   {formatCurrency(projection.total)}
                 </span>
               </div>
-              <div className="grid grid-cols-3 gap-2 text-xs text-gray-600">
+              <div className={`grid ${projection.teamOverride > 0 ? 'grid-cols-4' : 'grid-cols-3'} gap-2 text-xs text-gray-600`}>
                 <div>
                   <span className="block text-gray-500">New Business</span>
                   <span className="font-semibold text-gray-900">
@@ -344,6 +438,14 @@ export default function IncomeCalculator() {
                     {formatCurrency(projection.bonus)}
                   </span>
                 </div>
+                {projection.teamOverride > 0 && (
+                  <div>
+                    <span className="block text-gray-500">Team</span>
+                    <span className="font-semibold text-gray-900">
+                      {formatCurrency(projection.teamOverride)}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Progress bar */}
