@@ -1,5 +1,5 @@
 import { useState, lazy, Suspense } from 'react';
-import { Calculator, TrendingUp, Rocket, GraduationCap, Send, Loader2 } from 'lucide-react';
+import { Calculator, TrendingUp, Rocket, GraduationCap, Send, Loader2, Calendar } from 'lucide-react';
 
 // Lazy load career sections
 const IncomeCalculator = lazy(() => import('../Recruitment/IncomeCalculator'));
@@ -7,6 +7,8 @@ const TraditionalVsAgent = lazy(() => import('../Recruitment/TraditionalVsAgent'
 const CareerTimeline = lazy(() => import('../Recruitment/CareerTimeline'));
 const TrainingSupport = lazy(() => import('../Recruitment/TrainingSupport'));
 const ApplicationForm = lazy(() => import('../Recruitment/ApplicationForm'));
+const EmailCapture = lazy(() => import('../Recruitment/EmailCapture'));
+const CalendarBooking = lazy(() => import('../Recruitment/CalendarBooking'));
 
 // Loading component
 function SectionLoader() {
@@ -18,7 +20,7 @@ function SectionLoader() {
   );
 }
 
-type CareerSection = 'calculator' | 'comparison' | 'timeline' | 'training' | 'apply';
+type CareerSection = 'calculator' | 'comparison' | 'timeline' | 'training' | 'apply' | 'schedule';
 
 export default function Career() {
   const [activeSection, setActiveSection] = useState<CareerSection>('calculator');
@@ -28,6 +30,7 @@ export default function Career() {
     { id: 'comparison' as CareerSection, name: 'Job vs Agent', icon: <TrendingUp className="w-4 h-4" />, color: 'green' },
     { id: 'timeline' as CareerSection, name: 'Career Path', icon: <Rocket className="w-4 h-4" />, color: 'purple' },
     { id: 'training' as CareerSection, name: 'Training & Support', icon: <GraduationCap className="w-4 h-4" />, color: 'orange' },
+    { id: 'schedule' as CareerSection, name: 'Schedule Call', icon: <Calendar className="w-4 h-4" />, color: 'teal' },
     { id: 'apply' as CareerSection, name: 'Apply Now', icon: <Send className="w-4 h-4" />, color: 'red' },
   ];
 
@@ -91,6 +94,15 @@ export default function Career() {
           </Suspense>
         )}
 
+        {activeSection === 'schedule' && (
+          <Suspense fallback={<SectionLoader />}>
+            <div className="space-y-6">
+              <CalendarBooking />
+              <EmailCapture />
+            </div>
+          </Suspense>
+        )}
+
         {activeSection === 'apply' && (
           <Suspense fallback={<SectionLoader />}>
             <ApplicationForm />
@@ -99,19 +111,27 @@ export default function Career() {
       </div>
 
       {/* Bottom CTA */}
-      {activeSection !== 'apply' && (
+      {activeSection !== 'apply' && activeSection !== 'schedule' && (
         <div className="card bg-gradient-to-r from-green-600 to-blue-600 text-white">
           <div className="text-center py-8">
             <h3 className="text-2xl font-bold mb-4">Ready to Get Started?</h3>
             <p className="text-lg mb-6 opacity-90">
               Take the first step towards financial freedom. Applications reviewed within 24 hours.
             </p>
-            <button
-              onClick={() => setActiveSection('apply')}
-              className="px-8 py-4 bg-white text-blue-600 font-bold rounded-lg hover:bg-gray-100 transition-all shadow-lg transform hover:scale-105"
-            >
-              Apply Now
-            </button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => setActiveSection('schedule')}
+                className="px-8 py-4 bg-white/20 backdrop-blur border-2 border-white text-white font-bold rounded-lg hover:bg-white/30 transition-all"
+              >
+                Schedule a Call First
+              </button>
+              <button
+                onClick={() => setActiveSection('apply')}
+                className="px-8 py-4 bg-white text-blue-600 font-bold rounded-lg hover:bg-gray-100 transition-all shadow-lg transform hover:scale-105"
+              >
+                Apply Now
+              </button>
+            </div>
           </div>
         </div>
       )}

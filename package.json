@@ -19,7 +19,7 @@
     "deploy:github": "npm run build && gh-pages -d dist"
   },
   "engines": {
-    "node": "22.x",
+    "node": ">=22.0.0",
     "npm": ">=10.0.0"
   },
   "dependencies": {

@@ -63,43 +63,49 @@ export interface AgentConfig {
 }
 
 /**
- * DEFAULT CONFIGURATION - SAMPLE PLATFORM
- * Update these values to white-label for your agency
+ * AGENT CONFIGURATION
+ * Customize these values for your agency/recruiter branding
+ *
+ * To white-label for a new agent:
+ * 1. Update agent information below
+ * 2. Add logo/photo to /public folder
+ * 3. Update branding colors to match your brand
+ * 4. Redeploy the application
  */
 export const agentConfig: AgentConfig = {
   // Agent Information
-  agentName: "Agent Name Here",
-  agentTitle: "Professional Financial Consultant",
-  agentEmail: "agent@example.com",
-  agentPhone: "(555) 123-4567",
-  agentWebsite: "https://yourwebsite.com", // Update with your website
-  agentLogo: undefined, // Path to logo image in /public folder
-  agentPhoto: undefined, // Path to professional headshot in /public folder
-  agentBio: "Helping families and business owners achieve financial freedom through comprehensive planning and strategic wealth management.",
+  agentName: "Sony Ho",
+  agentTitle: "Senior Financial Consultant & Recruiter",
+  agentEmail: "mrsonyho@gmail.com",
+  agentPhone: "(808) 555-0123",
+  agentWebsite: "https://wealthpro.com",
+  agentLogo: undefined, // Add: "/logo.png"
+  agentPhoto: undefined, // Add: "/headshot.jpg"
+  agentBio: "Helping ambitious professionals build rewarding careers in financial services. With over 10 years of experience, I've helped hundreds of agents achieve financial freedom and work-life balance.",
 
   // Professional Credentials
   credentials: {
-    certifications: ["CFP®", "ChFC", "CLU"], // Update with your certifications
-    licenses: ["Series 65", "Life & Health"], // Update with your licenses
-    yearsOfExperience: 15,
-    clientsServed: 500,
-    assetsUnderManagement: "$50M+",
+    certifications: ["Life & Health Licensed", "Series 6", "Series 63"],
+    licenses: ["Hawaii Insurance License", "Life & Health"],
+    yearsOfExperience: 10,
+    clientsServed: 250,
+    assetsUnderManagement: undefined,
   },
 
   // Company Information
-  companyName: "Your Financial Services",
-  companyAddress: undefined,
+  companyName: "Wealth Pro Financial",
+  companyAddress: "Honolulu, Hawaii",
 
   // Branding Colors
   brandColors: {
     primary: "#0ea5e9", // Sky blue
     secondary: "#6366f1", // Indigo
-    accent: "#10b981", // Green
+    accent: "#10b981", // Emerald green
   },
 
   // Platform Settings
-  platformName: "Wealth Blueprint",
-  platformTagline: "Professional Financial Planning Platform",
+  platformName: "Wealth Pro Recruitment",
+  platformTagline: "Build Your Future in Financial Services",
 
   // Features
   features: {
@@ -112,7 +118,7 @@ export const agentConfig: AgentConfig = {
 
   // Social Links
   socialLinks: {
-    linkedin: "https://linkedin.com/in/yourusername",
+    linkedin: "https://linkedin.com/in/sonyho",
     twitter: undefined,
     facebook: undefined,
   },

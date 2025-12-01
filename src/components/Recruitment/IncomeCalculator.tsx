@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { DollarSign, TrendingUp, Calculator, Zap, Award, Target, Users, Settings } from 'lucide-react';
+import { DollarSign, TrendingUp, Calculator, Zap, Award, Target, Users, Settings, Download, Share2 } from 'lucide-react';
 import {
   COMMISSION_TIERS,
   TEAM_OVERRIDE_OPTIONS,
   getTierByProduction,
   calculateTeamOverride,
 } from '../../config/commission.config';
+import { CalculatorDisclaimer, IncomeDisclaimer } from '../shared/ComplianceDisclaimer';
+import { generateProjectionPDF } from '../../utils/pdf-export';
 
 export default function IncomeCalculator() {
   const [monthlyPolicies, setMonthlyPolicies] = useState(4);
@@ -475,7 +477,7 @@ export default function IncomeCalculator() {
 
       {/* Key Benefits Callout */}
       <div className="card bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-300">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">💡 Why Your Income Grows</h3>
+        <h3 className="text-lg font-bold text-gray-900 mb-4">Why Your Income Grows</h3>
         <ul className="space-y-3 text-sm">
           <li className="flex items-start gap-3">
             <span className="text-green-600 font-bold">✓</span>
@@ -494,7 +496,48 @@ export default function IncomeCalculator() {
             <span><strong>Compounding Growth:</strong> Your book grows year after year automatically</span>
           </li>
         </ul>
+        <IncomeDisclaimer />
       </div>
+
+      {/* Action Buttons */}
+      <div className="card">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <button
+            onClick={() => generateProjectionPDF({
+              monthlyPolicies,
+              avgPremium,
+              renewalBook,
+              currentTier,
+              projections,
+              totalFirstYearIncome,
+              teamOverrideIncome,
+              teamProduction,
+              teamOverridePercentage,
+            })}
+            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg"
+          >
+            <Download className="w-5 h-5" />
+            Save My Projection (PDF)
+          </button>
+          <button
+            onClick={() => {
+              const url = new URL(window.location.href);
+              url.searchParams.set('policies', monthlyPolicies.toString());
+              url.searchParams.set('premium', avgPremium.toString());
+              url.searchParams.set('renewals', renewalBook.toString());
+              navigator.clipboard.writeText(url.toString());
+              alert('Link copied to clipboard!');
+            }}
+            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-50 transition-all"
+          >
+            <Share2 className="w-5 h-5" />
+            Share This Projection
+          </button>
+        </div>
+      </div>
+
+      {/* Calculator Disclaimer */}
+      <CalculatorDisclaimer />
     </div>
   );
 }

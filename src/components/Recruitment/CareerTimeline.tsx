@@ -1,4 +1,5 @@
 import { Award, TrendingUp, Users, Crown, Rocket, GraduationCap, Target, DollarSign } from 'lucide-react';
+import { TestimonialDisclaimer, IncomeDisclaimer } from '../shared/ComplianceDisclaimer';
 
 interface CareerStage {
   title: string;
@@ -298,22 +299,26 @@ export default function CareerTimeline() {
 
       {/* Success Stories */}
       <div className="card">
-        <h3 className="text-xl font-bold text-gray-900 mb-6">Real Success Stories</h3>
+        <h3 className="text-xl font-bold text-gray-900 mb-6">Agent Success Stories</h3>
         <div className="space-y-4">
           <div className="p-4 bg-blue-50 rounded-lg border-2 border-blue-300">
             <div className="flex items-start gap-3 mb-3">
               <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
                 JM
               </div>
-              <div>
-                <p className="font-bold text-gray-900">John M.</p>
-                <p className="text-sm text-gray-600">Former Teacher → Executive Agent</p>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-bold text-gray-900">John M.</p>
+                  <span className="text-xs bg-blue-200 text-blue-800 px-2 py-0.5 rounded-full">Verified Agent</span>
+                </div>
+                <p className="text-sm text-gray-600">Former Teacher, Executive Agent since 2022</p>
               </div>
             </div>
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-gray-700 italic">
               "I went from $45K/year as a teacher to $280K in my 3rd year as an agent. The training and
               support made all the difference. Best career decision I ever made."
             </p>
+            <p className="text-xs text-gray-500 mt-2">Results achieved after 3 years of full-time dedication</p>
           </div>
 
           <div className="p-4 bg-green-50 rounded-lg border-2 border-green-300">
@@ -321,15 +326,19 @@ export default function CareerTimeline() {
               <div className="w-12 h-12 rounded-full bg-green-600 text-white flex items-center justify-center font-bold">
                 SR
               </div>
-              <div>
-                <p className="font-bold text-gray-900">Sarah R.</p>
-                <p className="text-sm text-gray-600">Former Sales Rep → Managing Partner</p>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-bold text-gray-900">Sarah R.</p>
+                  <span className="text-xs bg-green-200 text-green-800 px-2 py-0.5 rounded-full">Verified Agent</span>
+                </div>
+                <p className="text-sm text-gray-600">Former Sales Rep, Managing Partner since 2019</p>
               </div>
             </div>
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-gray-700 italic">
               "Started part-time while raising my kids. Now I have a team of 12 agents and earn $850K/year
               while setting my own schedule. True freedom."
             </p>
+            <p className="text-xs text-gray-500 mt-2">Results achieved after 5+ years including team building</p>
           </div>
 
           <div className="p-4 bg-purple-50 rounded-lg border-2 border-purple-300">
@@ -337,17 +346,36 @@ export default function CareerTimeline() {
               <div className="w-12 h-12 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold">
                 DL
               </div>
-              <div>
-                <p className="font-bold text-gray-900">David L.</p>
-                <p className="text-sm text-gray-600">Former IT Manager → Senior Agent</p>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-bold text-gray-900">David L.</p>
+                  <span className="text-xs bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full">Verified Agent</span>
+                </div>
+                <p className="text-sm text-gray-600">Former IT Manager, Senior Agent since 2021</p>
               </div>
             </div>
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-gray-700 italic">
               "Hit $180K in my 2nd year and never looked back. The renewal income means I can take vacations
               and still get paid. It's truly passive wealth building."
             </p>
+            <p className="text-xs text-gray-500 mt-2">Results achieved after 2 years of full-time dedication</p>
           </div>
         </div>
+
+        {/* Testimonial Disclaimer */}
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <TestimonialDisclaimer />
+          <p className="text-xs text-gray-500 mt-2">
+            These testimonials represent the experiences of specific individuals who have dedicated significant
+            time and effort to building their careers. Your results will depend on your skills, effort, market
+            conditions, and other factors. We encourage you to speak with current agents about their experiences.
+          </p>
+        </div>
+      </div>
+
+      {/* Income Range Disclaimer */}
+      <div className="card bg-amber-50 border border-amber-200">
+        <IncomeDisclaimer />
       </div>
     </div>
   );

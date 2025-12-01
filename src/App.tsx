@@ -7,6 +7,7 @@ import Dashboard from './components/Dashboard/Dashboard';
 import ClientInput from './components/ClientInput/ClientInput';
 import Career from './components/Career/Career';
 import ErrorBoundary from './components/shared/ErrorBoundary';
+import ComplianceDisclaimer from './components/shared/ComplianceDisclaimer';
 import { initAnalytics } from './utils/analytics';
 import { initErrorTracking } from './utils/error-handler';
 
@@ -94,7 +95,12 @@ function App() {
         </div>
       </main>
 
-      <footer className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-t border-gray-700 mt-16 py-8">
+      {/* Compliance Disclaimer Section */}
+      {activeTab === 'career' && (
+        <ComplianceDisclaimer variant="footer" />
+      )}
+
+      <footer className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-t border-gray-700 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-gray-300 font-medium">
@@ -103,10 +109,34 @@ function App() {
             <p className="text-gray-400 text-sm mt-2">
               {agentConfig.agentName} - {agentConfig.agentTitle}
             </p>
-            <p className="mt-4 text-xs text-gray-500 max-w-2xl mx-auto">
+            {agentConfig.companyAddress && (
+              <p className="text-gray-500 text-sm mt-1">
+                {agentConfig.companyAddress}
+              </p>
+            )}
+            <div className="mt-4 flex justify-center gap-4">
+              {agentConfig.socialLinks?.linkedin && (
+                <a
+                  href={agentConfig.socialLinks.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  LinkedIn
+                </a>
+              )}
+              <a
+                href={`mailto:${agentConfig.agentEmail}`}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                Contact
+              </a>
+            </div>
+            <p className="mt-6 text-xs text-gray-500 max-w-2xl mx-auto">
               This platform is designed as an educational and analysis tool. All
-              calculations and recommendations are general in nature and should
-              not be considered personalized financial advice.
+              calculations, projections, and recommendations are general in nature and should
+              not be considered personalized financial, legal, or career advice. Individual
+              results vary based on effort, skills, and market conditions.
             </p>
           </div>
         </div>

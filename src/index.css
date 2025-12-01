@@ -153,23 +153,86 @@
   animation: slide-in-right 0.3s ease-out;
 }
 
-/* Custom Range Input Styling */
+/* Custom Range Input Styling - Mobile Optimized */
 input[type="range"] {
-  @apply w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer;
+  @apply w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer;
+  touch-action: pan-x;
+  -webkit-tap-highlight-color: transparent;
 }
 
 input[type="range"]::-webkit-slider-thumb {
-  @apply appearance-none w-5 h-5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full cursor-pointer shadow-lg;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+  border: 3px solid white;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover,
+input[type="range"]::-webkit-slider-thumb:active {
+  transform: scale(1.15);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.5);
 }
 
 input[type="range"]::-moz-range-thumb {
-  @apply w-5 h-5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full cursor-pointer shadow-lg border-0;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+  border: 3px solid white;
 }
 
 input[type="range"]::-webkit-slider-runnable-track {
-  @apply w-full h-2 bg-gradient-to-r from-blue-200 to-purple-200 rounded-lg;
+  @apply w-full h-3 bg-gradient-to-r from-blue-200 to-purple-200 rounded-lg;
 }
 
 input[type="range"]::-moz-range-track {
-  @apply w-full h-2 bg-gradient-to-r from-blue-200 to-purple-200 rounded-lg;
+  @apply w-full h-3 bg-gradient-to-r from-blue-200 to-purple-200 rounded-lg;
+}
+
+/* Larger touch targets on mobile */
+@media (max-width: 768px) {
+  input[type="range"] {
+    height: 16px;
+    padding: 8px 0;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    width: 32px;
+    height: 32px;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Better touch spacing on mobile */
+  .card {
+    @apply p-4;
+  }
+
+  /* Improved button touch targets */
+  button, a {
+    min-height: 44px;
+  }
+}
+
+/* Smooth scrolling for swipe navigation */
+.scroll-smooth {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent text selection on interactive elements */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
 }

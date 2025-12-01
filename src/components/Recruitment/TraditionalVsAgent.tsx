@@ -1,4 +1,6 @@
-import { Briefcase, TrendingUp, Lock, Unlock, Clock, Calendar, DollarSign, Target } from 'lucide-react';
+import { Briefcase, TrendingUp, Lock, Unlock, Clock, Calendar, DollarSign, Target, Download } from 'lucide-react';
+import { IncomeDisclaimer } from '../shared/ComplianceDisclaimer';
+import { generateComparisonPDF } from '../../utils/pdf-export';
 
 export default function TraditionalVsAgent() {
   const formatCurrency = (amount: number) => {
@@ -342,11 +344,38 @@ export default function TraditionalVsAgent() {
         </div>
       </div>
 
+      {/* Download Comparison */}
+      <div className="card">
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <div>
+            <h3 className="font-bold text-gray-900">Save This Comparison</h3>
+            <p className="text-sm text-gray-600">Download a PDF to review later or share with others</p>
+          </div>
+          <button
+            onClick={() => generateComparisonPDF(traditionalJobIncome, agentIncome)}
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg"
+          >
+            <Download className="w-5 h-5" />
+            Download PDF
+          </button>
+        </div>
+      </div>
+
+      {/* Income Disclaimer */}
+      <div className="card bg-amber-50 border border-amber-200">
+        <IncomeDisclaimer />
+        <p className="text-xs text-amber-700 mt-2">
+          Traditional job income assumes 4% annual raises starting from $60,000. Agent income projections
+          assume consistent production of 4 policies per month at $2,000 average premium with growing renewal book.
+          Actual results depend on individual effort, market conditions, and other factors.
+        </p>
+      </div>
+
       {/* Bottom CTA */}
       <div className="card bg-gradient-to-br from-blue-600 to-purple-600 text-white">
         <h3 className="text-2xl font-bold mb-4">The Choice Is Yours</h3>
         <p className="text-lg mb-6">
-          Stay on the hamster wheel, or build your own financial freedom?
+          Ready to explore a career with unlimited potential?
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="p-4 bg-white/10 rounded-lg backdrop-blur">
