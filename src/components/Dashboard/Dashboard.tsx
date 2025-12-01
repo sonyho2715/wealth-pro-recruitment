@@ -41,6 +41,10 @@ import {
   Sparkles,
   BarChart,
   Loader2,
+  ChevronLeft,
+  ChevronRight,
+  GraduationCap,
+  Wallet,
 } from 'lucide-react';
 
 // Loading component for Suspense fallback
@@ -56,6 +60,7 @@ function SectionLoader() {
 export default function Dashboard() {
   const { currentClient, currentMetrics } = useClientStore();
   const [activeSection, setActiveSection] = useState<string>('overview');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Memoize helper functions to avoid recreating them on every render
   const getHealthScoreColor = useCallback((score: number) => {
@@ -72,24 +77,49 @@ export default function Dashboard() {
     return 'Critical';
   }, []);
 
-  // Memoize section configuration
-  const sections = useMemo(() => [
-    { id: 'overview', name: 'Overview', icon: <Activity className="w-4 h-4" /> },
-    { id: 'actions', name: 'Action Items', icon: <Target className="w-4 h-4" /> },
-    { id: 'risk', name: 'Risk Assessment', icon: <Shield className="w-4 h-4" /> },
-    { id: 'insurance', name: 'Insurance Quotes', icon: <Shield className="w-4 h-4" /> },
-    { id: 'goals', name: 'Financial Goals', icon: <Target className="w-4 h-4" /> },
-    { id: 'cashflow', name: 'Cash Flow', icon: <BarChart className="w-4 h-4" /> },
-    { id: 'college', name: 'College Planning', icon: <Target className="w-4 h-4" /> },
-    { id: 'portfolio', name: 'Portfolio Analysis', icon: <BarChart className="w-4 h-4" /> },
-    { id: 'planning', name: 'Life Planning', icon: <Target className="w-4 h-4" /> },
-    { id: 'analytics', name: 'Advanced Analytics', icon: <Sparkles className="w-4 h-4" /> },
-    { id: 'whatif', name: 'What-If', icon: <GitCompare className="w-4 h-4" /> },
-    { id: 'retirement', name: 'Retirement', icon: <LineChart className="w-4 h-4" /> },
-    { id: 'debt', name: 'Debt Payoff', icon: <CreditCard className="w-4 h-4" /> },
-    { id: 'peers', name: 'Benchmarks', icon: <Users className="w-4 h-4" /> },
-    { id: 'tax', name: 'Tax Optimization', icon: <Receipt className="w-4 h-4" /> },
-    { id: 'business', name: 'Business Owner', icon: <Briefcase className="w-4 h-4" /> },
+  // Memoize section configuration with categories
+  const sectionGroups = useMemo(() => [
+    {
+      label: 'Overview',
+      sections: [
+        { id: 'overview', name: 'Overview', icon: <Activity className="w-4 h-4" /> },
+        { id: 'actions', name: 'Action Items', icon: <Target className="w-4 h-4" /> },
+      ]
+    },
+    {
+      label: 'Protection',
+      sections: [
+        { id: 'risk', name: 'Risk Assessment', icon: <Shield className="w-4 h-4" /> },
+        { id: 'insurance', name: 'Insurance Quotes', icon: <Shield className="w-4 h-4" /> },
+      ]
+    },
+    {
+      label: 'Planning',
+      sections: [
+        { id: 'goals', name: 'Financial Goals', icon: <Target className="w-4 h-4" /> },
+        { id: 'cashflow', name: 'Cash Flow', icon: <Wallet className="w-4 h-4" /> },
+        { id: 'college', name: 'College Planning', icon: <GraduationCap className="w-4 h-4" /> },
+        { id: 'retirement', name: 'Retirement', icon: <LineChart className="w-4 h-4" /> },
+        { id: 'planning', name: 'Life Planning', icon: <Target className="w-4 h-4" /> },
+      ]
+    },
+    {
+      label: 'Analysis',
+      sections: [
+        { id: 'portfolio', name: 'Portfolio Analysis', icon: <BarChart className="w-4 h-4" /> },
+        { id: 'analytics', name: 'Advanced Analytics', icon: <Sparkles className="w-4 h-4" /> },
+        { id: 'whatif', name: 'What-If Scenarios', icon: <GitCompare className="w-4 h-4" /> },
+        { id: 'peers', name: 'Benchmarks', icon: <Users className="w-4 h-4" /> },
+      ]
+    },
+    {
+      label: 'Optimization',
+      sections: [
+        { id: 'debt', name: 'Debt Payoff', icon: <CreditCard className="w-4 h-4" /> },
+        { id: 'tax', name: 'Tax Optimization', icon: <Receipt className="w-4 h-4" /> },
+        { id: 'business', name: 'Business Owner', icon: <Briefcase className="w-4 h-4" /> },
+      ]
+    },
   ], []);
 
   // Memoize calculated values from metrics
@@ -112,29 +142,99 @@ export default function Dashboard() {
     return null;
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Section Navigation */}
-      <div className="card-gradient">
-        <div className="flex flex-wrap gap-2">
-          {sections.map((section) => (
-            <button
-              key={section.id}
-              onClick={() => setActiveSection(section.id)}
-              className={`relative flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all ${
-                activeSection === section.id
-                  ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
-                  : 'bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-              }`}
-            >
-              {section.icon}
-              <span>{section.name}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+  // Get current section name for header
+  const currentSectionName = useMemo(() => {
+    for (const group of sectionGroups) {
+      const found = group.sections.find(s => s.id === activeSection);
+      if (found) return found.name;
+    }
+    return 'Overview';
+  }, [activeSection, sectionGroups]);
 
-      {/* Active Section Content */}
+  return (
+    <div className="flex gap-6">
+      {/* Sidebar Navigation */}
+      <aside
+        className={`flex-shrink-0 transition-all duration-300 ${
+          sidebarCollapsed ? 'w-16' : 'w-64'
+        }`}
+      >
+        <div className="sticky top-4 bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden">
+          {/* Sidebar Header */}
+          <div className="p-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+            <div className="flex items-center justify-between">
+              {!sidebarCollapsed && (
+                <div>
+                  <h3 className="font-bold text-sm">Dashboard</h3>
+                  <p className="text-xs opacity-80">Analysis Tools</p>
+                </div>
+              )}
+              <button
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+                title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              >
+                {sidebarCollapsed ? (
+                  <ChevronRight className="w-4 h-4" />
+                ) : (
+                  <ChevronLeft className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Navigation Sections */}
+          <nav className="p-2 max-h-[calc(100vh-200px)] overflow-y-auto">
+            {sectionGroups.map((group, groupIdx) => (
+              <div key={group.label} className={groupIdx > 0 ? 'mt-4' : ''}>
+                {!sidebarCollapsed && (
+                  <p className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    {group.label}
+                  </p>
+                )}
+                <div className="space-y-1">
+                  {group.sections.map((section) => (
+                    <button
+                      key={section.id}
+                      onClick={() => setActiveSection(section.id)}
+                      title={sidebarCollapsed ? section.name : undefined}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                        activeSection === section.id
+                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
+                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      } ${sidebarCollapsed ? 'justify-center' : ''}`}
+                    >
+                      <span className={activeSection === section.id ? 'text-white' : 'text-gray-500'}>
+                        {section.icon}
+                      </span>
+                      {!sidebarCollapsed && <span>{section.name}</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </nav>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 min-w-0 space-y-6">
+        {/* Section Header */}
+        <div className="card-gradient">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              {sectionGroups.flatMap(g => g.sections).find(s => s.id === activeSection)?.icon}
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">{currentSectionName}</h2>
+              <p className="text-sm text-gray-600">
+                Analysis for {currentClient.name} - Age {currentClient.age}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Active Section Content */}
       {activeSection === 'overview' && (
         <div className="space-y-8">
           {/* Critical Alerts - MOVED TO TOP */}
@@ -467,6 +567,7 @@ export default function Dashboard() {
           <BusinessOwnerDashboard />
         </Suspense>
       )}
+      </div>
     </div>
   );
 }
