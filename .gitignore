@@ -33,8 +33,10 @@ dist-ssr
 # Build outputs
 dist/
 build/
+.next/
 .vercel
 .railway
+_backup/
 
 # Testing
 coverage

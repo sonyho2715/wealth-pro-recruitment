@@ -1,0 +1,197 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Core prospect/client model
+model Prospect {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  firstName String
+  lastName  String
+  phone     String?
+  status    ProspectStatus @default(LEAD)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  financialProfile FinancialProfile?
+  insuranceNeeds   InsuranceNeed[]
+  agentProjection  AgentProjection?
+  comparisons      Comparison[]
+  notes            Note[]
+}
+
+enum ProspectStatus {
+  LEAD
+  QUALIFIED
+  INSURANCE_CLIENT
+  AGENT_PROSPECT
+  LICENSED_AGENT
+  INACTIVE
+}
+
+// Financial intake data
+model FinancialProfile {
+  id         String   @id @default(cuid())
+  prospectId String   @unique
+  prospect   Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+
+  // Income
+  annualIncome  Decimal @db.Decimal(12, 2)
+  spouseIncome  Decimal? @db.Decimal(12, 2)
+  otherIncome   Decimal? @db.Decimal(12, 2)
+
+  // Monthly Expenses
+  monthlyExpenses Decimal @db.Decimal(12, 2)
+  housingCost     Decimal @db.Decimal(12, 2)
+  debtPayments    Decimal @db.Decimal(12, 2)
+
+  // Assets
+  savings       Decimal @db.Decimal(12, 2) @default(0)
+  investments   Decimal @db.Decimal(12, 2) @default(0)
+  retirement401k Decimal @db.Decimal(12, 2) @default(0)
+  homeEquity    Decimal @db.Decimal(12, 2) @default(0)
+  otherAssets   Decimal @db.Decimal(12, 2) @default(0)
+
+  // Liabilities
+  mortgage     Decimal @db.Decimal(12, 2) @default(0)
+  carLoans     Decimal @db.Decimal(12, 2) @default(0)
+  studentLoans Decimal @db.Decimal(12, 2) @default(0)
+  creditCards  Decimal @db.Decimal(12, 2) @default(0)
+  otherDebts   Decimal @db.Decimal(12, 2) @default(0)
+
+  // Demographics
+  age           Int
+  spouseAge     Int?
+  dependents    Int @default(0)
+  retirementAge Int @default(65)
+
+  // Calculated fields
+  netWorth      Decimal @db.Decimal(12, 2) @default(0)
+  monthlyGap    Decimal @db.Decimal(12, 2) @default(0)
+  protectionGap Decimal @db.Decimal(12, 2) @default(0)
+
+  // Current insurance
+  currentLifeInsurance Decimal @db.Decimal(12, 2) @default(0)
+  currentDisability    Decimal @db.Decimal(12, 2) @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Insurance recommendations
+model InsuranceNeed {
+  id         String   @id @default(cuid())
+  prospectId String
+  prospect   Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+
+  type                InsuranceType
+  recommendedCoverage Decimal @db.Decimal(12, 2)
+  currentCoverage     Decimal @db.Decimal(12, 2) @default(0)
+  gap                 Decimal @db.Decimal(12, 2)
+  monthlyPremium      Decimal? @db.Decimal(12, 2)
+  priority            Int
+  reasoning           String
+
+  createdAt DateTime @default(now())
+}
+
+enum InsuranceType {
+  TERM_LIFE
+  WHOLE_LIFE
+  UNIVERSAL_LIFE
+  DISABILITY
+  LONG_TERM_CARE
+}
+
+// Agent career projection
+model AgentProjection {
+  id         String   @id @default(cuid())
+  prospectId String   @unique
+  prospect   Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+
+  // Input assumptions
+  hoursPerWeek     Int @default(20)
+  networkSize      Int @default(100)
+  startDate        DateTime?
+
+  // Projection data (JSON for flexibility)
+  yearlyProjections Json
+
+  // Summary figures
+  year1Income   Decimal @db.Decimal(12, 2)
+  year3Income   Decimal @db.Decimal(12, 2)
+  year5Income   Decimal @db.Decimal(12, 2)
+  lifetimeValue Decimal @db.Decimal(12, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Side-by-side comparison scenarios
+model Comparison {
+  id         String   @id @default(cuid())
+  prospectId String
+  prospect   Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+
+  name String @default("Default Comparison")
+
+  // WITHOUT agent career projection
+  baselineProjection     Json
+  baselineRetirementAge  Int
+  baselineNetWorthAt65   Decimal @db.Decimal(12, 2)
+
+  // WITH agent career projection
+  agentProjection        Json
+  agentRetirementAge     Int
+  agentNetWorthAt65      Decimal @db.Decimal(12, 2)
+
+  // Difference highlights
+  additionalIncome        Decimal @db.Decimal(12, 2)
+  yearsEarlierRetirement  Int
+  additionalNetWorth      Decimal @db.Decimal(12, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// CRM notes for follow-up
+model Note {
+  id         String   @id @default(cuid())
+  prospectId String
+  prospect   Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+
+  content   String
+  type      NoteType @default(GENERAL)
+  createdBy String   @default("agent")
+
+  createdAt DateTime @default(now())
+}
+
+enum NoteType {
+  GENERAL
+  CALL
+  MEETING
+  FOLLOW_UP
+  EMAIL
+}
+
+// Agent user for CRM access
+model Agent {
+  id           String @id @default(cuid())
+  email        String @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  phone        String?
+  licenseNumber String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

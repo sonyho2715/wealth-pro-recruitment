@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+  }
+
+  body {
+    @apply bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen;
+  }
+}
+
+@layer components {
+  .card-gradient {
+    @apply bg-white/80 backdrop-blur-sm rounded-2xl shadow-soft p-6 border border-white/50;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-gray-700 font-semibold px-6 py-3 rounded-xl shadow border border-gray-200 hover:bg-gray-50 transition-all duration-300;
+  }
+
+  .btn-success {
+    @apply bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 bg-white;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold text-gray-900 mb-2;
+  }
+
+  .section-subtitle {
+    @apply text-gray-600 mb-6;
+  }
+
+  .stat-card {
+    @apply bg-white rounded-xl p-4 shadow-sm border border-gray-100;
+  }
+
+  .progress-bar {
+    @apply h-2 bg-gray-200 rounded-full overflow-hidden;
+  }
+
+  .progress-fill {
+    @apply h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-500;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient 3s ease infinite;
+  }
+
+  @keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+}

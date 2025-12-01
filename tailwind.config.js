@@ -1,26 +1,26 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./lib/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  // Safelist for dynamically generated classes used in commission tiers and career stages
   safelist: [
     // Blue tier (New Agent)
-    'bg-blue-50', 'bg-blue-100', 'bg-blue-200', 'bg-blue-300',
-    'border-blue-300', 'border-blue-400', 'border-blue-600',
+    'bg-blue-50', 'bg-blue-100', 'bg-blue-200', 'bg-blue-300', 'bg-blue-500', 'bg-blue-600',
+    'border-blue-300', 'border-blue-400', 'border-blue-500', 'border-blue-600',
     'text-blue-600', 'text-blue-700', 'text-blue-800', 'text-blue-900',
-    'from-blue-50', 'to-blue-100', 'to-indigo-50',
+    'from-blue-50', 'from-blue-500', 'from-blue-600', 'to-blue-100', 'to-blue-600', 'to-blue-700', 'to-indigo-50',
     // Green tier (Qualified Agent)
-    'bg-green-50', 'bg-green-100', 'bg-green-200', 'bg-green-300',
-    'border-green-300', 'border-green-400', 'border-green-600',
+    'bg-green-50', 'bg-green-100', 'bg-green-200', 'bg-green-300', 'bg-green-500', 'bg-green-600',
+    'border-green-300', 'border-green-400', 'border-green-500', 'border-green-600',
     'text-green-600', 'text-green-700', 'text-green-800', 'text-green-900',
-    'from-green-50', 'to-green-100', 'to-emerald-50',
+    'from-green-50', 'from-green-500', 'from-green-600', 'to-green-100', 'to-green-600', 'to-green-700', 'to-emerald-50',
     // Purple tier (Senior Agent)
-    'bg-purple-50', 'bg-purple-100', 'bg-purple-200', 'bg-purple-300',
-    'border-purple-300', 'border-purple-400', 'border-purple-600',
+    'bg-purple-50', 'bg-purple-100', 'bg-purple-200', 'bg-purple-300', 'bg-purple-500', 'bg-purple-600',
+    'border-purple-300', 'border-purple-400', 'border-purple-500', 'border-purple-600',
     'text-purple-600', 'text-purple-700', 'text-purple-800', 'text-purple-900',
-    'from-purple-50', 'to-purple-100', 'to-pink-50',
+    'from-purple-50', 'from-purple-500', 'from-purple-600', 'to-purple-100', 'to-purple-600', 'to-purple-700', 'to-pink-50',
     // Orange tier (Executive Agent)
     'bg-orange-50', 'bg-orange-100', 'bg-orange-200', 'bg-orange-300',
     'border-orange-300', 'border-orange-400', 'border-orange-600',
