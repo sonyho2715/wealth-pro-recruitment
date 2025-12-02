@@ -16,8 +16,9 @@ export default async function BalanceSheetsPage() {
   const session = await getSession();
   if (!session.agentId) redirect('/agent/login');
 
-  // Fetch all prospects with financial profiles
+  // Fetch all prospects with financial profiles (only this agent's)
   const prospects = await db.prospect.findMany({
+    where: { agentId: session.agentId },
     include: {
       financialProfile: true,
       insuranceNeeds: true,
@@ -56,7 +57,7 @@ export default async function BalanceSheetsPage() {
     <div className="p-6 lg:p-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Living Balance Sheets</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Personal Balance Sheets</h1>
         <p className="text-gray-600">View comprehensive financial snapshots for all prospects</p>
       </div>
 

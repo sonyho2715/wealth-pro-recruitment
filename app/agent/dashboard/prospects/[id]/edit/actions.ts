@@ -43,6 +43,16 @@ export async function updateProspect(prospectId: string, data: UpdateProspectDat
       return { success: false, error: 'Unauthorized' };
     }
 
+    // Security check: ensure prospect belongs to this agent
+    const prospect = await db.prospect.findUnique({
+      where: { id: prospectId },
+      select: { agentId: true },
+    });
+
+    if (!prospect || prospect.agentId !== session.agentId) {
+      return { success: false, error: 'Not authorized to update this prospect' };
+    }
+
     // Validate status
     const validStatuses = ['LEAD', 'QUALIFIED', 'INSURANCE_CLIENT', 'AGENT_PROSPECT', 'LICENSED_AGENT', 'INACTIVE'];
     if (!validStatuses.includes(data.status)) {
@@ -83,7 +93,7 @@ export async function updateProspect(prospectId: string, data: UpdateProspectDat
         lastName: data.lastName,
         email: data.email.toLowerCase(),
         phone: data.phone || null,
-        status: data.status as any,
+        status: data.status as 'LEAD' | 'QUALIFIED' | 'INSURANCE_CLIENT' | 'AGENT_PROSPECT' | 'LICENSED_AGENT' | 'INACTIVE',
       },
     });
 

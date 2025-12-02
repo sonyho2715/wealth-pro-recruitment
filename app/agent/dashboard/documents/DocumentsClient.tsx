@@ -14,8 +14,11 @@ import {
   Shield,
   CreditCard,
   DollarSign,
-  File
+  File,
+  AlertCircle,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
+import Pagination from '@/components/Pagination';
 import { deleteDocument, uploadDocument } from './actions';
 
 type DocumentType = 'APPLICATION' | 'POLICY' | 'ID_DOCUMENT' | 'FINANCIAL_STATEMENT' | 'OTHER';
@@ -53,6 +56,8 @@ const documentTypes = [
   { value: 'OTHER', label: 'Other', icon: File, color: 'gray' },
 ];
 
+const ITEMS_PER_PAGE = 12;
+
 export default function DocumentsClient({ documents: initialDocuments, prospects }: Props) {
   const [documents, setDocuments] = useState(initialDocuments);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -61,6 +66,8 @@ export default function DocumentsClient({ documents: initialDocuments, prospects
   const [dateRange, setDateRange] = useState<'all' | '7d' | '30d' | '90d'>('all');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [deletingDocumentId, setDeletingDocumentId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Filter documents
   const filteredDocuments = useMemo(() => {
@@ -89,21 +96,41 @@ export default function DocumentsClient({ documents: initialDocuments, prospects
     );
   }, [documents, selectedType, selectedProspect, dateRange]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this document?')) return;
+  // Pagination
+  const totalPages = Math.ceil(filteredDocuments.length / ITEMS_PER_PAGE);
+  const paginatedDocuments = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredDocuments.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredDocuments, currentPage]);
 
-    const result = await deleteDocument(id);
+  // Reset to page 1 when filters change
+  const handleFilterChange = <T,>(setter: React.Dispatch<React.SetStateAction<T>>, value: T) => {
+    setter(value);
+    setCurrentPage(1);
+  };
+
+  const handleDelete = (id: string) => {
+    setDeletingDocumentId(id);
+  };
+
+  const confirmDeleteDocument = async () => {
+    if (!deletingDocumentId) return;
+
+    const result = await deleteDocument(deletingDocumentId);
     if (result.success) {
-      setDocuments(prev => prev.filter(doc => doc.id !== id));
+      setDocuments(prev => prev.filter(doc => doc.id !== deletingDocumentId));
+      toast.success('Document deleted');
     } else {
-      alert(result.error || 'Failed to delete document');
+      toast.error(result.error || 'Failed to delete document');
     }
+    setDeletingDocumentId(null);
   };
 
   const handleDownload = (url: string, name: string) => {
     // In a real app, this would download from S3/cloud storage
-    // For demo, we'll just show an alert
-    alert(`Downloading: ${name}\nURL: ${url}`);
+    // For now, show a toast and open in new tab
+    toast.success(`Downloading: ${name}`);
+    window.open(url, '_blank');
   };
 
   const formatFileSize = (bytes: number | null) => {
@@ -200,7 +227,7 @@ export default function DocumentsClient({ documents: initialDocuments, prospects
             </label>
             <select
               value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value as DocumentType | 'ALL')}
+              onChange={(e) => handleFilterChange(setSelectedType, e.target.value as DocumentType | 'ALL')}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="ALL">All Types</option>
@@ -219,7 +246,7 @@ export default function DocumentsClient({ documents: initialDocuments, prospects
             </label>
             <select
               value={selectedProspect}
-              onChange={(e) => setSelectedProspect(e.target.value)}
+              onChange={(e) => handleFilterChange(setSelectedProspect, e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="ALL">All Prospects</option>
@@ -239,7 +266,7 @@ export default function DocumentsClient({ documents: initialDocuments, prospects
             </label>
             <select
               value={dateRange}
-              onChange={(e) => setDateRange(e.target.value as typeof dateRange)}
+              onChange={(e) => handleFilterChange(setDateRange, e.target.value as typeof dateRange)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="all">All Time</option>
@@ -257,6 +284,7 @@ export default function DocumentsClient({ documents: initialDocuments, prospects
                 setSelectedType('ALL');
                 setSelectedProspect('ALL');
                 setDateRange('all');
+                setCurrentPage(1);
               }}
               className="text-sm text-blue-600 hover:text-blue-700 font-medium"
             >
@@ -297,7 +325,7 @@ export default function DocumentsClient({ documents: initialDocuments, prospects
         </div>
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredDocuments.map((doc) => {
+          {paginatedDocuments.map((doc) => {
             const Icon = getDocumentIcon(doc.type);
             const color = getDocumentColor(doc.type);
             const docType = documentTypes.find(t => t.value === doc.type);
@@ -382,7 +410,7 @@ export default function DocumentsClient({ documents: initialDocuments, prospects
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredDocuments.map((doc) => {
+              {paginatedDocuments.map((doc) => {
                 const Icon = getDocumentIcon(doc.type);
                 const color = getDocumentColor(doc.type);
                 const docType = documentTypes.find(t => t.value === doc.type);
@@ -439,6 +467,48 @@ export default function DocumentsClient({ documents: initialDocuments, prospects
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {filteredDocuments.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={filteredDocuments.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingDocumentId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <AlertCircle className="w-5 h-5 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Delete Document</h3>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this document? This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeletingDocumentId(null)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteDocument}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -524,8 +594,9 @@ function UploadModal({ prospects, onClose, onUpload, isUploading, setIsUploading
         uploadedAt: new Date(result.data.uploadedAt),
         prospect: prospect ? { firstName: prospect.firstName, lastName: prospect.lastName } : null,
       });
+      toast.success('Document uploaded');
     } else {
-      alert(result.error || 'Failed to upload document');
+      toast.error(result.error || 'Failed to upload document');
     }
   };
 

@@ -54,8 +54,9 @@ export default async function EmailsPage() {
     templates = createdTemplates;
   }
 
-  // Get prospects for email dropdown
+  // Get prospects for email dropdown (only this agent's prospects)
   const prospectsWithProfile = await db.prospect.findMany({
+    where: { agentId: session.agentId },
     include: {
       financialProfile: {
         select: {

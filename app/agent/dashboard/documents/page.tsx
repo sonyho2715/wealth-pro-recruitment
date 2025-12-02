@@ -21,8 +21,9 @@ export default async function DocumentsPage() {
     orderBy: { uploadedAt: 'desc' },
   });
 
-  // Fetch all prospects for the upload modal
+  // Fetch all prospects for the upload modal (only this agent's prospects)
   const prospectsData = await db.prospect.findMany({
+    where: { agentId: session.agentId },
     select: {
       id: true,
       firstName: true,

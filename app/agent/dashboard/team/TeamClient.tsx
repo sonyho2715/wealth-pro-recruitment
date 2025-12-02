@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Agent } from '@prisma/client';
-import { Users, TrendingUp, UserPlus, Mail, Phone, Calendar, DollarSign, Edit2, Eye } from 'lucide-react';
-import { addTeamMember, updateTeamMember, getTeamMemberDetails } from './actions';
+import { Agent, Prisma } from '@prisma/client';
+import { Users, TrendingUp, UserPlus, Mail, Phone, Calendar, DollarSign, Edit2, Eye, Trash2, X, AlertTriangle } from 'lucide-react';
+import { addTeamMember, updateTeamMember, getTeamMemberDetails, deleteTeamMember } from './actions';
 
 interface TeamMemberWithStats extends Agent {
   totalProduction: number;
@@ -16,6 +16,46 @@ interface TeamClientProps {
   activeCount: number;
 }
 
+interface MemberCommission {
+  paidDate: Date | null;
+  productType: string;
+  amount: Prisma.Decimal | number | string;
+}
+
+interface MemberActivity {
+  id: string;
+  type: string;
+  completedAt: Date | null;
+}
+
+interface MemberDownline {
+  id: string;
+  firstName: string;
+  lastName: string;
+}
+
+interface MemberDetails {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string | null;
+  licenseNumber: string | null;
+  licenseDate: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  role: string;
+  monthlyGoal: Prisma.Decimal | number | string | null;
+  passwordHash: string;
+  uplineId: string | null;
+  totalProduction: number;
+  totalActivities: number;
+  teamSize: number;
+  commissions: MemberCommission[];
+  activities: MemberActivity[];
+  downlines: MemberDownline[];
+}
+
 export default function TeamClient({
   teamMembers,
   totalProduction,
@@ -26,7 +66,9 @@ export default function TeamClient({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [selectedMember, setSelectedMember] = useState<string | null>(null);
-  const [memberDetails, setMemberDetails] = useState<any>(null);
+  const [memberDetails, setMemberDetails] = useState<MemberDetails | null>(null);
+  const [editingMember, setEditingMember] = useState<TeamMemberWithStats | null>(null);
+  const [deletingMember, setDeletingMember] = useState<TeamMemberWithStats | null>(null);
 
   const handleAddMember = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -56,7 +98,7 @@ export default function TeamClient({
 
     const result = await getTeamMemberDetails(memberId);
 
-    if (result.success) {
+    if (result.success && result.data) {
       setMemberDetails(result.data);
     } else {
       setError(result.error || 'Failed to fetch member details');
@@ -68,6 +110,49 @@ export default function TeamClient({
   const closeModal = () => {
     setSelectedMember(null);
     setMemberDetails(null);
+  };
+
+  const handleEditMember = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editingMember) return;
+
+    setLoading(true);
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
+    const result = await updateTeamMember(editingMember.id, {
+      firstName: formData.get('firstName') as string,
+      lastName: formData.get('lastName') as string,
+      phone: (formData.get('phone') as string) || null,
+      licenseNumber: (formData.get('licenseNumber') as string) || null,
+    });
+
+    if (result.success) {
+      setSuccess('Team member updated successfully!');
+      setEditingMember(null);
+    } else {
+      setError(result.error || 'Failed to update team member');
+    }
+
+    setLoading(false);
+  };
+
+  const handleDeleteMember = async () => {
+    if (!deletingMember) return;
+
+    setLoading(true);
+    setError(null);
+
+    const result = await deleteTeamMember(deletingMember.id);
+
+    if (result.success) {
+      setSuccess(result.message || 'Team member removed successfully!');
+      setDeletingMember(null);
+    } else {
+      setError(result.error || 'Failed to remove team member');
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -328,7 +413,20 @@ export default function TeamClient({
                     className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm"
                   >
                     <Eye className="w-4 h-4" />
-                    View Details
+                    View
+                  </button>
+                  <button
+                    onClick={() => setEditingMember(member)}
+                    className="flex items-center justify-center gap-1 px-3 py-2 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 transition-colors text-sm"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => setDeletingMember(member)}
+                    className="flex items-center justify-center gap-1 px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm"
+                  >
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -431,9 +529,9 @@ export default function TeamClient({
                     Recent Commissions
                   </h3>
                   <div className="space-y-2">
-                    {memberDetails.commissions.slice(0, 5).map((commission: any) => (
+                    {memberDetails.commissions.slice(0, 5).map((commission, index) => (
                       <div
-                        key={commission.paidDate}
+                        key={`${commission.paidDate?.toString() || index}-${index}`}
                         className="flex justify-between items-center py-2 border-b border-gray-100"
                       >
                         <div>
@@ -441,7 +539,7 @@ export default function TeamClient({
                             {commission.productType}
                           </p>
                           <p className="text-xs text-gray-600">
-                            {new Date(commission.paidDate).toLocaleDateString()}
+                            {commission.paidDate ? new Date(commission.paidDate).toLocaleDateString() : 'Pending'}
                           </p>
                         </div>
                         <p className="text-sm font-semibold text-gray-900">
@@ -460,7 +558,7 @@ export default function TeamClient({
                     Their Team ({memberDetails.downlines.length})
                   </h3>
                   <div className="space-y-2">
-                    {memberDetails.downlines.map((downline: any) => (
+                    {memberDetails.downlines.map((downline) => (
                       <div
                         key={downline.id}
                         className="flex items-center gap-2 py-2 border-b border-gray-100"
@@ -483,6 +581,139 @@ export default function TeamClient({
               >
                 Close
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Member Modal */}
+      {editingMember && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-bold text-gray-900">
+                  Edit Team Member
+                </h2>
+                <button
+                  onClick={() => setEditingMember(null)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleEditMember} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    First Name *
+                  </label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    defaultValue={editingMember.firstName}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Last Name *
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    defaultValue={editingMember.lastName}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  defaultValue={editingMember.phone || ''}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  License Number
+                </label>
+                <input
+                  type="text"
+                  name="licenseNumber"
+                  defaultValue={editingMember.licenseNumber || ''}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 transition-colors"
+                >
+                  {loading ? 'Saving...' : 'Save Changes'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditingMember(null)}
+                  className="px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingMember && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">
+                    Remove Team Member
+                  </h2>
+                  <p className="text-gray-600 text-sm">This action cannot be undone</p>
+                </div>
+              </div>
+
+              <p className="text-gray-700 mb-6">
+                Are you sure you want to remove <strong>{deletingMember.firstName} {deletingMember.lastName}</strong> from your team?
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleDeleteMember}
+                  disabled={loading}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 transition-colors"
+                >
+                  {loading ? 'Removing...' : 'Yes, Remove'}
+                </button>
+                <button
+                  onClick={() => setDeletingMember(null)}
+                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -12,7 +12,9 @@ import {
   Power,
   X,
   Phone,
+  AlertCircle,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import {
   createEmailTemplate,
   updateEmailTemplate,
@@ -62,6 +64,7 @@ export default function EmailsClient({
   const [selectedProspect, setSelectedProspect] = useState<Prospect | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copiedTemplate, setCopiedTemplate] = useState<string | null>(null);
+  const [deletingTemplateId, setDeletingTemplateId] = useState<string | null>(null);
 
   // Filter templates by category
   const filteredTemplates = templates.filter(template => {
@@ -101,9 +104,10 @@ export default function EmailsClient({
     if (result.success && result.data) {
       setTemplates([...templates, result.data]);
       setIsCreateModalOpen(false);
+      toast.success('Template created');
       e.currentTarget.reset();
     } else {
-      alert(result.error || 'Failed to create template');
+      toast.error(result.error || 'Failed to create template');
     }
 
     setIsSubmitting(false);
@@ -130,8 +134,9 @@ export default function EmailsClient({
       setTemplates(templates.map(t => t.id === selectedTemplate.id ? result.data! : t));
       setIsEditModalOpen(false);
       setSelectedTemplate(null);
+      toast.success('Template updated');
     } else {
-      alert(result.error || 'Failed to update template');
+      toast.error(result.error || 'Failed to update template');
     }
 
     setIsSubmitting(false);
@@ -139,15 +144,21 @@ export default function EmailsClient({
 
   // Handle delete template
   const handleDeleteTemplate = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this template?')) return;
+    setDeletingTemplateId(id);
+  };
 
-    const result = await deleteEmailTemplate(id);
+  const confirmDeleteTemplate = async () => {
+    if (!deletingTemplateId) return;
+
+    const result = await deleteEmailTemplate(deletingTemplateId);
 
     if (result.success) {
-      setTemplates(templates.filter(t => t.id !== id));
+      setTemplates(templates.filter(t => t.id !== deletingTemplateId));
+      toast.success('Template deleted');
     } else {
-      alert(result.error || 'Failed to delete template');
+      toast.error(result.error || 'Failed to delete template');
     }
+    setDeletingTemplateId(null);
   };
 
   // Handle toggle template status
@@ -156,8 +167,9 @@ export default function EmailsClient({
 
     if (result.success && result.data) {
       setTemplates(templates.map(t => t.id === id ? result.data! : t));
+      toast.success(result.data.isActive ? 'Template activated' : 'Template deactivated');
     } else {
-      alert(result.error || 'Failed to toggle template status');
+      toast.error(result.error || 'Failed to toggle template status');
     }
   };
 
@@ -175,7 +187,7 @@ export default function EmailsClient({
   // Handle open in email client
   const handleOpenInEmail = (template: EmailTemplate) => {
     if (!selectedProspect) {
-      alert('Please select a prospect first');
+      toast.error('Please select a prospect first');
       return;
     }
 
@@ -494,6 +506,37 @@ export default function EmailsClient({
           onOpenEmail={handleOpenInEmail}
           copiedTemplate={copiedTemplate}
         />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingTemplateId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <AlertCircle className="w-5 h-5 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Delete Template</h3>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this template? This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeletingTemplateId(null)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteTemplate}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

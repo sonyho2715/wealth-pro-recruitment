@@ -161,6 +161,14 @@ export default function EditProspectForm({ prospect }: EditProspectFormProps) {
     }
   };
 
+  // Wrapper to convert string|number to string for text field setters
+  const asString = (setter: React.Dispatch<React.SetStateAction<string>>) =>
+    (v: string | number) => setter(String(v));
+
+  // Wrapper to convert string|number to number for number field setters
+  const asNumber = (setter: React.Dispatch<React.SetStateAction<number>>) =>
+    (v: string | number) => setter(Number(v));
+
   const InputField = ({
     label,
     value,
@@ -171,9 +179,9 @@ export default function EditProspectForm({ prospect }: EditProspectFormProps) {
   }: {
     label: string;
     value: string | number;
-    onChange: (v: any) => void;
+    onChange: (v: string | number) => void;
     type?: string;
-    icon?: any;
+    icon?: React.ComponentType<{ className?: string }>;
     prefix?: string;
   }) => (
     <div>
@@ -216,10 +224,10 @@ export default function EditProspectForm({ prospect }: EditProspectFormProps) {
           Basic Information
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <InputField label="First Name" value={firstName} onChange={setFirstName} icon={User} />
-          <InputField label="Last Name" value={lastName} onChange={setLastName} icon={User} />
-          <InputField label="Email" value={email} onChange={setEmail} type="email" icon={Mail} />
-          <InputField label="Phone" value={phone} onChange={setPhone} icon={Phone} />
+          <InputField label="First Name" value={firstName} onChange={asString(setFirstName)} icon={User} />
+          <InputField label="Last Name" value={lastName} onChange={asString(setLastName)} icon={User} />
+          <InputField label="Email" value={email} onChange={asString(setEmail)} type="email" icon={Mail} />
+          <InputField label="Phone" value={phone} onChange={asString(setPhone)} icon={Phone} />
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
             <select
@@ -242,10 +250,10 @@ export default function EditProspectForm({ prospect }: EditProspectFormProps) {
           Demographics
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <InputField label="Age" value={age} onChange={setAge} type="number" icon={Calendar} />
-          <InputField label="Spouse Age" value={spouseAge} onChange={setSpouseAge} type="number" icon={Calendar} />
-          <InputField label="Dependents" value={dependents} onChange={setDependents} type="number" icon={Users} />
-          <InputField label="Retirement Age" value={retirementAge} onChange={setRetirementAge} type="number" icon={Calendar} />
+          <InputField label="Age" value={age} onChange={asNumber(setAge)} type="number" icon={Calendar} />
+          <InputField label="Spouse Age" value={spouseAge} onChange={asNumber(setSpouseAge)} type="number" icon={Calendar} />
+          <InputField label="Dependents" value={dependents} onChange={asNumber(setDependents)} type="number" icon={Users} />
+          <InputField label="Retirement Age" value={retirementAge} onChange={asNumber(setRetirementAge)} type="number" icon={Calendar} />
         </div>
       </div>
 
@@ -256,9 +264,9 @@ export default function EditProspectForm({ prospect }: EditProspectFormProps) {
           Annual Income
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <InputField label="Annual Income" value={annualIncome} onChange={setAnnualIncome} type="number" prefix="$" />
-          <InputField label="Spouse Income" value={spouseIncome} onChange={setSpouseIncome} type="number" prefix="$" />
-          <InputField label="Other Income" value={otherIncome} onChange={setOtherIncome} type="number" prefix="$" />
+          <InputField label="Annual Income" value={annualIncome} onChange={asNumber(setAnnualIncome)} type="number" prefix="$" />
+          <InputField label="Spouse Income" value={spouseIncome} onChange={asNumber(setSpouseIncome)} type="number" prefix="$" />
+          <InputField label="Other Income" value={otherIncome} onChange={asNumber(setOtherIncome)} type="number" prefix="$" />
         </div>
       </div>
 
@@ -269,9 +277,9 @@ export default function EditProspectForm({ prospect }: EditProspectFormProps) {
           Monthly Expenses
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <InputField label="Total Monthly Expenses" value={monthlyExpenses} onChange={setMonthlyExpenses} type="number" prefix="$" />
-          <InputField label="Housing Cost" value={housingCost} onChange={setHousingCost} type="number" prefix="$" />
-          <InputField label="Debt Payments" value={debtPayments} onChange={setDebtPayments} type="number" prefix="$" />
+          <InputField label="Total Monthly Expenses" value={monthlyExpenses} onChange={asNumber(setMonthlyExpenses)} type="number" prefix="$" />
+          <InputField label="Housing Cost" value={housingCost} onChange={asNumber(setHousingCost)} type="number" prefix="$" />
+          <InputField label="Debt Payments" value={debtPayments} onChange={asNumber(setDebtPayments)} type="number" prefix="$" />
         </div>
       </div>
 
@@ -282,11 +290,11 @@ export default function EditProspectForm({ prospect }: EditProspectFormProps) {
           Assets
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <InputField label="Savings" value={savings} onChange={setSavings} type="number" prefix="$" />
-          <InputField label="Investments" value={investments} onChange={setInvestments} type="number" prefix="$" />
-          <InputField label="401(k)" value={retirement401k} onChange={setRetirement401k} type="number" prefix="$" />
-          <InputField label="Home Equity" value={homeEquity} onChange={setHomeEquity} type="number" prefix="$" />
-          <InputField label="Other Assets" value={otherAssets} onChange={setOtherAssets} type="number" prefix="$" />
+          <InputField label="Savings" value={savings} onChange={asNumber(setSavings)} type="number" prefix="$" />
+          <InputField label="Investments" value={investments} onChange={asNumber(setInvestments)} type="number" prefix="$" />
+          <InputField label="401(k)" value={retirement401k} onChange={asNumber(setRetirement401k)} type="number" prefix="$" />
+          <InputField label="Home Equity" value={homeEquity} onChange={asNumber(setHomeEquity)} type="number" prefix="$" />
+          <InputField label="Other Assets" value={otherAssets} onChange={asNumber(setOtherAssets)} type="number" prefix="$" />
         </div>
       </div>
 
@@ -297,11 +305,11 @@ export default function EditProspectForm({ prospect }: EditProspectFormProps) {
           Liabilities
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <InputField label="Mortgage" value={mortgage} onChange={setMortgage} type="number" prefix="$" />
-          <InputField label="Car Loans" value={carLoans} onChange={setCarLoans} type="number" prefix="$" />
-          <InputField label="Student Loans" value={studentLoans} onChange={setStudentLoans} type="number" prefix="$" />
-          <InputField label="Credit Cards" value={creditCards} onChange={setCreditCards} type="number" prefix="$" />
-          <InputField label="Other Debts" value={otherDebts} onChange={setOtherDebts} type="number" prefix="$" />
+          <InputField label="Mortgage" value={mortgage} onChange={asNumber(setMortgage)} type="number" prefix="$" />
+          <InputField label="Car Loans" value={carLoans} onChange={asNumber(setCarLoans)} type="number" prefix="$" />
+          <InputField label="Student Loans" value={studentLoans} onChange={asNumber(setStudentLoans)} type="number" prefix="$" />
+          <InputField label="Credit Cards" value={creditCards} onChange={asNumber(setCreditCards)} type="number" prefix="$" />
+          <InputField label="Other Debts" value={otherDebts} onChange={asNumber(setOtherDebts)} type="number" prefix="$" />
         </div>
       </div>
 
@@ -312,8 +320,8 @@ export default function EditProspectForm({ prospect }: EditProspectFormProps) {
           Current Insurance Coverage
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <InputField label="Life Insurance Coverage" value={currentLifeInsurance} onChange={setCurrentLifeInsurance} type="number" prefix="$" />
-          <InputField label="Disability Coverage" value={currentDisability} onChange={setCurrentDisability} type="number" prefix="$" />
+          <InputField label="Life Insurance Coverage" value={currentLifeInsurance} onChange={asNumber(setCurrentLifeInsurance)} type="number" prefix="$" />
+          <InputField label="Disability Coverage" value={currentDisability} onChange={asNumber(setCurrentDisability)} type="number" prefix="$" />
         </div>
       </div>
 

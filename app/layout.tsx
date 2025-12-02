@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import ToastProvider from '@/components/ToastProvider';
 
 export const metadata: Metadata = {
   title: 'Wealth Pro | Financial Planning & Career Opportunity',
@@ -20,6 +21,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
+        <ToastProvider />
         {children}
       </body>
     </html>

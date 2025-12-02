@@ -58,6 +58,19 @@ export default function CareerPage() {
 
   return (
     <div className="min-h-screen">
+      {/* Top Navigation Bar */}
+      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 text-gray-900 hover:text-blue-600 transition-colors">
+            <Shield className="w-6 h-6" />
+            <span className="font-bold text-lg">Wealth Pro</span>
+          </Link>
+          <Link href="/prospect" className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+            Start Financial Review
+          </Link>
+        </div>
+      </nav>
+
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 text-white py-20 px-4">
         <div className="max-w-6xl mx-auto text-center">
@@ -105,7 +118,7 @@ export default function CareerPage() {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">1. Your Financial Review</h3>
               <p className="text-gray-600">
-                Complete a quick assessment to see your Living Balance Sheet, protection gaps, and current trajectory.
+                Complete a quick assessment to see your Personal Balance Sheet, protection gaps, and current trajectory.
               </p>
             </div>
 

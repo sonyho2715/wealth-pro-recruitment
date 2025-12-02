@@ -1,6 +1,6 @@
 'use client';
 
-import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, BarElement, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, BarElement, Tooltip, Legend, TooltipItem } from 'chart.js';
 import { Doughnut, Bar } from 'react-chartjs-2';
 import {
   DollarSign,
@@ -180,7 +180,7 @@ export default function BalanceSheetClient({
       },
       tooltip: {
         callbacks: {
-          label: function(context: any) {
+          label: function(context: TooltipItem<'doughnut'>) {
             return `${context.label}: $${context.parsed.toLocaleString()}`;
           }
         }
@@ -197,8 +197,8 @@ export default function BalanceSheetClient({
       },
       tooltip: {
         callbacks: {
-          label: function(context: any) {
-            return `$${context.parsed.y.toLocaleString()}`;
+          label: function(context: TooltipItem<'bar'>) {
+            return `$${(context.parsed.y ?? 0).toLocaleString()}`;
           }
         }
       }
@@ -207,8 +207,8 @@ export default function BalanceSheetClient({
       y: {
         beginAtZero: true,
         ticks: {
-          callback: function(value: any) {
-            return '$' + value.toLocaleString();
+          callback: function(value: string | number) {
+            return '$' + Number(value).toLocaleString();
           }
         }
       }

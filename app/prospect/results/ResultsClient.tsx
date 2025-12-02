@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   PieChart,
@@ -100,9 +101,11 @@ interface Prospect {
 type Tab = 'balance-sheet' | 'insurance' | 'opportunity' | 'comparison';
 
 export default function ResultsClient({ prospect }: { prospect: Prospect }) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>('balance-sheet');
-  const [hoursPerWeek, setHoursPerWeek] = useState(20);
-  const [networkSize, setNetworkSize] = useState(100);
+  // Initialize with saved values if available
+  const [hoursPerWeek, setHoursPerWeek] = useState(prospect.agentProjection?.hoursPerWeek || 20);
+  const [networkSize, setNetworkSize] = useState(prospect.agentProjection?.networkSize || 100);
   const [loading, setLoading] = useState(false);
   const [expandedInsurance, setExpandedInsurance] = useState<string | null>(null);
 
@@ -117,7 +120,7 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
     setLoading(true);
     await generateAgentProjection(prospect.id, hoursPerWeek, networkSize);
     setLoading(false);
-    window.location.reload();
+    router.refresh();
   };
 
   const insuranceTypeLabels: Record<string, { label: string; icon: React.ReactNode }> = {
@@ -194,7 +197,7 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
             <div>
               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <PieChart className="w-6 h-6 text-blue-600" />
-                Living Balance Sheet
+                Personal Balance Sheet
               </h2>
 
               <div className="grid md:grid-cols-2 gap-8">

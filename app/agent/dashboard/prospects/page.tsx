@@ -7,8 +7,9 @@ export default async function ProspectsPage() {
   const session = await getSession();
   if (!session.agentId) redirect('/agent/login');
 
-  // Fetch all prospects with related data
+  // Fetch all prospects for this agent with related data
   const prospectsData = await db.prospect.findMany({
+    where: { agentId: session.agentId },
     include: {
       financialProfile: true,
       agentProjection: true,

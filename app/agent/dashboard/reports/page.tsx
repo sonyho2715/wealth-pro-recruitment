@@ -95,8 +95,9 @@ export default async function ReportsPage() {
     });
   }
 
-  // Fetch all prospects for pipeline analysis
+  // Fetch all prospects for pipeline analysis (only this agent's)
   const prospects = await db.prospect.findMany({
+    where: { agentId },
     select: {
       id: true,
       status: true,

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Commission, Prospect, CommissionStatus } from '@prisma/client';
+import Pagination from '@/components/Pagination';
 import {
   DollarSign,
   Plus,
@@ -14,6 +15,7 @@ import {
   AlertCircle,
   TrendingDown,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { createCommission, updateCommissionStatus, deleteCommission } from './actions';
 
 type CommissionWithProspect = Commission & {
@@ -43,6 +45,8 @@ const productTypes = [
   'Other',
 ];
 
+const ITEMS_PER_PAGE = 10;
+
 export default function CommissionsClient({ commissions, prospects }: CommissionsClientProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,6 +56,7 @@ export default function CommissionsClient({ commissions, prospects }: Commission
   const [filterStatus, setFilterStatus] = useState<CommissionStatus | 'ALL'>('ALL');
   const [filterProductType, setFilterProductType] = useState<string>('ALL');
   const [filterDateRange, setFilterDateRange] = useState<'ALL' | 'THIS_MONTH' | 'THIS_QUARTER' | 'THIS_YEAR'>('ALL');
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Filter commissions
   const filteredCommissions = commissions.filter((commission) => {
@@ -95,6 +100,19 @@ export default function CommissionsClient({ commissions, prospects }: Commission
     if (!a.earnedDate && b.earnedDate) return 1;
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
+
+  // Pagination
+  const totalPages = Math.ceil(sortedCommissions.length / ITEMS_PER_PAGE);
+  const paginatedCommissions = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return sortedCommissions.slice(start, start + ITEMS_PER_PAGE);
+  }, [sortedCommissions, currentPage]);
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = <T,>(setter: React.Dispatch<React.SetStateAction<T>>, value: T) => {
+    setter(value);
+    setCurrentPage(1);
+  };
 
   // Calculate totals
   const pendingTotal = commissions
@@ -141,18 +159,28 @@ export default function CommissionsClient({ commissions, prospects }: Commission
     formData.append('status', newStatus);
 
     const result = await updateCommissionStatus(commissionId, formData);
-    if (!result.success) {
-      alert(result.error || 'Failed to update status');
+    if (result.success) {
+      toast.success('Status updated');
+    } else {
+      toast.error(result.error || 'Failed to update status');
     }
   };
 
-  const handleDeleteCommission = async (commissionId: string) => {
-    if (!confirm('Are you sure you want to delete this commission?')) return;
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-    const result = await deleteCommission(commissionId);
-    if (!result.success) {
-      alert(result.error || 'Failed to delete commission');
+  const handleDeleteCommission = async (commissionId: string) => {
+    setDeletingId(commissionId);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingId) return;
+    const result = await deleteCommission(deletingId);
+    if (result.success) {
+      toast.success('Commission deleted');
+    } else {
+      toast.error(result.error || 'Failed to delete commission');
     }
+    setDeletingId(null);
   };
 
   const handleExportCSV = () => {
@@ -277,7 +305,7 @@ export default function CommissionsClient({ commissions, prospects }: Commission
             <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
             <select
               value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value as typeof filterStatus)}
+              onChange={(e) => handleFilterChange(setFilterStatus, e.target.value as typeof filterStatus)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="ALL">All Statuses</option>
@@ -293,7 +321,7 @@ export default function CommissionsClient({ commissions, prospects }: Commission
             <label className="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
             <select
               value={filterProductType}
-              onChange={(e) => setFilterProductType(e.target.value)}
+              onChange={(e) => handleFilterChange(setFilterProductType, e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="ALL">All Products</option>
@@ -310,7 +338,7 @@ export default function CommissionsClient({ commissions, prospects }: Commission
             <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
             <select
               value={filterDateRange}
-              onChange={(e) => setFilterDateRange(e.target.value as typeof filterDateRange)}
+              onChange={(e) => handleFilterChange(setFilterDateRange, e.target.value as typeof filterDateRange)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="ALL">All Time</option>
@@ -328,6 +356,7 @@ export default function CommissionsClient({ commissions, prospects }: Commission
               setFilterStatus('ALL');
               setFilterProductType('ALL');
               setFilterDateRange('ALL');
+              setCurrentPage(1);
             }}
             className="mt-4 text-sm text-blue-600 hover:text-blue-700"
           >
@@ -368,7 +397,7 @@ export default function CommissionsClient({ commissions, prospects }: Commission
                 </tr>
               </thead>
               <tbody>
-                {sortedCommissions.map((commission) => {
+                {paginatedCommissions.map((commission) => {
                   const statusConfig = statusColors[commission.status];
                   const StatusIcon = statusConfig.icon;
 
@@ -418,6 +447,15 @@ export default function CommissionsClient({ commissions, prospects }: Commission
             </table>
           </div>
         )}
+
+        {/* Pagination */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={sortedCommissions.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+        />
       </div>
 
       {/* Add Commission Modal */}
@@ -560,6 +598,37 @@ export default function CommissionsClient({ commissions, prospects }: Commission
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <AlertCircle className="w-5 h-5 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Delete Commission</h3>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this commission? This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeletingId(null)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

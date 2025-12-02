@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Activity, Prospect, ActivityType } from '@prisma/client';
+import Pagination from '@/components/Pagination';
 import {
   Calendar,
   Phone,
@@ -17,7 +18,10 @@ import {
   FileText,
   Presentation,
   MoreHorizontal,
+  AlertCircle,
+  Download,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { createActivity, completeActivity, deleteActivity } from './actions';
 
 type ActivityWithProspect = Activity & {
@@ -49,18 +53,22 @@ const activityColors: Record<ActivityType, { bg: string; text: string }> = {
   OTHER: { bg: 'bg-gray-100', text: 'text-gray-700' },
 };
 
+const ITEMS_PER_PAGE = 10;
+
 export default function ActivitiesClient({ activities, prospects }: ActivitiesClientProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<ActivityWithProspect | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deletingActivityId, setDeletingActivityId] = useState<string | null>(null);
 
   // Filters
   const [filterType, setFilterType] = useState<ActivityType | 'ALL'>('ALL');
   const [filterProspect, setFilterProspect] = useState<string>('ALL');
   const [filterDate, setFilterDate] = useState<'ALL' | 'TODAY' | 'WEEK' | 'MONTH'>('ALL');
   const [viewMode, setViewMode] = useState<'ALL' | 'UPCOMING' | 'COMPLETED'>('ALL');
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Filter activities
   const filteredActivities = activities.filter((activity) => {
@@ -118,6 +126,19 @@ export default function ActivitiesClient({ activities, prospects }: ActivitiesCl
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
+  // Pagination
+  const totalPages = Math.ceil(sortedActivities.length / ITEMS_PER_PAGE);
+  const paginatedActivities = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return sortedActivities.slice(start, start + ITEMS_PER_PAGE);
+  }, [sortedActivities, currentPage]);
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = <T,>(setter: React.Dispatch<React.SetStateAction<T>>, value: T) => {
+    setter(value);
+    setCurrentPage(1);
+  };
+
   const handleCreateActivity = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -158,12 +179,18 @@ export default function ActivitiesClient({ activities, prospects }: ActivitiesCl
   };
 
   const handleDeleteActivity = async (activityId: string) => {
-    if (!confirm('Are you sure you want to delete this activity?')) return;
+    setDeletingActivityId(activityId);
+  };
 
-    const result = await deleteActivity(activityId);
-    if (!result.success) {
-      alert(result.error || 'Failed to delete activity');
+  const confirmDeleteActivity = async () => {
+    if (!deletingActivityId) return;
+    const result = await deleteActivity(deletingActivityId);
+    if (result.success) {
+      toast.success('Activity deleted');
+    } else {
+      toast.error(result.error || 'Failed to delete activity');
     }
+    setDeletingActivityId(null);
   };
 
   const upcomingCount = activities.filter(
@@ -171,21 +198,59 @@ export default function ActivitiesClient({ activities, prospects }: ActivitiesCl
   ).length;
   const completedCount = activities.filter((a) => !!a.completedAt).length;
 
+  const handleExportCSV = () => {
+    const headers = ['Type', 'Title', 'Description', 'Prospect', 'Scheduled Date', 'Completed Date', 'Outcome'];
+    const rows = sortedActivities.map(a => [
+      a.type,
+      a.title,
+      a.description || '',
+      a.prospect ? `${a.prospect.firstName} ${a.prospect.lastName}` : '',
+      a.scheduledAt ? new Date(a.scheduledAt).toLocaleString() : '',
+      a.completedAt ? new Date(a.completedAt).toLocaleString() : '',
+      a.outcome || '',
+    ]);
+
+    const csv = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `activities-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    toast.success('Activities exported to CSV');
+  };
+
   return (
     <div>
-      {/* Header with Add Button */}
-      <div className="flex items-center justify-between mb-6">
+      {/* Header with Actions */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Activity Center</h1>
           <p className="text-gray-600">Track and manage all your activities</p>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          Add Activity
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleExportCSV}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <Download className="w-5 h-5" />
+            Export CSV
+          </button>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            Add Activity
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -240,7 +305,7 @@ export default function ActivitiesClient({ activities, prospects }: ActivitiesCl
             <label className="block text-sm font-medium text-gray-700 mb-2">View</label>
             <select
               value={viewMode}
-              onChange={(e) => setViewMode(e.target.value as typeof viewMode)}
+              onChange={(e) => handleFilterChange(setViewMode, e.target.value as typeof viewMode)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="ALL">All Activities</option>
@@ -254,7 +319,7 @@ export default function ActivitiesClient({ activities, prospects }: ActivitiesCl
             <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
             <select
               value={filterType}
-              onChange={(e) => setFilterType(e.target.value as typeof filterType)}
+              onChange={(e) => handleFilterChange(setFilterType, e.target.value as typeof filterType)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="ALL">All Types</option>
@@ -273,7 +338,7 @@ export default function ActivitiesClient({ activities, prospects }: ActivitiesCl
             <label className="block text-sm font-medium text-gray-700 mb-2">Prospect</label>
             <select
               value={filterProspect}
-              onChange={(e) => setFilterProspect(e.target.value)}
+              onChange={(e) => handleFilterChange(setFilterProspect, e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="ALL">All Prospects</option>
@@ -290,7 +355,7 @@ export default function ActivitiesClient({ activities, prospects }: ActivitiesCl
             <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
             <select
               value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value as typeof filterDate)}
+              onChange={(e) => handleFilterChange(setFilterDate, e.target.value as typeof filterDate)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="ALL">All Dates</option>
@@ -309,6 +374,7 @@ export default function ActivitiesClient({ activities, prospects }: ActivitiesCl
               setFilterProspect('ALL');
               setFilterDate('ALL');
               setViewMode('ALL');
+              setCurrentPage(1);
             }}
             className="mt-4 text-sm text-blue-600 hover:text-blue-700"
           >
@@ -336,7 +402,7 @@ export default function ActivitiesClient({ activities, prospects }: ActivitiesCl
           </div>
         ) : (
           <div className="space-y-3">
-            {sortedActivities.map((activity) => {
+            {paginatedActivities.map((activity) => {
               const Icon = activityIcons[activity.type];
               const colors = activityColors[activity.type];
               const isUpcoming =
@@ -443,6 +509,15 @@ export default function ActivitiesClient({ activities, prospects }: ActivitiesCl
             })}
           </div>
         )}
+
+        {/* Pagination */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={sortedActivities.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+        />
       </div>
 
       {/* Add Activity Modal */}
@@ -565,6 +640,37 @@ export default function ActivitiesClient({ activities, prospects }: ActivitiesCl
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingActivityId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <AlertCircle className="w-5 h-5 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Delete Activity</h3>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this activity? This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeletingActivityId(null)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteActivity}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   User,
   DollarSign,
@@ -576,7 +577,7 @@ export default function ProspectIntakePage() {
               <ul className="space-y-2 text-sm text-gray-700">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  View your complete Living Balance Sheet
+                  View your complete Personal Balance Sheet
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
@@ -598,7 +599,21 @@ export default function ProspectIntakePage() {
   };
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <div className="min-h-screen">
+      {/* Top Navigation Bar */}
+      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 text-gray-900 hover:text-blue-600 transition-colors">
+            <Shield className="w-6 h-6" />
+            <span className="font-bold text-lg">Wealth Pro</span>
+          </Link>
+          <Link href="/career" className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+            Learn About Career Opportunity
+          </Link>
+        </div>
+      </nav>
+
+      <div className="py-8 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -696,6 +711,7 @@ export default function ProspectIntakePage() {
             )}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

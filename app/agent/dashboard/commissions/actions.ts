@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { requireAgent } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { CommissionStatus } from '@prisma/client';
+import { handleActionError, NotFoundError, type ActionResult } from '@/lib/errors';
 
 const createCommissionSchema = z.object({
   prospectId: z.string().optional(),
@@ -15,7 +16,7 @@ const createCommissionSchema = z.object({
   notes: z.string().optional(),
 });
 
-export async function createCommission(formData: FormData) {
+export async function createCommission(formData: FormData): Promise<ActionResult<unknown>> {
   try {
     const session = await requireAgent();
 
@@ -47,12 +48,7 @@ export async function createCommission(formData: FormData) {
     revalidatePath('/agent/dashboard/commissions');
     return { success: true, data: commission };
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { success: false, error: 'Invalid input', details: error.errors };
-    }
-
-    console.error('Create Commission Error:', error);
-    return { success: false, error: 'Failed to create commission' };
+    return handleActionError(error);
   }
 }
 
@@ -60,7 +56,7 @@ const updateStatusSchema = z.object({
   status: z.enum(['PENDING', 'APPROVED', 'PAID', 'CHARGEBACK']),
 });
 
-export async function updateCommissionStatus(commissionId: string, formData: FormData) {
+export async function updateCommissionStatus(commissionId: string, formData: FormData): Promise<ActionResult<unknown>> {
   try {
     const session = await requireAgent();
 
@@ -77,7 +73,7 @@ export async function updateCommissionStatus(commissionId: string, formData: For
     });
 
     if (!existingCommission) {
-      return { success: false, error: 'Commission not found' };
+      throw new NotFoundError('Commission');
     }
 
     // Set paidDate when status is changed to PAID
@@ -101,16 +97,11 @@ export async function updateCommissionStatus(commissionId: string, formData: For
     revalidatePath('/agent/dashboard/commissions');
     return { success: true, data: commission };
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { success: false, error: 'Invalid input', details: error.errors };
-    }
-
-    console.error('Update Commission Status Error:', error);
-    return { success: false, error: 'Failed to update commission status' };
+    return handleActionError(error);
   }
 }
 
-export async function deleteCommission(commissionId: string) {
+export async function deleteCommission(commissionId: string): Promise<ActionResult<null>> {
   try {
     const session = await requireAgent();
 
@@ -123,7 +114,7 @@ export async function deleteCommission(commissionId: string) {
     });
 
     if (!existingCommission) {
-      return { success: false, error: 'Commission not found' };
+      throw new NotFoundError('Commission');
     }
 
     await db.commission.delete({
@@ -131,9 +122,8 @@ export async function deleteCommission(commissionId: string) {
     });
 
     revalidatePath('/agent/dashboard/commissions');
-    return { success: true };
+    return { success: true, data: null };
   } catch (error) {
-    console.error('Delete Commission Error:', error);
-    return { success: false, error: 'Failed to delete commission' };
+    return handleActionError(error);
   }
 }

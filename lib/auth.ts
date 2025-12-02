@@ -9,8 +9,16 @@ export interface SessionData {
   isLoggedIn: boolean;
 }
 
+function getSessionPassword(): string {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret && process.env.NODE_ENV === 'production') {
+    throw new Error('SESSION_SECRET environment variable is required in production');
+  }
+  return secret || 'development_only_secret_at_least_32_chars_long';
+}
+
 const sessionOptions = {
-  password: process.env.SESSION_SECRET || 'complex_password_at_least_32_characters_long',
+  password: getSessionPassword(),
   cookieName: 'wealth_pro_session',
   cookieOptions: {
     secure: process.env.NODE_ENV === 'production',

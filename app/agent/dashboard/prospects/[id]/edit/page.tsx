@@ -22,7 +22,8 @@ export default async function EditProspectPage({ params }: PageProps) {
     },
   });
 
-  if (!prospect) {
+  // Security check: ensure prospect belongs to this agent
+  if (!prospect || prospect.agentId !== session.agentId) {
     notFound();
   }
 

@@ -17,6 +17,7 @@ export default async function CommissionsPage() {
       orderBy: { createdAt: 'desc' },
     }),
     db.prospect.findMany({
+      where: { agentId: session.agentId },
       orderBy: [
         { firstName: 'asc' },
         { lastName: 'asc' },

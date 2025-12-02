@@ -13,6 +13,7 @@ import {
   Tooltip,
   Legend,
   Filler,
+  TooltipItem,
 } from 'chart.js';
 import { Line, Doughnut, Bar } from 'react-chartjs-2';
 import {
@@ -177,8 +178,8 @@ export default function ReportsClient({ data }: { data: ReportData }) {
       },
       tooltip: {
         callbacks: {
-          label: (context: any) => {
-            const value = context.parsed.y;
+          label: (context: TooltipItem<'line'>) => {
+            const value = context.parsed.y ?? 0;
             return `$${value.toLocaleString()}`;
           },
         },
@@ -188,7 +189,7 @@ export default function ReportsClient({ data }: { data: ReportData }) {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: (value: any) => `$${value.toLocaleString()}`,
+          callback: (value: string | number) => `$${Number(value).toLocaleString()}`,
         },
       },
     },

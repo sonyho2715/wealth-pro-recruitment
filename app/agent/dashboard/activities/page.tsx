@@ -22,6 +22,7 @@ export default async function ActivitiesPage() {
     }),
     db.prospect.findMany({
       where: {
+        agentId: session.agentId,
         status: {
           not: 'INACTIVE',
         },

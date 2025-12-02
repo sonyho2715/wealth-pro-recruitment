@@ -154,7 +154,7 @@ export default function HomePage() {
               {
                 step: '2',
                 icon: PieChart,
-                title: 'Living Balance Sheet',
+                title: 'Personal Balance Sheet',
                 description: 'See your complete financial picture with protection gaps identified'
               },
               {
@@ -307,7 +307,7 @@ export default function HomePage() {
                 name: 'Lisa Chen',
                 role: 'Healthcare Professional',
                 image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200',
-                quote: 'The Living Balance Sheet showed me exactly where I stood financially. Now I have a clear path to retirement 7 years earlier.',
+                quote: 'The Personal Balance Sheet showed me exactly where I stood financially. Now I have a clear path to retirement 7 years earlier.',
                 rating: 5,
               },
             ].map((testimonial, index) => (

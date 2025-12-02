@@ -1,18 +1,25 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import {
   Search,
   Filter,
   ChevronDown,
-  Eye,
   Mail,
   Phone,
   TrendingUp,
   FileText,
-  MoreVertical,
+  Download,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
+import Pagination from '@/components/Pagination';
+import {
+  ProspectStatus,
+  STATUS_COLORS,
+  STATUS_LABELS,
+  getValidNextStatuses,
+} from '@/lib/constants/prospect-statuses';
 
 interface Prospect {
   id: string;
@@ -34,30 +41,52 @@ interface Prospect {
   } | null;
 }
 
-const statusColors: Record<string, { bg: string; text: string; label: string }> = {
-  LEAD: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'New Lead' },
-  QUALIFIED: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Qualified' },
-  INSURANCE_CLIENT: { bg: 'bg-green-100', text: 'text-green-700', label: 'Insurance Client' },
-  AGENT_PROSPECT: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Agent Prospect' },
-  LICENSED_AGENT: { bg: 'bg-indigo-100', text: 'text-indigo-700', label: 'Licensed Agent' },
-  INACTIVE: { bg: 'bg-red-100', text: 'text-red-700', label: 'Inactive' },
-};
+// Combine colors and labels for display
+const statusDisplay: Record<string, { bg: string; text: string; label: string }> = Object.fromEntries(
+  Object.entries(STATUS_COLORS).map(([key, colors]) => [
+    key,
+    { ...colors, label: STATUS_LABELS[key as ProspectStatus] },
+  ])
+);
+
+const ITEMS_PER_PAGE = 10;
 
 export default function ProspectsClient({ prospects }: { prospects: Prospect[] }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const filteredProspects = prospects.filter((p) => {
-    const matchesSearch =
-      `${p.firstName} ${p.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (p.phone && p.phone.includes(searchQuery));
-    const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const filteredProspects = useMemo(() => {
+    return prospects.filter((p) => {
+      const matchesSearch =
+        `${p.firstName} ${p.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (p.phone && p.phone.includes(searchQuery));
+      const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [prospects, searchQuery, statusFilter]);
 
-  const handleStatusChange = async (prospectId: string, newStatus: string) => {
+  // Reset to page 1 when filters change
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  };
+
+  const handleFilterChange = (value: string) => {
+    setStatusFilter(value);
+    setCurrentPage(1);
+  };
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredProspects.length / ITEMS_PER_PAGE);
+  const paginatedProspects = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredProspects.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredProspects, currentPage]);
+
+  const handleProspectStatusChange = async (prospectId: string, newStatus: string) => {
     try {
       const response = await fetch(`/api/prospects/${prospectId}/status`, {
         method: 'PATCH',
@@ -65,25 +94,70 @@ export default function ProspectsClient({ prospects }: { prospects: Prospect[] }
         body: JSON.stringify({ status: newStatus }),
       });
 
-      if (response.ok) {
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast.success('Status updated');
         window.location.reload();
       } else {
-        alert('Failed to update status');
+        toast.error(data.error || 'Failed to update status');
       }
     } catch (error) {
       console.error('Error updating status:', error);
-      alert('Failed to update status');
+      toast.error('Failed to update status');
     }
+  };
+
+  const handleExportCSV = () => {
+
+    const headers = ['First Name', 'Last Name', 'Email', 'Phone', 'Status', 'Annual Income', 'Net Worth', 'Protection Gap', 'Year 1 Agent Income', 'Created At'];
+    const rows = filteredProspects.map(p => [
+      p.firstName,
+      p.lastName,
+      p.email,
+      p.phone || '',
+      STATUS_LABELS[p.status as ProspectStatus] || p.status,
+      p.financialProfile?.annualIncome?.toString() || '',
+      p.financialProfile?.netWorth?.toString() || '',
+      p.financialProfile?.protectionGap?.toString() || '',
+      p.agentProjection?.year1Income?.toString() || '',
+      new Date(p.createdAt).toLocaleDateString(),
+    ]);
+
+    const csv = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `prospects-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    toast.success('Prospects exported to CSV');
   };
 
   return (
     <div className="p-6 lg:p-8">
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Prospects</h1>
-        <p className="text-gray-600">
-          Manage and track all your prospects in one place.
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Prospects</h1>
+          <p className="text-gray-600">
+            Manage and track all your prospects in one place.
+          </p>
+        </div>
+        <button
+          onClick={handleExportCSV}
+          className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          <Download className="w-5 h-5" />
+          Export CSV
+        </button>
       </div>
 
       {/* Search and Filter */}
@@ -95,7 +169,7 @@ export default function ProspectsClient({ prospects }: { prospects: Prospect[] }
               type="text"
               placeholder="Search by name, email, or phone..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="input-field pl-12"
             />
           </div>
@@ -103,7 +177,7 @@ export default function ProspectsClient({ prospects }: { prospects: Prospect[] }
             <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => handleFilterChange(e.target.value)}
               className="input-field pl-12 pr-10 appearance-none cursor-pointer w-full"
             >
               <option value="all">All Statuses</option>
@@ -154,7 +228,7 @@ export default function ProspectsClient({ prospects }: { prospects: Prospect[] }
               </tr>
             </thead>
             <tbody>
-              {filteredProspects.length === 0 ? (
+              {paginatedProspects.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-center py-12 text-gray-500">
                     {searchQuery || statusFilter !== 'all'
@@ -163,8 +237,8 @@ export default function ProspectsClient({ prospects }: { prospects: Prospect[] }
                   </td>
                 </tr>
               ) : (
-                filteredProspects.map((prospect) => {
-                  const status = statusColors[prospect.status] || statusColors.LEAD;
+                paginatedProspects.map((prospect) => {
+                  const status = statusDisplay[prospect.status] || statusDisplay.LEAD;
                   return (
                     <tr
                       key={prospect.id}
@@ -205,11 +279,13 @@ export default function ProspectsClient({ prospects }: { prospects: Prospect[] }
                                 onClick={() => setOpenMenuId(null)}
                               />
                               <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 min-w-[180px]">
-                                {Object.entries(statusColors).map(([key, value]) => (
+                                {Object.entries(statusDisplay)
+                                  .filter(([key]) => getValidNextStatuses(prospect.status as ProspectStatus).includes(key as ProspectStatus))
+                                  .map(([key, value]) => (
                                   <button
                                     key={key}
                                     onClick={() => {
-                                      handleStatusChange(prospect.id, key);
+                                      handleProspectStatusChange(prospect.id, key);
                                       setOpenMenuId(null);
                                     }}
                                     className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors ${
@@ -304,6 +380,15 @@ export default function ProspectsClient({ prospects }: { prospects: Prospect[] }
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={filteredProspects.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+        />
       </div>
 
       {/* Quick Stats Footer */}

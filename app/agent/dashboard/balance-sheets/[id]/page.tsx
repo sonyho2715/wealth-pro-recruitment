@@ -2,8 +2,9 @@ import { db } from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Mail, FileText, Edit, Download } from 'lucide-react';
+import { ArrowLeft, Mail, Edit } from 'lucide-react';
 import BalanceSheetClient from './BalanceSheetClient';
+import PDFExportButton from '@/components/PDFExportButton';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -15,7 +16,7 @@ export default async function BalanceSheetDetailPage({ params }: PageProps) {
 
   const { id } = await params;
 
-  // Fetch prospect with all related data
+  // Fetch prospect with all related data - only if owned by this agent
   const prospect = await db.prospect.findUnique({
     where: { id },
     include: {
@@ -27,7 +28,8 @@ export default async function BalanceSheetDetailPage({ params }: PageProps) {
     },
   });
 
-  if (!prospect) {
+  // Security check: ensure prospect belongs to this agent
+  if (!prospect || prospect.agentId !== session.agentId) {
     notFound();
   }
 
@@ -149,12 +151,41 @@ export default async function BalanceSheetDetailPage({ params }: PageProps) {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <button className="btn-secondary text-sm flex items-center gap-2">
-              <Download className="w-4 h-4" />
-              Generate PDF
-            </button>
+            <PDFExportButton
+              prospectName={`${prospect.firstName} ${prospect.lastName}`}
+              email={prospect.email}
+              phone={prospect.phone}
+              totalAssets={totalAssets}
+              totalLiabilities={totalLiabilities}
+              netWorth={netWorth}
+              monthlyIncome={totalMonthlyIncome}
+              monthlyExpenses={monthlyExpenses}
+              assets={chartData.assets}
+              liabilities={chartData.liabilities}
+              insuranceNeeds={prospect.insuranceNeeds.map(need => ({
+                type: need.type,
+                recommendedCoverage: Number(need.recommendedCoverage),
+                currentCoverage: Number(need.currentCoverage),
+                gap: Number(need.gap),
+                monthlyPremium: need.monthlyPremium ? Number(need.monthlyPremium) : null,
+                priority: need.priority,
+                reasoning: need.reasoning,
+              }))}
+              totalRecommendedCoverage={totalRecommendedCoverage}
+              totalCurrentCoverage={totalCurrentCoverage}
+              protectionGap={protectionGap}
+              yearsToRetirement={yearsToRetirement}
+              retirementAge={profile.retirementAge}
+              currentAge={profile.age}
+              agentProjection={prospect.agentProjection ? {
+                year1Income: Number(prospect.agentProjection.year1Income),
+                year3Income: Number(prospect.agentProjection.year3Income),
+                year5Income: Number(prospect.agentProjection.year5Income),
+                lifetimeValue: Number(prospect.agentProjection.lifetimeValue),
+              } : null}
+            />
             <a
-              href={`mailto:${prospect.email}?subject=Your Living Balance Sheet&body=Hi ${prospect.firstName}, I've prepared your personalized Living Balance Sheet...`}
+              href={`mailto:${prospect.email}?subject=Your Personal Balance Sheet&body=Hi ${prospect.firstName}, I've prepared your personalized Personal Balance Sheet...`}
               className="btn-secondary text-sm flex items-center gap-2"
             >
               <Mail className="w-4 h-4" />

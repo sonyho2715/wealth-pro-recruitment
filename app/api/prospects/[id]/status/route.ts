@@ -2,16 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { z } from 'zod';
+import {
+  handleApiError,
+  successResponse,
+  AuthenticationError,
+  AuthorizationError,
+  NotFoundError,
+  ValidationError,
+} from '@/lib/errors';
+import {
+  ProspectStatus,
+  PROSPECT_STATUSES,
+  isValidTransition,
+  getTransitionErrorMessage,
+} from '@/lib/constants/prospect-statuses';
 
 const updateStatusSchema = z.object({
-  status: z.enum([
-    'LEAD',
-    'QUALIFIED',
-    'INSURANCE_CLIENT',
-    'AGENT_PROSPECT',
-    'LICENSED_AGENT',
-    'INACTIVE',
-  ]),
+  status: z.enum(PROSPECT_STATUSES as [ProspectStatus, ...ProspectStatus[]]),
 });
 
 export async function PATCH(
@@ -21,10 +28,7 @@ export async function PATCH(
   try {
     const session = await getSession();
     if (!session.agentId) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
+      throw new AuthenticationError();
     }
 
     const { id } = await params;
@@ -36,10 +40,20 @@ export async function PATCH(
     });
 
     if (!prospect) {
-      return NextResponse.json(
-        { success: false, error: 'Prospect not found' },
-        { status: 404 }
-      );
+      throw new NotFoundError('Prospect');
+    }
+
+    // Security check: ensure prospect belongs to this agent
+    if (prospect.agentId !== session.agentId) {
+      throw new AuthorizationError('Not authorized to update this prospect');
+    }
+
+    // Validate status transition
+    const currentStatus = prospect.status as ProspectStatus;
+    const newStatus = validated.status as ProspectStatus;
+
+    if (!isValidTransition(currentStatus, newStatus)) {
+      throw new ValidationError(getTransitionErrorMessage(currentStatus, newStatus));
     }
 
     const updated = await db.prospect.update({
@@ -47,19 +61,9 @@ export async function PATCH(
       data: { status: validated.status },
     });
 
-    return NextResponse.json({ success: true, data: updated });
+    return NextResponse.json(successResponse(updated));
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid status value', details: error.errors },
-        { status: 400 }
-      );
-    }
-
-    console.error('Status update error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to update status' },
-      { status: 500 }
-    );
+    const { response, status } = handleApiError(error);
+    return NextResponse.json(response, { status });
   }
 }

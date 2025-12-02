@@ -145,6 +145,55 @@ export async function updateTeamMember(memberId: string, data: Record<string, un
   }
 }
 
+export async function deleteTeamMember(memberId: string) {
+  try {
+    const session = await requireAgent();
+
+    // Verify that the member being deleted is in the agent's downline
+    const member = await db.agent.findUnique({
+      where: { id: memberId },
+      select: { uplineId: true, firstName: true, lastName: true },
+    });
+
+    if (!member || member.uplineId !== session.agentId) {
+      return {
+        success: false,
+        error: 'Unauthorized to delete this team member',
+      };
+    }
+
+    // Check if member has any downlines
+    const hasDownlines = await db.agent.count({
+      where: { uplineId: memberId },
+    });
+
+    if (hasDownlines > 0) {
+      return {
+        success: false,
+        error: 'Cannot delete a team member who has their own downlines. Reassign their team first.',
+      };
+    }
+
+    // Delete the team member
+    await db.agent.delete({
+      where: { id: memberId },
+    });
+
+    revalidatePath('/agent/dashboard/team');
+
+    return {
+      success: true,
+      message: `${member.firstName} ${member.lastName} has been removed from your team.`,
+    };
+  } catch (error) {
+    console.error('Delete Team Member Error:', error);
+    return {
+      success: false,
+      error: 'Failed to delete team member',
+    };
+  }
+}
+
 export async function getTeamMemberDetails(memberId: string) {
   try {
     const session = await requireAgent();

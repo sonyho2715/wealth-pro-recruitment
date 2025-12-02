@@ -16,6 +16,10 @@ model Prospect {
   phone     String?
   status    ProspectStatus @default(LEAD)
 
+  // Agent ownership (optional - prospects can self-register)
+  agentId   String?
+  agent     Agent?   @relation(fields: [agentId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -28,6 +32,8 @@ model Prospect {
   activities       Activity[]
   commissions      Commission[]
   documents        Document[]
+
+  @@index([agentId])
 }
 
 enum ProspectStatus {
@@ -103,6 +109,8 @@ model InsuranceNeed {
   reasoning           String
 
   createdAt DateTime @default(now())
+
+  @@index([prospectId])
 }
 
 enum InsuranceType {
@@ -162,6 +170,8 @@ model Comparison {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([prospectId])
 }
 
 // CRM notes for follow-up
@@ -175,6 +185,8 @@ model Note {
   createdBy String   @default("agent")
 
   createdAt DateTime @default(now())
+
+  @@index([prospectId])
 }
 
 enum NoteType {
@@ -204,12 +216,15 @@ model Agent {
   downlines    Agent[]  @relation("AgentHierarchy")
 
   // Relations
+  prospects    Prospect[]
   activities   Activity[]
   commissions  Commission[]
   documents    Document[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([uplineId])
 }
 
 enum AgentRole {
@@ -234,6 +249,10 @@ model Activity {
   outcome      String?
 
   createdAt    DateTime     @default(now())
+
+  @@index([agentId])
+  @@index([prospectId])
+  @@index([scheduledAt])
 }
 
 enum ActivityType {
@@ -263,6 +282,10 @@ model Commission {
   notes        String?
 
   createdAt    DateTime         @default(now())
+
+  @@index([agentId])
+  @@index([status])
+  @@index([earnedDate])
 }
 
 enum CommissionStatus {
@@ -286,6 +309,9 @@ model Document {
   size         Int?         // File size in bytes
 
   uploadedAt   DateTime     @default(now())
+
+  @@index([agentId])
+  @@index([prospectId])
 }
 
 enum DocumentType {
