@@ -23,6 +23,7 @@ export default async function DashboardOverviewPage() {
   // Fetch all data for overview
   const [prospects, activities, commissions] = await Promise.all([
     db.prospect.findMany({
+      where: { agentId: session.agentId },
       include: {
         financialProfile: true,
         agentProjection: true,
