@@ -46,3 +46,4 @@ coverage
 *.tsbuildinfo
 .cache
 .env*.local
+.env.production
