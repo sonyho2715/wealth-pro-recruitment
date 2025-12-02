@@ -161,7 +161,7 @@ export default async function BalanceSheetDetailPage({ params }: PageProps) {
               Send to Client
             </a>
             <Link
-              href={`/prospect?id=${prospect.id}`}
+              href={`/agent/dashboard/prospects/${prospect.id}/edit`}
               className="btn-primary text-sm flex items-center gap-2"
             >
               <Edit className="w-4 h-4" />

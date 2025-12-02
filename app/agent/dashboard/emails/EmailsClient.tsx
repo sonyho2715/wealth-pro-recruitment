@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import {
   Mail,
+  MessageSquare,
   Plus,
   Edit2,
   Trash2,
@@ -10,6 +11,7 @@ import {
   ExternalLink,
   Power,
   X,
+  Phone,
 } from 'lucide-react';
 import {
   createEmailTemplate,
@@ -17,7 +19,7 @@ import {
   deleteEmailTemplate,
   toggleEmailTemplateStatus,
 } from './actions';
-import { DEFAULT_EMAIL_TEMPLATES, EMAIL_CATEGORIES, EmailCategory } from './templates';
+import { DEFAULT_EMAIL_TEMPLATES, EMAIL_CATEGORIES, EmailCategory, DEFAULT_SMS_TEMPLATES, SMS_CATEGORIES } from './templates';
 
 interface EmailTemplate {
   id: string;
@@ -50,7 +52,9 @@ export default function EmailsClient({
   agentName,
 }: EmailsClientProps) {
   const [templates, setTemplates] = useState<EmailTemplate[]>(initialTemplates);
+  const [activeTab, setActiveTab] = useState<'email' | 'sms'>('email');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [selectedSmsCategory, setSelectedSmsCategory] = useState<string>('All');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isUseModalOpen, setIsUseModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -194,48 +198,76 @@ export default function EmailsClient({
     setIsEditModalOpen(true);
   };
 
+  // Filter SMS templates
+  const filteredSmsTemplates = DEFAULT_SMS_TEMPLATES.filter(template => {
+    if (selectedSmsCategory === 'All') return true;
+    return template.category === selectedSmsCategory;
+  });
+
+  // Group SMS templates by category
+  const smsByCategory = filteredSmsTemplates.reduce((acc, template) => {
+    const category = template.category;
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(template);
+    return acc;
+  }, {} as Record<string, typeof DEFAULT_SMS_TEMPLATES>);
+
+  // Handle copy SMS to clipboard
+  const handleCopySms = (body: string) => {
+    const text = selectedProspect
+      ? body
+          .replace(/\{\{firstName\}\}/g, selectedProspect.firstName)
+          .replace(/\{\{lastName\}\}/g, selectedProspect.lastName)
+          .replace(/\{\{agentName\}\}/g, agentName)
+      : body;
+    navigator.clipboard.writeText(text);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Email Templates</h1>
-          <p className="text-gray-600">Pre-written email templates for common scenarios</p>
+          <h1 className="text-2xl font-bold text-gray-900">Message Templates</h1>
+          <p className="text-gray-600">Pre-written templates for emails and SMS</p>
         </div>
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          <Plus className="w-4 h-4" />
-          New Template
-        </button>
+        {activeTab === 'email' && (
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            <Plus className="w-4 h-4" />
+            New Template
+          </button>
+        )}
       </div>
 
-      {/* Category Filter */}
-      <div className="flex flex-wrap gap-2">
+      {/* Tab Switcher */}
+      <div className="flex gap-2 border-b border-gray-200">
         <button
-          onClick={() => setSelectedCategory('All')}
-          className={`px-4 py-2 rounded-lg border transition-colors ${
-            selectedCategory === 'All'
-              ? 'bg-blue-600 text-white border-blue-600'
-              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+          onClick={() => setActiveTab('email')}
+          className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
+            activeTab === 'email'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-gray-600 hover:text-gray-900'
           }`}
         >
-          All ({templates.length})
+          <Mail className="w-4 h-4" />
+          Email Templates ({templates.length})
         </button>
-        {EMAIL_CATEGORIES.map(category => (
-          <button
-            key={category}
-            onClick={() => setSelectedCategory(category)}
-            className={`px-4 py-2 rounded-lg border transition-colors ${
-              selectedCategory === category
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            {category} ({templates.filter(t => t.category === category).length})
-          </button>
-        ))}
+        <button
+          onClick={() => setActiveTab('sms')}
+          className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
+            activeTab === 'sms'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          <MessageSquare className="w-4 h-4" />
+          SMS Templates ({DEFAULT_SMS_TEMPLATES.length})
+        </button>
       </div>
 
       {/* Prospect Selector for Preview */}
@@ -260,61 +292,166 @@ export default function EmailsClient({
         </select>
       </div>
 
-      {/* Templates Grid */}
-      {selectedCategory === 'All' ? (
-        <div className="space-y-8">
-          {Object.entries(templatesByCategory).map(([category, categoryTemplates]) => (
-            <div key={category}>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">{category}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {categoryTemplates.map(template => (
-                  <TemplateCard
-                    key={template.id}
-                    template={template}
-                    selectedProspect={selectedProspect}
-                    agentName={agentName}
-                    copiedTemplate={copiedTemplate}
-                    onUse={handleUseTemplate}
-                    onEdit={handleEditTemplate}
-                    onDelete={handleDeleteTemplate}
-                    onToggleStatus={handleToggleStatus}
-                    onCopy={handleCopyToClipboard}
-                  />
-                ))}
-              </div>
+      {/* EMAIL TEMPLATES TAB */}
+      {activeTab === 'email' && (
+        <>
+          {/* Category Filter */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setSelectedCategory('All')}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                selectedCategory === 'All'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              All
+            </button>
+            {EMAIL_CATEGORIES.map(category => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  selectedCategory === category
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+
+          {/* Email Templates Grid */}
+          {selectedCategory === 'All' ? (
+            <div className="space-y-8">
+              {Object.entries(templatesByCategory).map(([category, categoryTemplates]) => (
+                <div key={category}>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4">{category}</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {categoryTemplates.map(template => (
+                      <TemplateCard
+                        key={template.id}
+                        template={template}
+                        selectedProspect={selectedProspect}
+                        agentName={agentName}
+                        copiedTemplate={copiedTemplate}
+                        onUse={handleUseTemplate}
+                        onEdit={handleEditTemplate}
+                        onDelete={handleDeleteTemplate}
+                        onToggleStatus={handleToggleStatus}
+                        onCopy={handleCopyToClipboard}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTemplates.map(template => (
-            <TemplateCard
-              key={template.id}
-              template={template}
-              selectedProspect={selectedProspect}
-              agentName={agentName}
-              copiedTemplate={copiedTemplate}
-              onUse={handleUseTemplate}
-              onEdit={handleEditTemplate}
-              onDelete={handleDeleteTemplate}
-              onToggleStatus={handleToggleStatus}
-              onCopy={handleCopyToClipboard}
-            />
-          ))}
-        </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredTemplates.map(template => (
+                <TemplateCard
+                  key={template.id}
+                  template={template}
+                  selectedProspect={selectedProspect}
+                  agentName={agentName}
+                  copiedTemplate={copiedTemplate}
+                  onUse={handleUseTemplate}
+                  onEdit={handleEditTemplate}
+                  onDelete={handleDeleteTemplate}
+                  onToggleStatus={handleToggleStatus}
+                  onCopy={handleCopyToClipboard}
+                />
+              ))}
+            </div>
+          )}
+
+          {filteredTemplates.length === 0 && (
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <Mail className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 mb-4">No templates found in this category</p>
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Create your first template
+              </button>
+            </div>
+          )}
+        </>
       )}
 
-      {filteredTemplates.length === 0 && (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <Mail className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600 mb-4">No templates found in this category</p>
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="text-blue-600 hover:text-blue-700 font-medium"
-          >
-            Create your first template
-          </button>
-        </div>
+      {/* SMS TEMPLATES TAB */}
+      {activeTab === 'sms' && (
+        <>
+          {/* SMS Category Filter */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setSelectedSmsCategory('All')}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                selectedSmsCategory === 'All'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              All
+            </button>
+            {SMS_CATEGORIES.map(category => (
+              <button
+                key={category}
+                onClick={() => setSelectedSmsCategory(category)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  selectedSmsCategory === category
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+
+          {/* SMS Templates Grid */}
+          {selectedSmsCategory === 'All' ? (
+            <div className="space-y-8">
+              {Object.entries(smsByCategory).map(([category, smsTemplates]) => (
+                <div key={category}>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4">{category}</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {smsTemplates.map((sms, idx) => (
+                      <SmsTemplateCard
+                        key={`${category}-${idx}`}
+                        template={sms}
+                        selectedProspect={selectedProspect}
+                        agentName={agentName}
+                        onCopy={handleCopySms}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredSmsTemplates.map((sms, idx) => (
+                <SmsTemplateCard
+                  key={`sms-${idx}`}
+                  template={sms}
+                  selectedProspect={selectedProspect}
+                  agentName={agentName}
+                  onCopy={handleCopySms}
+                />
+              ))}
+            </div>
+          )}
+
+          {filteredSmsTemplates.length === 0 && (
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">No SMS templates found in this category</p>
+            </div>
+          )}
+        </>
       )}
 
       {/* Create Template Modal */}
@@ -697,6 +834,90 @@ function UseTemplateModal({
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// SMS Template Card Component
+interface SmsTemplateCardProps {
+  template: {
+    name: string;
+    body: string;
+    category: string;
+  };
+  selectedProspect: Prospect | null;
+  agentName: string;
+  onCopy: (body: string) => void;
+}
+
+function SmsTemplateCard({
+  template,
+  selectedProspect,
+  agentName,
+  onCopy,
+}: SmsTemplateCardProps) {
+  const [copied, setCopied] = useState(false);
+
+  const replaceMergeFields = (text: string) => {
+    if (!selectedProspect) return text;
+
+    return text
+      .replace(/\{\{firstName\}\}/g, selectedProspect.firstName)
+      .replace(/\{\{lastName\}\}/g, selectedProspect.lastName)
+      .replace(/\{\{agentName\}\}/g, agentName);
+  };
+
+  const handleCopy = () => {
+    onCopy(template.body);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const previewText = replaceMergeFields(template.body);
+  const charCount = previewText.length;
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-3">
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <h3 className="font-semibold text-gray-900 text-sm">{template.name}</h3>
+          <span className="inline-block px-2 py-0.5 mt-1 text-xs rounded-full bg-green-100 text-green-700">
+            {template.category}
+          </span>
+        </div>
+        <MessageSquare className="w-4 h-4 text-green-600 flex-shrink-0" />
+      </div>
+
+      <div className="bg-gray-50 rounded-lg p-3">
+        <p className="text-sm text-gray-700 whitespace-pre-wrap">
+          {previewText}
+        </p>
+      </div>
+
+      <div className="flex items-center justify-between pt-2 border-t">
+        <span className={`text-xs ${charCount > 160 ? 'text-amber-600' : 'text-gray-500'}`}>
+          {charCount} characters {charCount > 160 && '(may be split)'}
+        </span>
+        <button
+          onClick={handleCopy}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            copied
+              ? 'bg-green-100 text-green-700'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          {copied ? (
+            <>
+              <span>Copied!</span>
+            </>
+          ) : (
+            <>
+              <Copy className="w-3.5 h-3.5" />
+              <span>Copy</span>
+            </>
+          )}
+        </button>
       </div>
     </div>
   );

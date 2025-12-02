@@ -32,6 +32,7 @@ export default function AgentLoginPage() {
         return;
       }
 
+      router.refresh();
       router.push('/agent/dashboard');
     } catch {
       setError('An error occurred. Please try again.');

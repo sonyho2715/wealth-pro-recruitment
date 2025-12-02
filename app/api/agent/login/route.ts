@@ -34,8 +34,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create session
+    // Clear any existing session and create new one
     const session = await getSession();
+    // Destroy old session data
+    session.destroy();
+    // Set new session
     session.agentId = agent.id;
     session.email = agent.email;
     session.role = 'agent';
