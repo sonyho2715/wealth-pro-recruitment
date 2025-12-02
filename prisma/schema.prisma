@@ -25,6 +25,9 @@ model Prospect {
   agentProjection  AgentProjection?
   comparisons      Comparison[]
   notes            Note[]
+  activities       Activity[]
+  commissions      Commission[]
+  documents        Document[]
 }
 
 enum ProspectStatus {
@@ -191,7 +194,117 @@ model Agent {
   lastName     String
   phone        String?
   licenseNumber String?
+  role         AgentRole @default(AGENT)
+  licenseDate  DateTime?
+  monthlyGoal  Decimal? @db.Decimal(12, 2)
+
+  // Team hierarchy
+  uplineId     String?
+  upline       Agent?   @relation("AgentHierarchy", fields: [uplineId], references: [id])
+  downlines    Agent[]  @relation("AgentHierarchy")
+
+  // Relations
+  activities   Activity[]
+  commissions  Commission[]
+  documents    Document[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum AgentRole {
+  AGENT
+  MANAGER
+  ADMIN
+}
+
+// Activity tracking for prospects
+model Activity {
+  id           String       @id @default(cuid())
+  agentId      String
+  agent        Agent        @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  prospectId   String?
+  prospect     Prospect?    @relation(fields: [prospectId], references: [id], onDelete: SetNull)
+
+  type         ActivityType
+  title        String
+  description  String?
+  scheduledAt  DateTime?
+  completedAt  DateTime?
+  outcome      String?
+
+  createdAt    DateTime     @default(now())
+}
+
+enum ActivityType {
+  CALL
+  MEETING
+  EMAIL
+  FOLLOW_UP
+  PRESENTATION
+  APPLICATION
+  OTHER
+}
+
+// Commission tracking
+model Commission {
+  id           String           @id @default(cuid())
+  agentId      String
+  agent        Agent            @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  prospectId   String?
+  prospect     Prospect?        @relation(fields: [prospectId], references: [id], onDelete: SetNull)
+
+  productType  String           // Life, Disability, etc.
+  policyNumber String?
+  amount       Decimal          @db.Decimal(12, 2)
+  status       CommissionStatus @default(PENDING)
+  earnedDate   DateTime?
+  paidDate     DateTime?
+  notes        String?
+
+  createdAt    DateTime         @default(now())
+}
+
+enum CommissionStatus {
+  PENDING
+  APPROVED
+  PAID
+  CHARGEBACK
+}
+
+// Document storage
+model Document {
+  id           String       @id @default(cuid())
+  agentId      String
+  agent        Agent        @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  prospectId   String?
+  prospect     Prospect?    @relation(fields: [prospectId], references: [id], onDelete: SetNull)
+
+  name         String
+  type         DocumentType @default(OTHER)
+  url          String       // File path or URL
+  size         Int?         // File size in bytes
+
+  uploadedAt   DateTime     @default(now())
+}
+
+enum DocumentType {
+  APPLICATION
+  POLICY
+  ID_DOCUMENT
+  FINANCIAL_STATEMENT
+  OTHER
+}
+
+// Email templates for follow-ups
+model EmailTemplate {
+  id           String   @id @default(cuid())
+  name         String
+  subject      String
+  body         String   @db.Text
+  category     String   // follow_up, appointment, thank_you, etc.
+  isActive     Boolean  @default(true)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
