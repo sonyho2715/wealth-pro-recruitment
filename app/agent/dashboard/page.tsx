@@ -20,28 +20,29 @@ export default async function DashboardOverviewPage() {
   const session = await getSession();
   if (!session.agentId) redirect('/agent/login');
 
-  // Fetch all data for overview
-  const [prospects, activities, commissions] = await Promise.all([
-    db.prospect.findMany({
-      where: { agentId: session.agentId },
-      include: {
-        financialProfile: true,
-        agentProjection: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    }),
-    db.activity.findMany({
-      where: { agentId: session.agentId },
-      include: { prospect: true },
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-    }),
-    db.commission.findMany({
-      where: { agentId: session.agentId },
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-    }),
-  ]);
+  try {
+    // Fetch all data for overview
+    const [prospects, activities, commissions] = await Promise.all([
+      db.prospect.findMany({
+        where: { agentId: session.agentId },
+        include: {
+          financialProfile: true,
+          agentProjection: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      db.activity.findMany({
+        where: { agentId: session.agentId },
+        include: { prospect: true },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      }),
+      db.commission.findMany({
+        where: { agentId: session.agentId },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      }),
+    ]);
 
   // Calculate stats
   const totalProspects = prospects.length;
@@ -338,4 +339,15 @@ export default async function DashboardOverviewPage() {
       </div>
     </div>
   );
+  } catch (error) {
+    console.error('Dashboard error:', error);
+    return (
+      <div className="p-6 lg:p-8">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
+          <p className="text-red-600">Error loading dashboard data. Please try again later.</p>
+        </div>
+      </div>
+    );
+  }
 }
