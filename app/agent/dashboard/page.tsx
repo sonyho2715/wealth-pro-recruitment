@@ -341,11 +341,15 @@ export default async function DashboardOverviewPage() {
   );
   } catch (error) {
     console.error('Dashboard error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return (
       <div className="p-6 lg:p-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
           <p className="text-red-600">Error loading dashboard data. Please try again later.</p>
+          {process.env.NODE_ENV !== 'production' && (
+            <p className="text-sm text-gray-500 mt-2">Debug: {errorMessage}</p>
+          )}
         </div>
       </div>
     );
