@@ -17,20 +17,22 @@ function getSessionPassword(): string {
   return secret || 'development_only_secret_at_least_32_chars_long';
 }
 
-const sessionOptions = {
-  password: getSessionPassword(),
-  cookieName: 'wealth_pro_session',
-  cookieOptions: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'lax' as const,
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-  },
-};
+function getSessionOptions() {
+  return {
+    password: getSessionPassword(),
+    cookieName: 'wealth_pro_session',
+    cookieOptions: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      sameSite: 'lax' as const,
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    },
+  };
+}
 
 export async function getSession(): Promise<IronSession<SessionData>> {
   const cookieStore = await cookies();
-  return getIronSession<SessionData>(cookieStore, sessionOptions);
+  return getIronSession<SessionData>(cookieStore, getSessionOptions());
 }
 
 export async function requireAgent() {
