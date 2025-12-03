@@ -41,12 +41,12 @@ interface BalanceSheetData {
   };
 }
 
-interface LivingBalanceSheetProps {
+interface FinancialSnapshotProps {
   data: BalanceSheetData;
   clientName?: string;
 }
 
-export default function LivingBalanceSheet({ data, clientName }: LivingBalanceSheetProps) {
+export default function FinancialSnapshot({ data, clientName }: FinancialSnapshotProps) {
   // Calculate totals
   const totalAssets =
     data.assets.personalProperty +
@@ -94,7 +94,7 @@ export default function LivingBalanceSheet({ data, clientName }: LivingBalanceSh
       {/* Header */}
       {clientName && (
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-slate-800">Living Balance Sheet</h2>
+          <h2 className="text-2xl font-bold text-slate-800">Financial Snapshot</h2>
           <p className="text-slate-600">{clientName}</p>
         </div>
       )}
