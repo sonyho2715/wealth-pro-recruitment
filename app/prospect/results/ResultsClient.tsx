@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -9,7 +9,6 @@ import {
   TrendingUp,
   DollarSign,
   ArrowRight,
-  CheckCircle2,
   AlertTriangle,
   Users,
   Clock,
@@ -22,9 +21,14 @@ import {
   Home,
   Car,
   GraduationCap,
-  Heart
+  Heart,
+  Sparkles,
+  ToggleLeft,
+  ToggleRight
 } from 'lucide-react';
-import { generateAgentProjection } from '../actions';
+import ScenarioModal from '@/components/ScenarioModal';
+import IncomeSlider, { IncomeProjection } from '@/components/IncomeSlider';
+import ComplianceDisclaimer from '@/components/ComplianceDisclaimer';
 
 interface InsuranceNeed {
   id: string;
@@ -98,30 +102,65 @@ interface Prospect {
   comparisons: Comparison[];
 }
 
-type Tab = 'balance-sheet' | 'insurance' | 'opportunity' | 'comparison';
+// State A tabs (Current Reality)
+type RealityTab = 'balance-sheet' | 'insurance' | 'trajectory';
+// State B tabs (Scenario Mode)
+type ScenarioTab = 'opportunity' | 'comparison';
 
 export default function ResultsClient({ prospect }: { prospect: Prospect }) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<Tab>('balance-sheet');
-  // Initialize with saved values if available
-  const [hoursPerWeek, setHoursPerWeek] = useState(prospect.agentProjection?.hoursPerWeek || 20);
-  const [networkSize, setNetworkSize] = useState(prospect.agentProjection?.networkSize || 100);
-  const [loading, setLoading] = useState(false);
+
+  // TWO-STATE ARCHITECTURE
+  // State A: Current Reality (default) - navy/grey theme
+  // State B: Scenario Mode (requires consent) - green/gold theme
+  const [isScenarioMode, setIsScenarioMode] = useState(false);
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [hasConsented, setHasConsented] = useState(false);
+
+  // Tab states for each mode
+  const [realityTab, setRealityTab] = useState<RealityTab>('balance-sheet');
+  const [scenarioTab, setScenarioTab] = useState<ScenarioTab>('opportunity');
+
+  // Expandable insurance items
   const [expandedInsurance, setExpandedInsurance] = useState<string | null>(null);
 
+  // User-controlled income projection
+  const [userProjection, setUserProjection] = useState<IncomeProjection | null>(null);
+
   const profile = prospect.financialProfile!;
-  const comparison = prospect.comparisons[0] || null;
 
   const totalAssets = profile.savings + profile.investments + profile.retirement401k + profile.homeEquity + profile.otherAssets;
   const totalLiabilities = profile.mortgage + profile.carLoans + profile.studentLoans + profile.creditCards + profile.otherDebts;
   const totalIncome = profile.annualIncome + (profile.spouseIncome || 0) + (profile.otherIncome || 0);
 
-  const handleGenerateProjection = async () => {
-    setLoading(true);
-    await generateAgentProjection(prospect.id, hoursPerWeek, networkSize);
-    setLoading(false);
-    router.refresh();
+  // Handle scenario mode toggle
+  const handleToggleScenario = () => {
+    if (!isScenarioMode) {
+      // Trying to enter scenario mode - show consent modal
+      if (!hasConsented) {
+        setShowConsentModal(true);
+      } else {
+        setIsScenarioMode(true);
+      }
+    } else {
+      // Exiting scenario mode - no consent needed
+      setIsScenarioMode(false);
+    }
   };
+
+  const handleConsentAccept = () => {
+    setHasConsented(true);
+    setShowConsentModal(false);
+    setIsScenarioMode(true);
+  };
+
+  const handleConsentDecline = () => {
+    setShowConsentModal(false);
+  };
+
+  const handleProjectionChange = useCallback((projection: IncomeProjection) => {
+    setUserProjection(projection);
+  }, []);
 
   const insuranceTypeLabels: Record<string, { label: string; icon: React.ReactNode }> = {
     TERM_LIFE: { label: 'Term Life Insurance', icon: <Shield className="w-5 h-5" /> },
@@ -131,454 +170,625 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
     LONG_TERM_CARE: { label: 'Long-Term Care Insurance', icon: <Clock className="w-5 h-5" /> },
   };
 
-  const tabs = [
-    { id: 'balance-sheet' as Tab, label: 'Balance Sheet', icon: <PieChart className="w-5 h-5" /> },
-    { id: 'insurance' as Tab, label: 'Insurance Gaps', icon: <Shield className="w-5 h-5" /> },
-    { id: 'opportunity' as Tab, label: 'Agent Opportunity', icon: <Briefcase className="w-5 h-5" /> },
-    { id: 'comparison' as Tab, label: 'Compare Futures', icon: <TrendingUp className="w-5 h-5" /> },
+  // State A tabs configuration
+  const realityTabs = [
+    { id: 'balance-sheet' as RealityTab, label: 'Balance Sheet', icon: <PieChart className="w-5 h-5" /> },
+    { id: 'insurance' as RealityTab, label: 'Insurance Gaps', icon: <Shield className="w-5 h-5" /> },
+    { id: 'trajectory' as RealityTab, label: 'Current Trajectory', icon: <TrendingUp className="w-5 h-5" /> },
   ];
 
+  // State B tabs configuration
+  const scenarioTabs = [
+    { id: 'opportunity' as ScenarioTab, label: 'Income Scenario', icon: <Sparkles className="w-5 h-5" /> },
+    { id: 'comparison' as ScenarioTab, label: 'Compare Futures', icon: <TrendingUp className="w-5 h-5" /> },
+  ];
+
+  // Calculate trajectory (simplified future projection without agent income)
+  const yearsToRetirement = profile.retirementAge - profile.age;
+  const currentSavingsRate = profile.monthlyGap > 0 ? profile.monthlyGap * 12 : 0;
+  const projectedRetirementSavings = Math.round(
+    (profile.savings + profile.investments + profile.retirement401k) *
+    Math.pow(1.06, yearsToRetirement) +
+    currentSavingsRate * ((Math.pow(1.06, yearsToRetirement) - 1) / 0.06)
+  );
+  const retirementNeed = totalIncome * 0.8 * 25; // 80% income replacement, 25 years
+
   return (
-    <div className="min-h-screen py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Your Financial Analysis, {prospect.firstName}
-          </h1>
-          <p className="text-gray-600">
-            Here's your complete financial picture and personalized recommendations
-          </p>
-        </div>
+    <div className={`min-h-screen transition-colors duration-500 ${
+      isScenarioMode
+        ? 'bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50'
+        : 'bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100'
+    }`}>
+      {/* Consent Modal */}
+      <ScenarioModal
+        isOpen={showConsentModal}
+        onAccept={handleConsentAccept}
+        onDecline={handleConsentDecline}
+      />
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="card-gradient text-center">
-            <div className="text-2xl font-bold text-blue-600">${profile.netWorth.toLocaleString()}</div>
-            <div className="text-sm text-gray-600">Net Worth</div>
+      <div className="py-8 px-4">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className={`text-3xl font-bold mb-2 transition-colors ${
+              isScenarioMode ? 'text-emerald-900' : 'text-slate-900'
+            }`}>
+              {isScenarioMode ? 'Hypothetical Scenario Analysis' : 'Your Financial Analysis'}, {prospect.firstName}
+            </h1>
+            <p className={`transition-colors ${isScenarioMode ? 'text-emerald-700' : 'text-slate-600'}`}>
+              {isScenarioMode
+                ? 'Explore what-if scenarios based on your inputs (for educational purposes only)'
+                : 'Your current financial picture based on the information you provided'
+              }
+            </p>
           </div>
-          <div className="card-gradient text-center">
-            <div className={`text-2xl font-bold ${profile.monthlyGap >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              ${Math.abs(profile.monthlyGap).toLocaleString()}/mo
+
+          {/* MODE TOGGLE - The Magic Switch */}
+          <div className={`rounded-2xl p-4 mb-8 flex items-center justify-between transition-all ${
+            isScenarioMode
+              ? 'bg-gradient-to-r from-emerald-600 to-green-600 shadow-lg shadow-emerald-500/20'
+              : 'bg-gradient-to-r from-slate-700 to-slate-800 shadow-lg shadow-slate-500/20'
+          }`}>
+            <div className="flex items-center gap-3">
+              {isScenarioMode ? (
+                <Sparkles className="w-6 h-6 text-amber-300" />
+              ) : (
+                <PieChart className="w-6 h-6 text-slate-300" />
+              )}
+              <div className="text-white">
+                <div className="font-semibold">
+                  {isScenarioMode ? 'Scenario Mode' : 'Current Reality'}
+                </div>
+                <div className="text-sm opacity-80">
+                  {isScenarioMode
+                    ? 'Viewing hypothetical income scenarios'
+                    : 'Viewing your actual financial data'
+                  }
+                </div>
+              </div>
             </div>
-            <div className="text-sm text-gray-600">{profile.monthlyGap >= 0 ? 'Monthly Surplus' : 'Monthly Deficit'}</div>
-          </div>
-          <div className="card-gradient text-center">
-            <div className="text-2xl font-bold text-amber-600">${profile.protectionGap.toLocaleString()}</div>
-            <div className="text-sm text-gray-600">Protection Gap</div>
-          </div>
-          <div className="card-gradient text-center">
-            <div className="text-2xl font-bold text-purple-600">{profile.retirementAge - profile.age} yrs</div>
-            <div className="text-sm text-gray-600">To Retirement</div>
-          </div>
-        </div>
 
-        {/* Tab Navigation */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          {tabs.map(tab => (
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={handleToggleScenario}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
-                activeTab === tab.id
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'bg-white text-gray-700 hover:bg-blue-50'
+                isScenarioMode
+                  ? 'bg-white/20 text-white hover:bg-white/30'
+                  : 'bg-emerald-500 text-white hover:bg-emerald-600'
               }`}
             >
-              {tab.icon}
-              {tab.label}
+              {isScenarioMode ? (
+                <>
+                  <ToggleRight className="w-5 h-5" />
+                  Exit Scenario
+                </>
+              ) : (
+                <>
+                  <ToggleLeft className="w-5 h-5" />
+                  Explore Scenarios
+                </>
+              )}
             </button>
-          ))}
-        </div>
+          </div>
 
-        {/* Tab Content */}
-        <div className="card-gradient">
-          {activeTab === 'balance-sheet' && (
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <PieChart className="w-6 h-6 text-blue-600" />
-                Personal Balance Sheet
-              </h2>
-
-              <div className="grid md:grid-cols-2 gap-8">
-                {/* Assets */}
-                <div>
-                  <h3 className="font-semibold text-green-700 mb-4 flex items-center gap-2">
-                    <Wallet className="w-5 h-5" />
-                    Assets
-                  </h3>
-                  <div className="space-y-3">
-                    {[
-                      { label: 'Savings', value: profile.savings, icon: <DollarSign className="w-4 h-4" /> },
-                      { label: 'Investments', value: profile.investments, icon: <TrendingUp className="w-4 h-4" /> },
-                      { label: 'Retirement (401k/IRA)', value: profile.retirement401k, icon: <Target className="w-4 h-4" /> },
-                      { label: 'Home Equity', value: profile.homeEquity, icon: <Home className="w-4 h-4" /> },
-                      { label: 'Other Assets', value: profile.otherAssets, icon: <Wallet className="w-4 h-4" /> },
-                    ].map(item => (
-                      <div key={item.label} className="flex items-center justify-between py-2 border-b border-gray-100">
-                        <span className="flex items-center gap-2 text-gray-700">
-                          {item.icon}
-                          {item.label}
-                        </span>
-                        <span className="font-medium text-green-600">${item.value.toLocaleString()}</span>
-                      </div>
-                    ))}
-                    <div className="flex items-center justify-between py-3 bg-green-50 rounded-lg px-3 mt-4">
-                      <span className="font-bold text-green-800">Total Assets</span>
-                      <span className="font-bold text-green-600 text-lg">${totalAssets.toLocaleString()}</span>
-                    </div>
+          {/* Quick Stats - Different for each mode */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            {isScenarioMode ? (
+              // Scenario Mode Stats
+              <>
+                <div className="bg-white rounded-2xl p-4 shadow-lg border border-emerald-100 text-center">
+                  <div className="text-2xl font-bold text-emerald-600">
+                    ${(userProjection?.year1Income || 0).toLocaleString()}*
                   </div>
+                  <div className="text-sm text-slate-600">Hypothetical Year 1</div>
                 </div>
-
-                {/* Liabilities */}
-                <div>
-                  <h3 className="font-semibold text-red-700 mb-4 flex items-center gap-2">
-                    <CreditCard className="w-5 h-5" />
-                    Liabilities
-                  </h3>
-                  <div className="space-y-3">
-                    {[
-                      { label: 'Mortgage', value: profile.mortgage, icon: <Home className="w-4 h-4" /> },
-                      { label: 'Car Loans', value: profile.carLoans, icon: <Car className="w-4 h-4" /> },
-                      { label: 'Student Loans', value: profile.studentLoans, icon: <GraduationCap className="w-4 h-4" /> },
-                      { label: 'Credit Cards', value: profile.creditCards, icon: <CreditCard className="w-4 h-4" /> },
-                      { label: 'Other Debts', value: profile.otherDebts, icon: <CreditCard className="w-4 h-4" /> },
-                    ].map(item => (
-                      <div key={item.label} className="flex items-center justify-between py-2 border-b border-gray-100">
-                        <span className="flex items-center gap-2 text-gray-700">
-                          {item.icon}
-                          {item.label}
-                        </span>
-                        <span className="font-medium text-red-600">${item.value.toLocaleString()}</span>
-                      </div>
-                    ))}
-                    <div className="flex items-center justify-between py-3 bg-red-50 rounded-lg px-3 mt-4">
-                      <span className="font-bold text-red-800">Total Liabilities</span>
-                      <span className="font-bold text-red-600 text-lg">${totalLiabilities.toLocaleString()}</span>
-                    </div>
+                <div className="bg-white rounded-2xl p-4 shadow-lg border border-emerald-100 text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    ${(userProjection?.year3Income || 0).toLocaleString()}*
                   </div>
+                  <div className="text-sm text-slate-600">Hypothetical Year 3</div>
                 </div>
-              </div>
-
-              {/* Net Worth Summary */}
-              <div className="mt-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-6 text-white">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div>
-                    <div className="text-blue-100 mb-1">Your Net Worth</div>
-                    <div className="text-4xl font-bold">${profile.netWorth.toLocaleString()}</div>
+                <div className="bg-white rounded-2xl p-4 shadow-lg border border-emerald-100 text-center">
+                  <div className="text-2xl font-bold text-purple-600">
+                    ${(userProjection?.year5Income || 0).toLocaleString()}*
                   </div>
-                  <div className="text-right">
-                    <div className="text-blue-100 mb-1">Annual Income</div>
-                    <div className="text-2xl font-semibold">${totalIncome.toLocaleString()}</div>
-                  </div>
+                  <div className="text-sm text-slate-600">Hypothetical Year 5</div>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'insurance' && (
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <Shield className="w-6 h-6 text-blue-600" />
-                Insurance Recommendations
-              </h2>
-
-              {profile.protectionGap > 0 && (
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <div className="font-semibold text-amber-800">Protection Gap Identified</div>
-                    <div className="text-amber-700 text-sm">
-                      Based on your income, dependents, and debts, you have a ${profile.protectionGap.toLocaleString()} gap in life insurance coverage.
-                    </div>
+                <div className="bg-white rounded-2xl p-4 shadow-lg border border-emerald-100 text-center">
+                  <div className="text-2xl font-bold text-amber-600">
+                    ${(userProjection?.lifetimeValue || 0).toLocaleString()}*
                   </div>
+                  <div className="text-sm text-slate-600">Hypothetical 10-Year</div>
                 </div>
-              )}
-
-              <div className="space-y-4">
-                {prospect.insuranceNeeds.map(need => {
-                  const typeInfo = insuranceTypeLabels[need.type] || { label: need.type, icon: <Shield className="w-5 h-5" /> };
-                  const isExpanded = expandedInsurance === need.id;
-
-                  return (
-                    <div key={need.id} className="border border-gray-200 rounded-xl overflow-hidden">
-                      <button
-                        onClick={() => setExpandedInsurance(isExpanded ? null : need.id)}
-                        className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                            need.priority === 1 ? 'bg-red-100 text-red-600' :
-                            need.priority === 2 ? 'bg-amber-100 text-amber-600' :
-                            'bg-blue-100 text-blue-600'
-                          }`}>
-                            {typeInfo.icon}
-                          </div>
-                          <div className="text-left">
-                            <div className="font-semibold text-gray-900">{typeInfo.label}</div>
-                            <div className="text-sm text-gray-500">
-                              Gap: ${need.gap.toLocaleString()}
-                              {need.monthlyPremium && ` • Est. $${need.monthlyPremium}/mo`}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            need.priority === 1 ? 'bg-red-100 text-red-700' :
-                            need.priority === 2 ? 'bg-amber-100 text-amber-700' :
-                            'bg-blue-100 text-blue-700'
-                          }`}>
-                            Priority {need.priority}
-                          </span>
-                          {isExpanded ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
-                        </div>
-                      </button>
-
-                      {isExpanded && (
-                        <div className="p-4 border-t border-gray-200 bg-gray-50">
-                          <div className="grid md:grid-cols-3 gap-4 mb-4">
-                            <div className="bg-white rounded-lg p-3">
-                              <div className="text-sm text-gray-500">Recommended</div>
-                              <div className="font-bold text-green-600">${need.recommendedCoverage.toLocaleString()}</div>
-                            </div>
-                            <div className="bg-white rounded-lg p-3">
-                              <div className="text-sm text-gray-500">Current</div>
-                              <div className="font-bold text-gray-600">${need.currentCoverage.toLocaleString()}</div>
-                            </div>
-                            <div className="bg-white rounded-lg p-3">
-                              <div className="text-sm text-gray-500">Gap</div>
-                              <div className="font-bold text-red-600">${need.gap.toLocaleString()}</div>
-                            </div>
-                          </div>
-                          <p className="text-gray-700 text-sm">{need.reasoning}</p>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="mt-8 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6">
-                <h3 className="font-semibold text-gray-900 mb-2">Ready to Get Protected?</h3>
-                <p className="text-gray-600 text-sm mb-4">
-                  Schedule a call to discuss these recommendations and get personalized quotes.
-                </p>
-                <Link href="/career" className="btn-success inline-flex items-center gap-2">
-                  Schedule Consultation
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'opportunity' && (
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <Briefcase className="w-6 h-6 text-blue-600" />
-                Agent Career Opportunity
-              </h2>
-
-              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 mb-6">
-                <h3 className="font-semibold text-gray-900 mb-4">What if YOU could help others like this?</h3>
-                <p className="text-gray-600 mb-4">
-                  As a licensed insurance agent, you could earn significant income while helping families protect their futures.
-                  Let's see how this opportunity could transform YOUR financial picture.
-                </p>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Hours per week you could dedicate
-                    </label>
-                    <input
-                      type="range"
-                      min="5"
-                      max="40"
-                      value={hoursPerWeek}
-                      onChange={e => setHoursPerWeek(parseInt(e.target.value))}
-                      className="w-full"
-                    />
-                    <div className="text-center font-bold text-purple-600">{hoursPerWeek} hours/week</div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Size of your network (friends, family, contacts)
-                    </label>
-                    <input
-                      type="range"
-                      min="25"
-                      max="500"
-                      step="25"
-                      value={networkSize}
-                      onChange={e => setNetworkSize(parseInt(e.target.value))}
-                      className="w-full"
-                    />
-                    <div className="text-center font-bold text-purple-600">{networkSize} people</div>
-                  </div>
+              </>
+            ) : (
+              // Reality Mode Stats
+              <>
+                <div className="bg-white rounded-2xl p-4 shadow-lg border border-slate-200 text-center">
+                  <div className="text-2xl font-bold text-blue-600">${profile.netWorth.toLocaleString()}</div>
+                  <div className="text-sm text-slate-600">Net Worth</div>
                 </div>
+                <div className="bg-white rounded-2xl p-4 shadow-lg border border-slate-200 text-center">
+                  <div className={`text-2xl font-bold ${profile.monthlyGap >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    ${Math.abs(profile.monthlyGap).toLocaleString()}/mo
+                  </div>
+                  <div className="text-sm text-slate-600">{profile.monthlyGap >= 0 ? 'Monthly Surplus' : 'Monthly Deficit'}</div>
+                </div>
+                <div className="bg-white rounded-2xl p-4 shadow-lg border border-slate-200 text-center">
+                  <div className="text-2xl font-bold text-amber-600">${profile.protectionGap.toLocaleString()}</div>
+                  <div className="text-sm text-slate-600">Protection Gap</div>
+                </div>
+                <div className="bg-white rounded-2xl p-4 shadow-lg border border-slate-200 text-center">
+                  <div className="text-2xl font-bold text-purple-600">{yearsToRetirement} yrs</div>
+                  <div className="text-sm text-slate-600">To Retirement</div>
+                </div>
+              </>
+            )}
+          </div>
 
+          {/* Tab Navigation - Different for each mode */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            {isScenarioMode ? (
+              // Scenario Mode Tabs
+              scenarioTabs.map(tab => (
                 <button
-                  onClick={handleGenerateProjection}
-                  disabled={loading}
-                  className="btn-primary w-full mt-6"
+                  key={tab.id}
+                  onClick={() => setScenarioTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
+                    scenarioTab === tab.id
+                      ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg'
+                      : 'bg-white text-slate-700 hover:bg-emerald-50 border border-slate-200'
+                  }`}
                 >
-                  {loading ? 'Calculating...' : 'Calculate My Potential Income'}
+                  {tab.icon}
+                  {tab.label}
                 </button>
-              </div>
+              ))
+            ) : (
+              // Reality Mode Tabs
+              realityTabs.map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setRealityTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
+                    realityTab === tab.id
+                      ? 'bg-gradient-to-r from-slate-700 to-slate-800 text-white shadow-lg'
+                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                  }`}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              ))
+            )}
+          </div>
 
-              {prospect.agentProjection && (
-                <div className="space-y-6">
-                  <div className="grid md:grid-cols-4 gap-4">
-                    <div className="bg-white rounded-xl p-4 border border-gray-200 text-center">
-                      <div className="text-3xl font-bold text-green-600">
-                        ${prospect.agentProjection.year1Income.toLocaleString()}
+          {/* Tab Content */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
+            {/* ============================================ */}
+            {/* STATE A: CURRENT REALITY TABS                */}
+            {/* ============================================ */}
+            {!isScenarioMode && realityTab === 'balance-sheet' && (
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                  <PieChart className="w-6 h-6 text-slate-600" />
+                  Personal Balance Sheet
+                </h2>
+
+                <div className="grid md:grid-cols-2 gap-8">
+                  {/* Assets */}
+                  <div>
+                    <h3 className="font-semibold text-green-700 mb-4 flex items-center gap-2">
+                      <Wallet className="w-5 h-5" />
+                      Assets
+                    </h3>
+                    <div className="space-y-3">
+                      {[
+                        { label: 'Savings', value: profile.savings, icon: <DollarSign className="w-4 h-4" /> },
+                        { label: 'Investments', value: profile.investments, icon: <TrendingUp className="w-4 h-4" /> },
+                        { label: 'Retirement (401k/IRA)', value: profile.retirement401k, icon: <Target className="w-4 h-4" /> },
+                        { label: 'Home Equity', value: profile.homeEquity, icon: <Home className="w-4 h-4" /> },
+                        { label: 'Other Assets', value: profile.otherAssets, icon: <Wallet className="w-4 h-4" /> },
+                      ].map(item => (
+                        <div key={item.label} className="flex items-center justify-between py-2 border-b border-slate-100">
+                          <span className="flex items-center gap-2 text-slate-700">
+                            {item.icon}
+                            {item.label}
+                          </span>
+                          <span className="font-medium text-green-600">${item.value.toLocaleString()}</span>
+                        </div>
+                      ))}
+                      <div className="flex items-center justify-between py-3 bg-green-50 rounded-lg px-3 mt-4">
+                        <span className="font-bold text-green-800">Total Assets</span>
+                        <span className="font-bold text-green-600 text-lg">${totalAssets.toLocaleString()}</span>
                       </div>
-                      <div className="text-sm text-gray-600">Year 1 Income</div>
-                    </div>
-                    <div className="bg-white rounded-xl p-4 border border-gray-200 text-center">
-                      <div className="text-3xl font-bold text-blue-600">
-                        ${prospect.agentProjection.year3Income.toLocaleString()}
-                      </div>
-                      <div className="text-sm text-gray-600">Year 3 Income</div>
-                    </div>
-                    <div className="bg-white rounded-xl p-4 border border-gray-200 text-center">
-                      <div className="text-3xl font-bold text-purple-600">
-                        ${prospect.agentProjection.year5Income.toLocaleString()}
-                      </div>
-                      <div className="text-sm text-gray-600">Year 5 Income</div>
-                    </div>
-                    <div className="bg-white rounded-xl p-4 border border-gray-200 text-center">
-                      <div className="text-3xl font-bold text-indigo-600">
-                        ${prospect.agentProjection.lifetimeValue.toLocaleString()}
-                      </div>
-                      <div className="text-sm text-gray-600">10-Year Total</div>
                     </div>
                   </div>
 
-                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                    <p className="text-amber-700 text-sm">
-                      <strong>Disclaimer:</strong> These projections are estimates based on industry averages.
-                      Individual results vary based on effort, market conditions, and other factors.
-                      Past performance does not guarantee future results.
-                    </p>
+                  {/* Liabilities */}
+                  <div>
+                    <h3 className="font-semibold text-red-700 mb-4 flex items-center gap-2">
+                      <CreditCard className="w-5 h-5" />
+                      Liabilities
+                    </h3>
+                    <div className="space-y-3">
+                      {[
+                        { label: 'Mortgage', value: profile.mortgage, icon: <Home className="w-4 h-4" /> },
+                        { label: 'Car Loans', value: profile.carLoans, icon: <Car className="w-4 h-4" /> },
+                        { label: 'Student Loans', value: profile.studentLoans, icon: <GraduationCap className="w-4 h-4" /> },
+                        { label: 'Credit Cards', value: profile.creditCards, icon: <CreditCard className="w-4 h-4" /> },
+                        { label: 'Other Debts', value: profile.otherDebts, icon: <CreditCard className="w-4 h-4" /> },
+                      ].map(item => (
+                        <div key={item.label} className="flex items-center justify-between py-2 border-b border-slate-100">
+                          <span className="flex items-center gap-2 text-slate-700">
+                            {item.icon}
+                            {item.label}
+                          </span>
+                          <span className="font-medium text-red-600">${item.value.toLocaleString()}</span>
+                        </div>
+                      ))}
+                      <div className="flex items-center justify-between py-3 bg-red-50 rounded-lg px-3 mt-4">
+                        <span className="font-bold text-red-800">Total Liabilities</span>
+                        <span className="font-bold text-red-600 text-lg">${totalLiabilities.toLocaleString()}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              )}
-            </div>
-          )}
 
-          {activeTab === 'comparison' && (
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <TrendingUp className="w-6 h-6 text-blue-600" />
-                Your Future: With vs Without Agent Career
-              </h2>
+                {/* Net Worth Summary */}
+                <div className="mt-8 bg-gradient-to-r from-slate-700 to-slate-800 rounded-xl p-6 text-white">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                      <div className="text-slate-300 mb-1">Your Net Worth</div>
+                      <div className="text-4xl font-bold">${profile.netWorth.toLocaleString()}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-slate-300 mb-1">Annual Income</div>
+                      <div className="text-2xl font-semibold">${totalIncome.toLocaleString()}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
-              {!comparison ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-600 mb-4">
-                    Generate your agent income projection first to see the comparison.
+            {!isScenarioMode && realityTab === 'insurance' && (
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                  <Shield className="w-6 h-6 text-slate-600" />
+                  Insurance Recommendations
+                </h2>
+
+                {profile.protectionGap > 0 && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-semibold text-amber-800">Protection Gap Identified</div>
+                      <div className="text-amber-700 text-sm">
+                        Based on your income, dependents, and debts, you have a ${profile.protectionGap.toLocaleString()} gap in life insurance coverage.
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  {prospect.insuranceNeeds.map(need => {
+                    const typeInfo = insuranceTypeLabels[need.type] || { label: need.type, icon: <Shield className="w-5 h-5" /> };
+                    const isExpanded = expandedInsurance === need.id;
+
+                    return (
+                      <div key={need.id} className="border border-slate-200 rounded-xl overflow-hidden">
+                        <button
+                          onClick={() => setExpandedInsurance(isExpanded ? null : need.id)}
+                          className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                              need.priority === 1 ? 'bg-red-100 text-red-600' :
+                              need.priority === 2 ? 'bg-amber-100 text-amber-600' :
+                              'bg-blue-100 text-blue-600'
+                            }`}>
+                              {typeInfo.icon}
+                            </div>
+                            <div className="text-left">
+                              <div className="font-semibold text-slate-900">{typeInfo.label}</div>
+                              <div className="text-sm text-slate-500">
+                                Gap: ${need.gap.toLocaleString()}
+                                {need.monthlyPremium && ` • Est. $${need.monthlyPremium}/mo`}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              need.priority === 1 ? 'bg-red-100 text-red-700' :
+                              need.priority === 2 ? 'bg-amber-100 text-amber-700' :
+                              'bg-blue-100 text-blue-700'
+                            }`}>
+                              Priority {need.priority}
+                            </span>
+                            {isExpanded ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
+                          </div>
+                        </button>
+
+                        {isExpanded && (
+                          <div className="p-4 border-t border-slate-200 bg-slate-50">
+                            <div className="grid md:grid-cols-3 gap-4 mb-4">
+                              <div className="bg-white rounded-lg p-3">
+                                <div className="text-sm text-slate-500">Recommended</div>
+                                <div className="font-bold text-green-600">${need.recommendedCoverage.toLocaleString()}</div>
+                              </div>
+                              <div className="bg-white rounded-lg p-3">
+                                <div className="text-sm text-slate-500">Current</div>
+                                <div className="font-bold text-slate-600">${need.currentCoverage.toLocaleString()}</div>
+                              </div>
+                              <div className="bg-white rounded-lg p-3">
+                                <div className="text-sm text-slate-500">Gap</div>
+                                <div className="font-bold text-red-600">${need.gap.toLocaleString()}</div>
+                              </div>
+                            </div>
+                            <p className="text-slate-700 text-sm">{need.reasoning}</p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {!isScenarioMode && realityTab === 'trajectory' && (
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                  <TrendingUp className="w-6 h-6 text-slate-600" />
+                  Your Current Trajectory
+                </h2>
+
+                <div className="bg-slate-50 rounded-xl p-6 mb-6">
+                  <p className="text-slate-700 mb-4">
+                    Based on your current income, savings rate, and expenses, here's where you're headed:
+                  </p>
+
+                  <div className="grid md:grid-cols-3 gap-4 mb-6">
+                    <div className="bg-white rounded-xl p-4 border border-slate-200">
+                      <div className="text-sm text-slate-500 mb-1">Target Retirement Age</div>
+                      <div className="text-3xl font-bold text-slate-800">{profile.retirementAge}</div>
+                    </div>
+                    <div className="bg-white rounded-xl p-4 border border-slate-200">
+                      <div className="text-sm text-slate-500 mb-1">Years to Go</div>
+                      <div className="text-3xl font-bold text-slate-800">{yearsToRetirement}</div>
+                    </div>
+                    <div className="bg-white rounded-xl p-4 border border-slate-200">
+                      <div className="text-sm text-slate-500 mb-1">Current Savings Rate</div>
+                      <div className="text-3xl font-bold text-slate-800">
+                        ${currentSavingsRate.toLocaleString()}/yr
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Retirement Readiness */}
+                  <div className="bg-white rounded-xl p-6 border border-slate-200">
+                    <h3 className="font-semibold text-slate-900 mb-4">Retirement Readiness Assessment</h3>
+
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-slate-600">Projected savings at {profile.retirementAge}:</span>
+                      <span className="font-bold text-slate-900">${projectedRetirementSavings.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-slate-600">Estimated need for 25-year retirement:</span>
+                      <span className="font-bold text-slate-900">${retirementNeed.toLocaleString()}</span>
+                    </div>
+
+                    {/* Progress bar */}
+                    <div className="mb-4">
+                      <div className="h-4 bg-slate-200 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all ${
+                            projectedRetirementSavings >= retirementNeed
+                              ? 'bg-gradient-to-r from-green-400 to-emerald-500'
+                              : projectedRetirementSavings >= retirementNeed * 0.7
+                              ? 'bg-gradient-to-r from-amber-400 to-orange-500'
+                              : 'bg-gradient-to-r from-red-400 to-rose-500'
+                          }`}
+                          style={{ width: `${Math.min(100, (projectedRetirementSavings / retirementNeed) * 100)}%` }}
+                        />
+                      </div>
+                      <div className="text-right text-sm text-slate-500 mt-1">
+                        {Math.round((projectedRetirementSavings / retirementNeed) * 100)}% funded
+                      </div>
+                    </div>
+
+                    {projectedRetirementSavings < retirementNeed && (
+                      <div className={`p-4 rounded-lg ${
+                        projectedRetirementSavings >= retirementNeed * 0.7
+                          ? 'bg-amber-50 text-amber-800'
+                          : 'bg-red-50 text-red-800'
+                      }`}>
+                        <div className="flex items-start gap-2">
+                          <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <div className="font-semibold">
+                              {projectedRetirementSavings >= retirementNeed * 0.7
+                                ? 'Getting Close'
+                                : 'Gap Identified'
+                              }
+                            </div>
+                            <div className="text-sm">
+                              At your current pace, you may be short approximately
+                              ${(retirementNeed - projectedRetirementSavings).toLocaleString()} for retirement.
+                              Consider increasing income or savings rate.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* CTA to Scenario Mode */}
+                <div className="bg-gradient-to-r from-slate-100 to-slate-200 rounded-xl p-6 text-center">
+                  <h3 className="font-semibold text-slate-900 mb-2">Want to explore income scenarios?</h3>
+                  <p className="text-slate-600 text-sm mb-4">
+                    Toggle to Scenario Mode to see how additional income sources could impact your trajectory.
                   </p>
                   <button
-                    onClick={() => setActiveTab('opportunity')}
-                    className="btn-primary"
+                    onClick={handleToggleScenario}
+                    className="bg-gradient-to-r from-emerald-500 to-green-600 text-white px-6 py-3 rounded-xl font-medium hover:from-emerald-600 hover:to-green-700 transition-all shadow-lg inline-flex items-center gap-2"
                   >
-                    Calculate Agent Income
+                    <Sparkles className="w-5 h-5" />
+                    Explore Scenarios
                   </button>
                 </div>
-              ) : (
-                <div className="space-y-8">
-                  {/* Comparison Cards */}
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {/* Without Agent Career */}
-                    <div className="border-2 border-gray-200 rounded-xl p-6">
-                      <div className="text-center mb-6">
-                        <div className="inline-flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-full mb-4">
-                          <Clock className="w-4 h-4" />
-                          Current Path
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900">Without Agent Career</h3>
-                      </div>
+              </div>
+            )}
 
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center py-2 border-b">
-                          <span className="text-gray-600">Retirement Age</span>
-                          <span className="font-bold text-gray-900">{comparison.baselineRetirementAge}</span>
+            {/* ============================================ */}
+            {/* STATE B: SCENARIO MODE TABS                  */}
+            {/* ============================================ */}
+            {isScenarioMode && scenarioTab === 'opportunity' && (
+              <div>
+                <h2 className="text-xl font-bold text-emerald-900 mb-2 flex items-center gap-2">
+                  <Sparkles className="w-6 h-6 text-emerald-600" />
+                  Hypothetical Income Scenario
+                </h2>
+                <p className="text-emerald-700 text-sm mb-6">
+                  Drag the slider to explore different activity levels. All figures are hypothetical.
+                </p>
+
+                {/* Income Slider Component */}
+                <div className="mb-8">
+                  <IncomeSlider onProjectionChange={handleProjectionChange} />
+                </div>
+
+                {/* What This Could Mean */}
+                {userProjection && (
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-6">
+                    <h3 className="font-semibold text-emerald-900 mb-4">
+                      What {userProjection.salesPerMonth} sales/month could mean for your trajectory
+                    </h3>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="bg-white rounded-lg p-4">
+                        <div className="text-sm text-slate-500 mb-1">Potential additional annual income</div>
+                        <div className="text-2xl font-bold text-emerald-600">
+                          +${userProjection.year1Income.toLocaleString()}*
                         </div>
-                        <div className="flex justify-between items-center py-2 border-b">
-                          <span className="text-gray-600">Net Worth at 65</span>
-                          <span className="font-bold text-gray-900">${comparison.baselineNetWorthAt65.toLocaleString()}</span>
+                      </div>
+                      <div className="bg-white rounded-lg p-4">
+                        <div className="text-sm text-slate-500 mb-1">Potential retirement boost</div>
+                        <div className="text-2xl font-bold text-blue-600">
+                          +${(userProjection.lifetimeValue * 0.7).toLocaleString()}*
                         </div>
-                        <div className="flex justify-between items-center py-2">
-                          <span className="text-gray-600">Income Source</span>
-                          <span className="font-bold text-gray-900">Job Only</span>
-                        </div>
+                        <div className="text-xs text-slate-400">If 70% invested over 10 years</div>
                       </div>
                     </div>
 
-                    {/* With Agent Career */}
-                    <div className="border-2 border-green-500 rounded-xl p-6 bg-gradient-to-br from-green-50 to-emerald-50">
-                      <div className="text-center mb-6">
-                        <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full mb-4">
-                          <TrendingUp className="w-4 h-4" />
-                          Enhanced Path
-                        </div>
-                        <h3 className="text-xl font-bold text-green-800">With Agent Career</h3>
-                      </div>
+                    <p className="text-emerald-700 text-xs mt-4">
+                      *Hypothetical illustration only. Based on your selected inputs and assumptions.
+                      Results are not typical. Individual outcomes vary.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center py-2 border-b border-green-200">
-                          <span className="text-green-700">Retirement Age</span>
-                          <span className="font-bold text-green-800">
-                            {comparison.agentRetirementAge}
-                            {comparison.yearsEarlierRetirement > 0 && (
-                              <span className="text-green-600 text-sm ml-2">
-                                ({comparison.yearsEarlierRetirement} years earlier!)
-                              </span>
-                            )}
+            {isScenarioMode && scenarioTab === 'comparison' && (
+              <div>
+                <h2 className="text-xl font-bold text-emerald-900 mb-2 flex items-center gap-2">
+                  <TrendingUp className="w-6 h-6 text-emerald-600" />
+                  Hypothetical Future Comparison
+                </h2>
+                <p className="text-emerald-700 text-sm mb-6">
+                  Compare your current trajectory with a hypothetical scenario where you add the projected income.
+                </p>
+
+                <div className="grid md:grid-cols-2 gap-6 mb-8">
+                  {/* Current Path */}
+                  <div className="border-2 border-slate-200 rounded-xl p-6 bg-slate-50">
+                    <div className="text-center mb-6">
+                      <div className="inline-flex items-center gap-2 bg-slate-200 text-slate-700 px-4 py-2 rounded-full mb-4">
+                        <Clock className="w-4 h-4" />
+                        Current Path
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-900">Without Additional Income</h3>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center py-2 border-b border-slate-200">
+                        <span className="text-slate-600">Retirement Age Target</span>
+                        <span className="font-bold text-slate-900">{profile.retirementAge}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-slate-200">
+                        <span className="text-slate-600">Projected Savings at Retirement</span>
+                        <span className="font-bold text-slate-900">${projectedRetirementSavings.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2">
+                        <span className="text-slate-600">Retirement Readiness</span>
+                        <span className="font-bold text-slate-900">
+                          {Math.round((projectedRetirementSavings / retirementNeed) * 100)}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Hypothetical Path */}
+                  <div className="border-2 border-emerald-400 rounded-xl p-6 bg-gradient-to-br from-emerald-50 to-green-50">
+                    <div className="text-center mb-6">
+                      <div className="inline-flex items-center gap-2 bg-emerald-200 text-emerald-800 px-4 py-2 rounded-full mb-4">
+                        <Sparkles className="w-4 h-4" />
+                        Hypothetical Path
+                      </div>
+                      <h3 className="text-xl font-bold text-emerald-900">With Projected Income*</h3>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center py-2 border-b border-emerald-200">
+                        <span className="text-emerald-700">Could Retire As Early As</span>
+                        <span className="font-bold text-emerald-800">
+                          {Math.max(profile.age + 5, profile.retirementAge - Math.floor((userProjection?.year1Income || 0) / 10000))}
+                          <span className="text-emerald-600 text-sm ml-1">
+                            (hypothetical)
                           </span>
-                        </div>
-                        <div className="flex justify-between items-center py-2 border-b border-green-200">
-                          <span className="text-green-700">Net Worth at 65</span>
-                          <span className="font-bold text-green-800">${comparison.agentNetWorthAt65.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between items-center py-2">
-                          <span className="text-green-700">Income Sources</span>
-                          <span className="font-bold text-green-800">Job + Agent</span>
-                        </div>
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-emerald-200">
+                        <span className="text-emerald-700">Potential Retirement Savings</span>
+                        <span className="font-bold text-emerald-800">
+                          ${(projectedRetirementSavings + (userProjection?.lifetimeValue || 0) * 0.5).toLocaleString()}*
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-2">
+                        <span className="text-emerald-700">Potential Readiness</span>
+                        <span className="font-bold text-emerald-800">
+                          {Math.min(150, Math.round(((projectedRetirementSavings + (userProjection?.lifetimeValue || 0) * 0.5) / retirementNeed) * 100))}%*
+                        </span>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Impact Summary */}
-                  <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-6 text-white">
-                    <h3 className="font-bold text-xl mb-4 text-center">The Agent Career Difference</h3>
-                    <div className="grid md:grid-cols-3 gap-6 text-center">
-                      <div>
-                        <div className="text-4xl font-bold mb-1">+${comparison.additionalIncome.toLocaleString()}</div>
-                        <div className="text-blue-100">Additional Lifetime Income</div>
-                      </div>
-                      <div>
-                        <div className="text-4xl font-bold mb-1">{comparison.yearsEarlierRetirement}</div>
-                        <div className="text-blue-100">Years Earlier Retirement</div>
-                      </div>
-                      <div>
-                        <div className="text-4xl font-bold mb-1">+${comparison.additionalNetWorth.toLocaleString()}</div>
-                        <div className="text-blue-100">Additional Net Worth at 65</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* CTA */}
-                  <div className="text-center">
-                    <h3 className="text-xl font-bold text-gray-900 mb-4">Ready to Transform Your Financial Future?</h3>
-                    <Link href="/career" className="btn-success inline-flex items-center gap-2 text-lg px-8 py-4">
-                      Learn More About Becoming an Agent
-                      <ArrowRight className="w-5 h-5" />
-                    </Link>
                   </div>
                 </div>
-              )}
+
+                {/* Disclaimer */}
+                <ComplianceDisclaimer variant="income" />
+
+                {/* CTA */}
+                <div className="mt-8 text-center">
+                  <h3 className="text-xl font-bold text-emerald-900 mb-4">Want to Learn More?</h3>
+                  <p className="text-emerald-700 mb-4">
+                    If you're interested in exploring this opportunity further, we can discuss the details.
+                  </p>
+                  <Link
+                    href="/career"
+                    className="bg-gradient-to-r from-emerald-500 to-green-600 text-white px-8 py-4 rounded-xl font-medium hover:from-emerald-600 hover:to-green-700 transition-all shadow-lg inline-flex items-center gap-2"
+                  >
+                    Learn About the Opportunity
+                    <ArrowRight className="w-5 h-5" />
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Footer Disclaimer - Always visible in Scenario Mode */}
+          {isScenarioMode && (
+            <div className="mt-6">
+              <ComplianceDisclaimer variant="compact" className="text-center" />
             </div>
           )}
         </div>
