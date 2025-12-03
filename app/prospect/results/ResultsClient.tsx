@@ -23,6 +23,7 @@ import ScenarioModal from '@/components/ScenarioModal';
 import IncomeSlider, { IncomeProjection } from '@/components/IncomeSlider';
 import ComplianceDisclaimer from '@/components/ComplianceDisclaimer';
 import LivingBalanceSheet from '@/components/LivingBalanceSheet';
+import { FINANCIAL_ASSUMPTIONS } from '@/lib/config';
 
 interface InsuranceNeed {
   id: string;
@@ -180,12 +181,13 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
   // Calculate trajectory (simplified future projection without agent income)
   const yearsToRetirement = profile.retirementAge - profile.age;
   const currentSavingsRate = profile.monthlyGap > 0 ? profile.monthlyGap * 12 : 0;
+  const returnRate = FINANCIAL_ASSUMPTIONS.nominalReturnRate;
   const projectedRetirementSavings = Math.round(
     (profile.savings + profile.investments + profile.retirement401k) *
-    Math.pow(1.06, yearsToRetirement) +
-    currentSavingsRate * ((Math.pow(1.06, yearsToRetirement) - 1) / 0.06)
+    Math.pow(1 + returnRate, yearsToRetirement) +
+    currentSavingsRate * ((Math.pow(1 + returnRate, yearsToRetirement) - 1) / returnRate)
   );
-  const retirementNeed = totalIncome * 0.8 * 25; // 80% income replacement, 25 years
+  const retirementNeed = totalIncome * FINANCIAL_ASSUMPTIONS.incomeReplacementRate * FINANCIAL_ASSUMPTIONS.retirementYears;
 
   return (
     <div className={`min-h-screen transition-colors duration-500 ${

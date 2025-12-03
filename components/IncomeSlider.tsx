@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { DollarSign, TrendingUp, Calendar, Info } from 'lucide-react';
+import { AGENT_ASSUMPTIONS } from '@/lib/config';
 
 interface IncomeSliderProps {
   onProjectionChange: (projection: IncomeProjection) => void;
@@ -30,13 +31,13 @@ export interface IncomeProjection {
  * - Prominent disclaimer that follows the slider
  */
 
-// Conservative projection assumptions
+// Use unified config for consistency
 const ASSUMPTIONS = {
-  averagePremium: 1500,        // Conservative average policy premium
-  commissionRate: 0.50,        // 50% first-year commission
-  renewalRate: 0.10,           // 10% renewal commission
-  retentionRate: 0.85,         // 85% client retention
-  growthFactor: 1.15,          // 15% annual improvement factor
+  averagePremium: AGENT_ASSUMPTIONS.averagePolicyPremium,
+  commissionRate: AGENT_ASSUMPTIONS.firstYearCommissionRate,
+  renewalRate: AGENT_ASSUMPTIONS.renewalCommissionRate,
+  retentionRate: AGENT_ASSUMPTIONS.clientRetentionRate,
+  growthFactor: AGENT_ASSUMPTIONS.annualGrowthFactor,
 };
 
 function calculateProjection(salesPerMonth: number): IncomeProjection {
@@ -66,15 +67,26 @@ function calculateProjection(salesPerMonth: number): IncomeProjection {
     year5AnnualPolicies * avgCommissionPerPolicy + year5Renewals
   );
 
-  // 10-year lifetime value (simplified)
-  const lifetimeValue = Math.round(
-    year1Income +
-    (year1Income * 1.1) +
-    year3Income +
-    (year3Income * 1.05) +
-    year5Income +
-    (year5Income * 1.0) * 5
-  );
+  // 10-year lifetime value (proper calculation)
+  // Sum of first-year commissions + renewal book building over 10 years
+  let lifetimeValue = 0;
+  let totalPoliciesInForce = 0;
+
+  for (let year = 1; year <= 10; year++) {
+    // New policies this year with growth
+    const yearPolicies = Math.round(annualPolicies * Math.pow(ASSUMPTIONS.growthFactor, year - 1));
+    const firstYearCommission = yearPolicies * avgCommissionPerPolicy;
+
+    // Renewals from existing book (with retention)
+    const renewalCommission = totalPoliciesInForce * ASSUMPTIONS.averagePremium * ASSUMPTIONS.renewalRate;
+
+    // Update book of business
+    totalPoliciesInForce = Math.round(totalPoliciesInForce * ASSUMPTIONS.retentionRate + yearPolicies);
+
+    lifetimeValue += firstYearCommission + renewalCommission;
+  }
+
+  lifetimeValue = Math.round(lifetimeValue);
 
   return {
     salesPerMonth,

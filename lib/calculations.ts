@@ -1,4 +1,10 @@
 import type { FinancialProfile, InsuranceType } from '@prisma/client';
+import {
+  AGENT_ASSUMPTIONS,
+  PREMIUM_ESTIMATES,
+  FINANCIAL_ASSUMPTIONS,
+  DIME_ASSUMPTIONS,
+} from './config';
 
 // Calculate net worth from financial profile
 export function calculateNetWorth(profile: {
@@ -70,17 +76,17 @@ export function calculateProtectionGap(profile: {
     profile.creditCards +
     profile.otherDebts;
 
-  // I - Income replacement (10 years or until retirement, whichever is less)
-  const incomeYears = Math.min(10, yearsToRetirement);
+  // I - Income replacement (use config value or until retirement, whichever is less)
+  const incomeYears = Math.min(DIME_ASSUMPTIONS.incomeReplacementYears, yearsToRetirement);
   const incomeReplacement = profile.annualIncome * incomeYears;
 
   // M - Mortgage (already included in debt)
 
-  // E - Education ($50K per dependent for college)
-  const educationFund = profile.dependents * 50000;
+  // E - Education (use config value per dependent)
+  const educationFund = profile.dependents * DIME_ASSUMPTIONS.educationFundPerDependent;
 
-  // Final expenses
-  const finalExpenses = 25000;
+  // Final expenses (from config)
+  const finalExpenses = DIME_ASSUMPTIONS.finalExpenses;
 
   const totalNeed = totalDebt + incomeReplacement + educationFund + finalExpenses;
   const gap = totalNeed - profile.currentLifeInsurance;
@@ -127,9 +133,9 @@ export function generateInsuranceRecommendations(profile: {
   // Term Life Insurance
   if (protectionGap > 0) {
     const termYears = Math.min(20, yearsToRetirement);
-    // Rough premium estimate: $20/month per $500K for 35yo, adjust by age
-    const ageMultiplier = 1 + (profile.age - 35) * 0.03;
-    const premium = (protectionGap / 500000) * 20 * ageMultiplier;
+    // Premium estimate using config values
+    const ageMultiplier = 1 + (profile.age - PREMIUM_ESTIMATES.termLife.baseAge) * PREMIUM_ESTIMATES.termLife.ageMultiplierRate;
+    const premium = (protectionGap / 500000) * PREMIUM_ESTIMATES.termLife.basePremiumPer500K * Math.max(1, ageMultiplier);
 
     recommendations.push({
       type: 'TERM_LIFE',
@@ -155,7 +161,7 @@ export function generateInsuranceRecommendations(profile: {
       gap: disabilityGap * 12,
       priority: 2,
       reasoning: `Disability insurance replaces your income if you cannot work. You need approximately $${Math.round(disabilityNeed).toLocaleString()}/month coverage (60% of your income).`,
-      estimatedMonthlyPremium: Math.round(disabilityNeed * 0.02), // ~2% of benefit
+      estimatedMonthlyPremium: Math.round(disabilityNeed * PREMIUM_ESTIMATES.disability.premiumRate),
     });
   }
 
@@ -169,12 +175,12 @@ export function generateInsuranceRecommendations(profile: {
       gap: wholeLifeAmount,
       priority: 3,
       reasoning: `Whole life insurance provides permanent coverage and builds cash value. A $${wholeLifeAmount.toLocaleString()} policy can serve as a tax-advantaged savings vehicle and cover final expenses.`,
-      estimatedMonthlyPremium: Math.round((wholeLifeAmount / 1000) * 8), // ~$8 per $1K coverage
+      estimatedMonthlyPremium: Math.round((wholeLifeAmount / 1000) * PREMIUM_ESTIMATES.wholeLife.premiumPer1K),
     });
   }
 
   // Long-term care (if age 45+)
-  if (profile.age >= 45) {
+  if (profile.age >= PREMIUM_ESTIMATES.longTermCare.baseAge) {
     const ltcBenefit = 5000; // $5K/month benefit
     recommendations.push({
       type: 'LONG_TERM_CARE',
@@ -183,7 +189,10 @@ export function generateInsuranceRecommendations(profile: {
       gap: ltcBenefit * 36,
       priority: 4,
       reasoning: `70% of people over 65 will need long-term care. A policy with $${ltcBenefit.toLocaleString()}/month benefit helps protect your assets from nursing home costs.`,
-      estimatedMonthlyPremium: Math.round(100 + (profile.age - 45) * 10),
+      estimatedMonthlyPremium: Math.round(
+        PREMIUM_ESTIMATES.longTermCare.basePremium +
+        (profile.age - PREMIUM_ESTIMATES.longTermCare.baseAge) * PREMIUM_ESTIMATES.longTermCare.ageMultiplierRate
+      ),
     });
   }
 
@@ -212,13 +221,13 @@ export function calculateAgentProjection(params: {
 } {
   const { hoursPerWeek, networkSize } = params;
 
-  // Assumptions
-  const avgPolicyPremium = 2000; // Annual premium
-  const firstYearCommissionRate = 0.55; // 55% first year
-  const renewalCommissionRate = 0.05; // 5% renewals
-  const conversionRate = 0.15; // 15% of contacts become clients
-  const policiesPerClient = 1.5; // Average policies per client
-  const yearlyNewContacts = (hoursPerWeek / 10) * 50; // Contacts per year based on hours
+  // Use unified config for assumptions
+  const avgPolicyPremium = AGENT_ASSUMPTIONS.averagePolicyPremium;
+  const firstYearCommissionRate = AGENT_ASSUMPTIONS.firstYearCommissionRate;
+  const renewalCommissionRate = AGENT_ASSUMPTIONS.renewalCommissionRate;
+  const conversionRate = AGENT_ASSUMPTIONS.conversionRate;
+  const policiesPerClient = AGENT_ASSUMPTIONS.policiesPerClient;
+  const yearlyNewContacts = hoursPerWeek * AGENT_ASSUMPTIONS.contactsPerHour * 50; // 50 weeks/year
 
   const projections: Array<{
     year: number;
@@ -298,7 +307,7 @@ export function calculateComparison(params: {
 } {
   const { currentAge, retirementAge, currentIncome, currentSavings, monthlyContribution } = params;
   const yearsTo65 = 65 - currentAge;
-  const annualReturn = 0.07; // 7% average return
+  const annualReturn = FINANCIAL_ASSUMPTIONS.nominalReturnRate;
 
   // Baseline projection (current path)
   const baselineProjection: Array<{ age: number; income: number; netWorth: number }> = [];
@@ -306,7 +315,7 @@ export function calculateComparison(params: {
 
   for (let i = 0; i <= yearsTo65; i++) {
     const age = currentAge + i;
-    const income = currentIncome * Math.pow(1.03, i); // 3% annual raise
+    const income = currentIncome * Math.pow(1 + FINANCIAL_ASSUMPTIONS.annualRaiseRate, i);
     baselineNetWorth = baselineNetWorth * (1 + annualReturn) + monthlyContribution * 12;
 
     baselineProjection.push({
@@ -324,7 +333,7 @@ export function calculateComparison(params: {
 
   for (let i = 0; i <= yearsTo65; i++) {
     const age = currentAge + i;
-    const baseIncome = currentIncome * Math.pow(1.03, i);
+    const baseIncome = currentIncome * Math.pow(1 + FINANCIAL_ASSUMPTIONS.annualRaiseRate, i);
 
     // Agent income grows from year1 to year5, then stabilizes
     let agentIncome = 0;
@@ -336,7 +345,7 @@ export function calculateComparison(params: {
     }
 
     const totalIncome = baseIncome + agentIncome;
-    const agentMonthlyContribution = monthlyContribution + (agentIncome * 0.3) / 12; // Save 30% of agent income
+    const agentMonthlyContribution = monthlyContribution + (agentIncome * FINANCIAL_ASSUMPTIONS.agentIncomeSavingsRate) / 12;
 
     agentNetWorth = agentNetWorth * (1 + annualReturn) + agentMonthlyContribution * 12;
 
