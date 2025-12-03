@@ -13,6 +13,7 @@ import {
   Target,
   Award
 } from 'lucide-react';
+import ComplianceDisclaimer from '@/components/ComplianceDisclaimer';
 
 export default function CareerPage() {
   const benefits = [
@@ -194,11 +195,16 @@ export default function CareerPage() {
               { label: 'Top Performers', income: '$200K+', hours: 'Unlimited potential' },
             ].map((tier, index) => (
               <div key={index} className="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-center">
-                <div className="text-3xl font-bold mb-2">{tier.income}</div>
+                <div className="text-3xl font-bold mb-2">{tier.income}*</div>
                 <div className="font-medium text-blue-200 mb-1">{tier.label}</div>
                 <div className="text-sm text-blue-300">{tier.hours}</div>
               </div>
             ))}
+          </div>
+
+          {/* Income Disclaimer - Required for compliance */}
+          <div className="mt-8 max-w-3xl mx-auto">
+            <ComplianceDisclaimer variant="income" className="bg-white/10 border-white/20 [&_p]:text-blue-100 [&_.text-amber-800]:text-blue-200 [&_.text-amber-700]:text-blue-100" />
           </div>
         </div>
       </section>
@@ -264,16 +270,19 @@ export default function CareerPage() {
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12 px-4">
-        <div className="max-w-6xl mx-auto text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-center gap-3 mb-8">
             <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
               <Shield className="w-6 h-6" />
             </div>
             <span className="text-xl font-bold">Wealth Pro</span>
           </div>
-          <p className="text-gray-400 text-sm max-w-2xl mx-auto">
-            Income projections are estimates based on industry averages. Individual results vary based on effort,
-            market conditions, and other factors. Insurance products subject to underwriting approval.
+
+          {/* Full Compliance Disclosure */}
+          <ComplianceDisclaimer variant="full" className="bg-gray-800/50 text-gray-300 [&_h4]:text-gray-200 [&_strong]:text-gray-200 mb-8" />
+
+          <p className="text-gray-500 text-sm text-center">
+            © {new Date().getFullYear()} Wealth Pro. All rights reserved. For informational purposes only.
           </p>
         </div>
       </footer>

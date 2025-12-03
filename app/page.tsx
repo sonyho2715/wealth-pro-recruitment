@@ -13,6 +13,7 @@ import {
   Star,
   Quote
 } from 'lucide-react';
+import ComplianceDisclaimer from '@/components/ComplianceDisclaimer';
 
 export default function HomePage() {
   return (
@@ -486,14 +487,18 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Compliance Disclosures */}
+          <div className="border-t border-gray-800 pt-8 mb-8">
+            <ComplianceDisclaimer variant="full" className="bg-gray-800/50 text-gray-300 [&_h4]:text-gray-200 [&_strong]:text-gray-200" />
+          </div>
+
           <div className="border-t border-gray-800 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <p className="text-gray-500 text-sm">
                 © {new Date().getFullYear()} Wealth Pro. All rights reserved.
               </p>
               <p className="text-gray-500 text-sm text-center">
-                Results vary based on individual effort and market conditions.
-                Insurance products are subject to underwriting approval.
+                For informational purposes only. Not financial advice.
               </p>
             </div>
           </div>
