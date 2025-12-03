@@ -19,11 +19,17 @@ export default async function EditProspectPage({ params }: PageProps) {
     where: { id },
     include: {
       financialProfile: true,
+      sharedWith: true,
     },
   });
 
-  // Security check: ensure prospect belongs to this agent
-  if (!prospect || prospect.agentId !== session.agentId) {
+  // Security check: ensure prospect belongs to this agent, is unassigned, OR shared with edit permission
+  const isOwner = prospect?.agentId === session.agentId || prospect?.agentId === null;
+  const hasEditAccess = prospect?.sharedWith.some(
+    s => s.sharedWithAgentId === session.agentId && s.canEdit
+  );
+
+  if (!prospect || (!isOwner && !hasEditAccess)) {
     notFound();
   }
 
