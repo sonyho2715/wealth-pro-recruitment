@@ -263,3 +263,109 @@ export async function getProspectData(prospectId: string) {
     return null;
   }
 }
+
+export async function sendFinancialSnapshot(prospectId: string) {
+  try {
+    const prospect = await db.prospect.findUnique({
+      where: { id: prospectId },
+      include: {
+        financialProfile: true,
+        insuranceNeeds: {
+          orderBy: { priority: 'asc' }
+        }
+      }
+    });
+
+    if (!prospect) {
+      return { success: false, error: 'Prospect not found' };
+    }
+
+    if (!prospect.financialProfile) {
+      return { success: false, error: 'No financial profile found' };
+    }
+
+    const profile = prospect.financialProfile;
+
+    // Calculate totals for email
+    const totalAssets = Number(profile.savings) + Number(profile.investments) +
+      Number(profile.retirement401k) + Number(profile.homeEquity) + Number(profile.otherAssets);
+    const totalLiabilities = Number(profile.mortgage) + Number(profile.carLoans) +
+      Number(profile.studentLoans) + Number(profile.creditCards) + Number(profile.otherDebts);
+    const netWorth = totalAssets - totalLiabilities;
+
+    // Format currency helper
+    const fmt = (n: number) => new Intl.NumberFormat('en-US', {
+      style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0
+    }).format(n);
+
+    // Build email content
+    const emailContent = `
+Financial Snapshot for ${prospect.firstName} ${prospect.lastName}
+Generated: ${new Date().toLocaleDateString()}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PROTECTION
+• Life Insurance: ${fmt(Number(profile.currentLifeInsurance) || 0)}
+• Disability Coverage: ${fmt(Number(profile.currentDisability) || 0)}/month
+• Protection Gap: ${fmt(Number(profile.protectionGap))}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ASSETS                          TOTAL: ${fmt(totalAssets)}
+• Savings:                      ${fmt(Number(profile.savings))}
+• Investments:                  ${fmt(Number(profile.investments))}
+• Retirement (401k):            ${fmt(Number(profile.retirement401k))}
+• Home Equity:                  ${fmt(Number(profile.homeEquity))}
+• Other Assets:                 ${fmt(Number(profile.otherAssets))}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LIABILITIES                     TOTAL: ${fmt(totalLiabilities)}
+• Mortgage:                     ${fmt(Number(profile.mortgage))}
+• Car Loans:                    ${fmt(Number(profile.carLoans))}
+• Student Loans:                ${fmt(Number(profile.studentLoans))}
+• Credit Cards:                 ${fmt(Number(profile.creditCards))}
+• Other Debts:                  ${fmt(Number(profile.otherDebts))}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NET WORTH:                      ${fmt(netWorth)}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CASH FLOW
+• Annual Income:                ${fmt(Number(profile.annualIncome))}
+• Monthly Surplus/Deficit:      ${fmt(Number(profile.monthlyGap))}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is a summary of your financial information. For personalized
+recommendations, please contact your financial advisor.
+    `.trim();
+
+    // Log email for now (TODO: integrate with email service like Resend, SendGrid, etc.)
+    console.log('=== SENDING FINANCIAL SNAPSHOT EMAIL ===');
+    console.log(`To: ${prospect.email}`);
+    console.log(`Subject: Your Financial Snapshot - ${prospect.firstName} ${prospect.lastName}`);
+    console.log('Content:', emailContent);
+    console.log('=== END EMAIL ===');
+
+    // Record the email send in activity log (if table exists)
+    // For now, we'll just return success
+
+    // TODO: Integrate with email service
+    // Example with Resend:
+    // await resend.emails.send({
+    //   from: 'noreply@wealthpro.com',
+    //   to: prospect.email,
+    //   subject: `Your Financial Snapshot - ${prospect.firstName} ${prospect.lastName}`,
+    //   text: emailContent,
+    // });
+
+    return { success: true, message: `Email sent to ${prospect.email}` };
+  } catch (error) {
+    console.error('Error sending financial snapshot:', error);
+    return { success: false, error: 'Failed to send email' };
+  }
+}

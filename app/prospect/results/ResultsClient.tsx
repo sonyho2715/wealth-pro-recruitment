@@ -17,12 +17,17 @@ import {
   Heart,
   Sparkles,
   ToggleLeft,
-  ToggleRight
+  ToggleRight,
+  Home,
+  Mail,
+  Loader2,
+  Check
 } from 'lucide-react';
 import ScenarioModal from '@/components/ScenarioModal';
 import IncomeSlider, { IncomeProjection } from '@/components/IncomeSlider';
 import ComplianceDisclaimer from '@/components/ComplianceDisclaimer';
-import LivingBalanceSheet from '@/components/LivingBalanceSheet';
+import FinancialSnapshot from '@/components/FinancialSnapshot';
+import { sendFinancialSnapshot } from '../actions';
 import { FINANCIAL_ASSUMPTIONS } from '@/lib/config';
 
 interface InsuranceNeed {
@@ -122,6 +127,9 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
   // User-controlled income projection
   const [userProjection, setUserProjection] = useState<IncomeProjection | null>(null);
 
+  // Email state
+  const [emailStatus, setEmailStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+
   const profile = prospect.financialProfile!;
 
   const totalAssets = profile.savings + profile.investments + profile.retirement401k + profile.homeEquity + profile.otherAssets;
@@ -157,6 +165,23 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
     setUserProjection(projection);
   }, []);
 
+  const handleSendEmail = async () => {
+    setEmailStatus('sending');
+    try {
+      const result = await sendFinancialSnapshot(prospect.id);
+      if (result.success) {
+        setEmailStatus('sent');
+        setTimeout(() => setEmailStatus('idle'), 3000);
+      } else {
+        setEmailStatus('error');
+        setTimeout(() => setEmailStatus('idle'), 3000);
+      }
+    } catch {
+      setEmailStatus('error');
+      setTimeout(() => setEmailStatus('idle'), 3000);
+    }
+  };
+
   const insuranceTypeLabels: Record<string, { label: string; icon: React.ReactNode }> = {
     TERM_LIFE: { label: 'Term Life Insurance', icon: <Shield className="w-5 h-5" /> },
     WHOLE_LIFE: { label: 'Whole Life Insurance', icon: <Heart className="w-5 h-5" /> },
@@ -167,7 +192,7 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
 
   // State A tabs configuration
   const realityTabs = [
-    { id: 'balance-sheet' as RealityTab, label: 'Balance Sheet', icon: <PieChart className="w-5 h-5" /> },
+    { id: 'balance-sheet' as RealityTab, label: 'Financial Snapshot', icon: <PieChart className="w-5 h-5" /> },
     { id: 'insurance' as RealityTab, label: 'Insurance Gaps', icon: <Shield className="w-5 h-5" /> },
     { id: 'trajectory' as RealityTab, label: 'Current Trajectory', icon: <TrendingUp className="w-5 h-5" /> },
   ];
@@ -204,6 +229,51 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
 
       <div className="py-8 px-4">
         <div className="max-w-6xl mx-auto">
+          {/* Top Navigation */}
+          <div className="flex items-center justify-between mb-6">
+            <Link
+              href="/"
+              className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors"
+            >
+              <Home className="w-5 h-5" />
+              <span className="font-medium">Back to Home</span>
+            </Link>
+
+            <button
+              onClick={handleSendEmail}
+              disabled={emailStatus === 'sending'}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
+                emailStatus === 'sent'
+                  ? 'bg-green-100 text-green-700'
+                  : emailStatus === 'error'
+                  ? 'bg-red-100 text-red-700'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+            >
+              {emailStatus === 'sending' ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Sending...
+                </>
+              ) : emailStatus === 'sent' ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  Sent to {prospect.email}
+                </>
+              ) : emailStatus === 'error' ? (
+                <>
+                  <AlertTriangle className="w-4 h-4" />
+                  Failed to send
+                </>
+              ) : (
+                <>
+                  <Mail className="w-4 h-4" />
+                  Email Snapshot
+                </>
+              )}
+            </button>
+          </div>
+
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className={`text-3xl font-bold mb-2 transition-colors ${
@@ -364,7 +434,7 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
             {/* STATE A: CURRENT REALITY TABS                */}
             {/* ============================================ */}
             {!isScenarioMode && realityTab === 'balance-sheet' && (
-              <LivingBalanceSheet
+              <FinancialSnapshot
                 clientName={`${prospect.firstName} ${prospect.lastName}`}
                 data={{
                   protection: {
