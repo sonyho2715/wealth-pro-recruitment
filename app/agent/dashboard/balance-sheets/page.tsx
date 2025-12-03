@@ -16,9 +16,14 @@ export default async function BalanceSheetsPage() {
   const session = await getSession();
   if (!session.agentId) redirect('/agent/login');
 
-  // Fetch all prospects with financial profiles (only this agent's)
+  // Fetch all prospects with financial profiles (this agent's OR unassigned)
   const prospects = await db.prospect.findMany({
-    where: { agentId: session.agentId },
+    where: {
+      OR: [
+        { agentId: session.agentId },
+        { agentId: null }
+      ]
+    },
     include: {
       financialProfile: true,
       insuranceNeeds: true,
