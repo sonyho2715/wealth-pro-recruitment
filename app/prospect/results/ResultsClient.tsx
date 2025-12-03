@@ -14,13 +14,6 @@ import {
   Clock,
   ChevronDown,
   ChevronUp,
-  Briefcase,
-  Target,
-  Wallet,
-  CreditCard,
-  Home,
-  Car,
-  GraduationCap,
   Heart,
   Sparkles,
   ToggleLeft,
@@ -29,6 +22,7 @@ import {
 import ScenarioModal from '@/components/ScenarioModal';
 import IncomeSlider, { IncomeProjection } from '@/components/IncomeSlider';
 import ComplianceDisclaimer from '@/components/ComplianceDisclaimer';
+import LivingBalanceSheet from '@/components/LivingBalanceSheet';
 
 interface InsuranceNeed {
   id: string;
@@ -368,86 +362,40 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
             {/* STATE A: CURRENT REALITY TABS                */}
             {/* ============================================ */}
             {!isScenarioMode && realityTab === 'balance-sheet' && (
-              <div>
-                <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                  <PieChart className="w-6 h-6 text-slate-600" />
-                  Personal Balance Sheet
-                </h2>
-
-                <div className="grid md:grid-cols-2 gap-8">
-                  {/* Assets */}
-                  <div>
-                    <h3 className="font-semibold text-green-700 mb-4 flex items-center gap-2">
-                      <Wallet className="w-5 h-5" />
-                      Assets
-                    </h3>
-                    <div className="space-y-3">
-                      {[
-                        { label: 'Savings', value: profile.savings, icon: <DollarSign className="w-4 h-4" /> },
-                        { label: 'Investments', value: profile.investments, icon: <TrendingUp className="w-4 h-4" /> },
-                        { label: 'Retirement (401k/IRA)', value: profile.retirement401k, icon: <Target className="w-4 h-4" /> },
-                        { label: 'Home Equity', value: profile.homeEquity, icon: <Home className="w-4 h-4" /> },
-                        { label: 'Other Assets', value: profile.otherAssets, icon: <Wallet className="w-4 h-4" /> },
-                      ].map(item => (
-                        <div key={item.label} className="flex items-center justify-between py-2 border-b border-slate-100">
-                          <span className="flex items-center gap-2 text-slate-700">
-                            {item.icon}
-                            {item.label}
-                          </span>
-                          <span className="font-medium text-green-600">${item.value.toLocaleString()}</span>
-                        </div>
-                      ))}
-                      <div className="flex items-center justify-between py-3 bg-green-50 rounded-lg px-3 mt-4">
-                        <span className="font-bold text-green-800">Total Assets</span>
-                        <span className="font-bold text-green-600 text-lg">${totalAssets.toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Liabilities */}
-                  <div>
-                    <h3 className="font-semibold text-red-700 mb-4 flex items-center gap-2">
-                      <CreditCard className="w-5 h-5" />
-                      Liabilities
-                    </h3>
-                    <div className="space-y-3">
-                      {[
-                        { label: 'Mortgage', value: profile.mortgage, icon: <Home className="w-4 h-4" /> },
-                        { label: 'Car Loans', value: profile.carLoans, icon: <Car className="w-4 h-4" /> },
-                        { label: 'Student Loans', value: profile.studentLoans, icon: <GraduationCap className="w-4 h-4" /> },
-                        { label: 'Credit Cards', value: profile.creditCards, icon: <CreditCard className="w-4 h-4" /> },
-                        { label: 'Other Debts', value: profile.otherDebts, icon: <CreditCard className="w-4 h-4" /> },
-                      ].map(item => (
-                        <div key={item.label} className="flex items-center justify-between py-2 border-b border-slate-100">
-                          <span className="flex items-center gap-2 text-slate-700">
-                            {item.icon}
-                            {item.label}
-                          </span>
-                          <span className="font-medium text-red-600">${item.value.toLocaleString()}</span>
-                        </div>
-                      ))}
-                      <div className="flex items-center justify-between py-3 bg-red-50 rounded-lg px-3 mt-4">
-                        <span className="font-bold text-red-800">Total Liabilities</span>
-                        <span className="font-bold text-red-600 text-lg">${totalLiabilities.toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Net Worth Summary */}
-                <div className="mt-8 bg-gradient-to-r from-slate-700 to-slate-800 rounded-xl p-6 text-white">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div>
-                      <div className="text-slate-300 mb-1">Your Net Worth</div>
-                      <div className="text-4xl font-bold">${profile.netWorth.toLocaleString()}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-slate-300 mb-1">Annual Income</div>
-                      <div className="text-2xl font-semibold">${totalIncome.toLocaleString()}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <LivingBalanceSheet
+                clientName={`${prospect.firstName} ${prospect.lastName}`}
+                data={{
+                  protection: {
+                    liability: 0,
+                    disabilityMonthly: profile.currentDisability || 0,
+                    hospitalDaily: 0,
+                    hasWill: false,
+                    hasTrust: false,
+                    lifeInsuranceClient: profile.currentLifeInsurance || 0,
+                    lifeInsuranceSpouse: 0,
+                  },
+                  assets: {
+                    personalProperty: profile.otherAssets,
+                    savings: profile.savings,
+                    investments: profile.investments,
+                    retirement: profile.retirement401k,
+                    realEstate: profile.homeEquity,
+                    business: 0,
+                  },
+                  liabilities: {
+                    shortTerm: profile.creditCards + profile.carLoans,
+                    taxes: 0,
+                    mortgages: profile.mortgage,
+                    businessDebt: profile.studentLoans + profile.otherDebts,
+                  },
+                  cashFlow: {
+                    annualIncome: totalIncome,
+                    insuranceCosts: 0,
+                    annualSavings: profile.monthlyGap > 0 ? profile.monthlyGap * 12 : 0,
+                    debtAndTaxCosts: profile.debtPayments * 12,
+                  },
+                }}
+              />
             )}
 
             {!isScenarioMode && realityTab === 'insurance' && (
