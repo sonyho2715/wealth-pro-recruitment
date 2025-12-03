@@ -8,9 +8,14 @@ export default async function ProspectsPage() {
   if (!session.agentId) redirect('/agent/login');
 
   try {
-    // Fetch all prospects for this agent with related data
+    // Fetch all prospects for this agent OR unassigned (self-registered)
     const prospectsData = await db.prospect.findMany({
-      where: { agentId: session.agentId },
+      where: {
+        OR: [
+          { agentId: session.agentId },
+          { agentId: null }
+        ]
+      },
       include: {
         financialProfile: true,
         agentProjection: true,

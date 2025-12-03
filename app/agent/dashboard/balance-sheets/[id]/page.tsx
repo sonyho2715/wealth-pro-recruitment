@@ -28,8 +28,8 @@ export default async function BalanceSheetDetailPage({ params }: PageProps) {
     },
   });
 
-  // Security check: ensure prospect belongs to this agent
-  if (!prospect || prospect.agentId !== session.agentId) {
+  // Security check: ensure prospect belongs to this agent OR is unassigned
+  if (!prospect || (prospect.agentId !== null && prospect.agentId !== session.agentId)) {
     notFound();
   }
 

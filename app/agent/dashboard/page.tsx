@@ -22,9 +22,15 @@ export default async function DashboardOverviewPage() {
 
   try {
     // Fetch all data for overview
+    // Show prospects assigned to this agent OR unassigned (self-registered)
     const [prospects, activities, commissions] = await Promise.all([
       db.prospect.findMany({
-        where: { agentId: session.agentId },
+        where: {
+          OR: [
+            { agentId: session.agentId },
+            { agentId: null }
+          ]
+        },
         include: {
           financialProfile: true,
           agentProjection: true,
