@@ -16,7 +16,7 @@ export default async function BalanceSheetDetailPage({ params }: PageProps) {
 
   const { id } = await params;
 
-  // Fetch prospect with all related data - only if owned by this agent
+  // Fetch prospect with all related data
   const prospect = await db.prospect.findUnique({
     where: { id },
     include: {
@@ -25,11 +25,15 @@ export default async function BalanceSheetDetailPage({ params }: PageProps) {
         orderBy: { priority: 'asc' },
       },
       agentProjection: true,
+      sharedWith: true,
     },
   });
 
-  // Security check: ensure prospect belongs to this agent OR is unassigned
-  if (!prospect || (prospect.agentId !== null && prospect.agentId !== session.agentId)) {
+  // Security check: ensure prospect belongs to this agent, is unassigned, OR is shared with them
+  const isOwner = prospect?.agentId === session.agentId || prospect?.agentId === null;
+  const hasSharedAccess = prospect?.sharedWith.some(s => s.sharedWithAgentId === session.agentId);
+
+  if (!prospect || (!isOwner && !hasSharedAccess)) {
     notFound();
   }
 

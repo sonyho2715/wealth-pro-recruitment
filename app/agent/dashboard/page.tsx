@@ -13,7 +13,9 @@ import {
   Calendar,
   ArrowRight,
   Phone,
-  Mail
+  Mail,
+  Share2,
+  Link2
 } from 'lucide-react';
 
 export default async function DashboardOverviewPage() {
@@ -22,8 +24,8 @@ export default async function DashboardOverviewPage() {
 
   try {
     // Fetch all data for overview
-    // Show prospects assigned to this agent OR unassigned (self-registered)
-    const [prospects, activities, commissions] = await Promise.all([
+    // Show prospects: owned by agent, unassigned, or shared with agent
+    const [prospects, sharedProspects, activities, commissions] = await Promise.all([
       db.prospect.findMany({
         where: {
           OR: [
@@ -34,8 +36,24 @@ export default async function DashboardOverviewPage() {
         include: {
           financialProfile: true,
           agentProjection: true,
+          sharedWith: true,
         },
         orderBy: { createdAt: 'desc' },
+      }),
+      // Get prospects shared with this agent
+      db.prospectShare.findMany({
+        where: { sharedWithAgentId: session.agentId },
+        include: {
+          prospect: {
+            include: {
+              financialProfile: true,
+              agentProjection: true,
+            }
+          },
+          sharedByAgent: {
+            select: { firstName: true, lastName: true }
+          }
+        }
       }),
       db.activity.findMany({
         where: { agentId: session.agentId },
@@ -50,14 +68,22 @@ export default async function DashboardOverviewPage() {
       }),
     ]);
 
+  // Combine own prospects with shared prospects (avoiding duplicates)
+  const sharedProspectIds = new Set(sharedProspects.map(sp => sp.prospect.id));
+  const allProspects = [
+    ...prospects,
+    ...sharedProspects.map(sp => sp.prospect).filter(p => !prospects.some(op => op.id === p.id))
+  ];
+
   // Calculate stats
   const totalProspects = prospects.length;
-  const qualified = prospects.filter(p => p.status !== 'LEAD' && p.status !== 'INACTIVE').length;
-  const totalProtectionGap = prospects.reduce(
+  const sharedWithMeCount = sharedProspects.length;
+  const qualified = allProspects.filter(p => p.status !== 'LEAD' && p.status !== 'INACTIVE').length;
+  const totalProtectionGap = allProspects.reduce(
     (sum, p) => sum + Number(p.financialProfile?.protectionGap || 0),
     0
   );
-  const agentProspects = prospects.filter(p => p.status === 'AGENT_PROSPECT').length;
+  const agentProspects = allProspects.filter(p => p.status === 'AGENT_PROSPECT').length;
   const pendingCommissions = commissions
     .filter(c => c.status === 'PENDING')
     .reduce((sum, c) => sum + Number(c.amount), 0);
@@ -91,7 +117,7 @@ export default async function DashboardOverviewPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         <div className="card-gradient">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -99,7 +125,19 @@ export default async function DashboardOverviewPage() {
             </div>
             <div>
               <div className="text-3xl font-bold text-gray-900">{totalProspects}</div>
-              <div className="text-sm text-gray-600">Total Prospects</div>
+              <div className="text-sm text-gray-600">My Prospects</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card-gradient">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center">
+              <Share2 className="w-6 h-6 text-cyan-600" />
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-gray-900">{sharedWithMeCount}</div>
+              <div className="text-sm text-gray-600">Shared With Me</div>
             </div>
           </div>
         </div>

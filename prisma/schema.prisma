@@ -15,10 +15,16 @@ model Prospect {
   lastName  String
   phone     String?
   status    ProspectStatus @default(LEAD)
+  stage     ProspectStage  @default(NEW)
 
   // Agent ownership (optional - prospects can self-register)
   agentId   String?
   agent     Agent?   @relation(fields: [agentId], references: [id], onDelete: SetNull)
+
+  // Referral tracking
+  referredByAgentId String?
+  referredByAgent   Agent?   @relation("ReferredProspects", fields: [referredByAgentId], references: [id], onDelete: SetNull)
+  referralSource    String?  // e.g., "link", "manual", "website"
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -32,8 +38,10 @@ model Prospect {
   activities       Activity[]
   commissions      Commission[]
   documents        Document[]
+  sharedWith       ProspectShare[]
 
   @@index([agentId])
+  @@index([referredByAgentId])
 }
 
 enum ProspectStatus {
@@ -43,6 +51,45 @@ enum ProspectStatus {
   AGENT_PROSPECT
   LICENSED_AGENT
   INACTIVE
+}
+
+// Pipeline stages for tracking progress
+enum ProspectStage {
+  NEW              // Just added
+  CONTACTED        // Initial contact made
+  MEETING_SCHEDULED // Meeting booked
+  NEEDS_ANALYSIS   // Financial analysis in progress
+  PROPOSAL_SENT    // Proposal/recommendation sent
+  NEGOTIATION      // Discussing terms
+  CLOSED_WON       // Successfully converted
+  CLOSED_LOST      // Did not convert
+}
+
+// Prospect sharing between agents
+model ProspectShare {
+  id           String   @id @default(cuid())
+  prospectId   String
+  prospect     Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+
+  // Agent who shared
+  sharedByAgentId String
+  sharedByAgent   Agent  @relation("SharedByAgent", fields: [sharedByAgentId], references: [id], onDelete: Cascade)
+
+  // Agent receiving access
+  sharedWithAgentId String
+  sharedWithAgent   Agent  @relation("SharedWithAgent", fields: [sharedWithAgentId], references: [id], onDelete: Cascade)
+
+  // Permissions
+  canEdit      Boolean @default(false)
+  canViewOnly  Boolean @default(true)
+
+  // Metadata
+  note         String?
+  sharedAt     DateTime @default(now())
+
+  @@unique([prospectId, sharedWithAgentId])
+  @@index([sharedByAgentId])
+  @@index([sharedWithAgentId])
 }
 
 // Financial intake data
@@ -210,21 +257,28 @@ model Agent {
   licenseDate  DateTime?
   monthlyGoal  Decimal? @db.Decimal(12, 2)
 
+  // Referral system (generated on first access if null)
+  referralCode String? @unique
+
   // Team hierarchy
   uplineId     String?
   upline       Agent?   @relation("AgentHierarchy", fields: [uplineId], references: [id])
   downlines    Agent[]  @relation("AgentHierarchy")
 
   // Relations
-  prospects    Prospect[]
-  activities   Activity[]
-  commissions  Commission[]
-  documents    Document[]
+  prospects         Prospect[]
+  referredProspects Prospect[] @relation("ReferredProspects")
+  activities        Activity[]
+  commissions       Commission[]
+  documents         Document[]
+  sharedByMe        ProspectShare[] @relation("SharedByAgent")
+  sharedWithMe      ProspectShare[] @relation("SharedWithAgent")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([uplineId])
+  @@index([referralCode])
 }
 
 enum AgentRole {
