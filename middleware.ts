@@ -33,11 +33,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Redirect to dashboard if accessing auth routes with valid session
-  const isAuthRoute = authRoutes.some(route => pathname === route);
-  if (isAuthRoute && hasSession) {
-    return NextResponse.redirect(new URL('/agent/dashboard', request.url));
-  }
+  // Note: We don't redirect from auth routes here because the session cookie
+  // existing doesn't mean it's valid. The pages themselves will handle the
+  // redirect if the user is already authenticated with a valid session.
 
   return NextResponse.next();
 }
