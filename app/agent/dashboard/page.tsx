@@ -22,7 +22,12 @@ import {
   UserPlus,
   FileCheck,
   Star,
-  Trophy
+  Trophy,
+  Lightbulb,
+  Sparkles,
+  Zap,
+  MessageSquare,
+  ClipboardList
 } from 'lucide-react';
 
 export default async function DashboardOverviewPage() {
@@ -255,6 +260,207 @@ export default async function DashboardOverviewPage() {
           <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
           <p className="text-gray-600">Welcome back, {agent.firstName}! Here's your performance snapshot.</p>
         </div>
+
+        {/* What to Do Today - Smart Suggestions */}
+        {(() => {
+          // Generate smart suggestions based on performance data
+          const suggestions: Array<{
+            id: string;
+            priority: 'high' | 'medium' | 'low';
+            icon: React.ReactNode;
+            title: string;
+            description: string;
+            action: string;
+            href: string;
+            color: string;
+          }> = [];
+
+          // High Priority: No production this month
+          if (mtdPoints === 0) {
+            suggestions.push({
+              id: 'no-production',
+              priority: 'high',
+              icon: <Zap className="w-5 h-5" />,
+              title: 'Write your first case this month',
+              description: 'You haven\'t logged any production in ' + new Date().toLocaleString('default', { month: 'long' }) + ' yet.',
+              action: 'Log Production',
+              href: '/agent/dashboard/production',
+              color: 'from-red-500 to-orange-500',
+            });
+          }
+
+          // High Priority: Upcoming BPM with low invites
+          const bpmNeedingInvites = upcomingBPMs.find(b => b.guests.length < b.inviteGoal);
+          if (bpmNeedingInvites) {
+            const remaining = bpmNeedingInvites.inviteGoal - bpmNeedingInvites.guests.length;
+            suggestions.push({
+              id: 'bpm-invites',
+              priority: 'high',
+              icon: <CalendarCheck className="w-5 h-5" />,
+              title: `Invite ${remaining} more guests to BPM`,
+              description: `"${bpmNeedingInvites.name}" needs ${remaining} more invites to hit goal.`,
+              action: 'Manage Event',
+              href: `/agent/dashboard/events/${bpmNeedingInvites.id}`,
+              color: 'from-purple-500 to-indigo-500',
+            });
+          }
+
+          // Medium Priority: Recruits with incomplete Fast Start milestones
+          const recruitsNeedingAttention = myRecruits.filter(r =>
+            r.status === 'ACTIVE' &&
+            (!r.meetSpouse || !r.submitLic || !r.prospectList || !r.threeThreeThirty)
+          );
+          if (recruitsNeedingAttention.length > 0) {
+            const recruit = recruitsNeedingAttention[0];
+            const missingSteps = [];
+            if (!recruit.meetSpouse) missingSteps.push('Meet Spouse');
+            if (!recruit.submitLic) missingSteps.push('Submit License');
+            if (!recruit.prospectList) missingSteps.push('Prospect List');
+            if (!recruit.threeThreeThirty) missingSteps.push('3-3-30');
+
+            suggestions.push({
+              id: 'recruit-followup',
+              priority: 'medium',
+              icon: <UserPlus className="w-5 h-5" />,
+              title: `Follow up with ${recruit.firstName}`,
+              description: `Missing: ${missingSteps.slice(0, 2).join(', ')}${missingSteps.length > 2 ? ` +${missingSteps.length - 2} more` : ''}`,
+              action: 'View Recruits',
+              href: '/agent/dashboard/recruits',
+              color: 'from-green-500 to-emerald-500',
+            });
+          }
+
+          // Medium Priority: No upcoming activities scheduled
+          if (upcomingActivities.length === 0) {
+            suggestions.push({
+              id: 'schedule-activity',
+              priority: 'medium',
+              icon: <Calendar className="w-5 h-5" />,
+              title: 'Schedule your next activity',
+              description: 'You have no upcoming appointments or follow-ups scheduled.',
+              action: 'Schedule Now',
+              href: '/agent/dashboard/activities',
+              color: 'from-blue-500 to-cyan-500',
+            });
+          }
+
+          // Medium Priority: Prospects needing follow-up (in early stages)
+          const prospectsNeedingFollowUp = allProspects.filter(p =>
+            p.stage === 'NEW' || p.stage === 'CONTACTED'
+          ).length;
+          if (prospectsNeedingFollowUp > 0) {
+            suggestions.push({
+              id: 'prospect-followup',
+              priority: 'medium',
+              icon: <MessageSquare className="w-5 h-5" />,
+              title: `${prospectsNeedingFollowUp} prospects need follow-up`,
+              description: 'Move prospects through your pipeline with consistent follow-ups.',
+              action: 'View Prospects',
+              href: '/agent/dashboard/prospects',
+              color: 'from-amber-500 to-yellow-500',
+            });
+          }
+
+          // Low Priority: Low BPM attendance rate
+          if (attendanceRate < 50 && totalGuests > 0) {
+            suggestions.push({
+              id: 'improve-attendance',
+              priority: 'low',
+              icon: <Target className="w-5 h-5" />,
+              title: 'Improve BPM attendance rate',
+              description: `Current rate is ${attendanceRate}%. Confirm guests 24-48 hours before events.`,
+              action: 'View Events',
+              href: '/agent/dashboard/events',
+              color: 'from-pink-500 to-rose-500',
+            });
+          }
+
+          // Low Priority: Rank improvement opportunity
+          if (myRank > 1 && leaderboardData.length > 1) {
+            const nextRank = leaderboardData[myRank - 2];
+            if (nextRank) {
+              const pointsToNextRank = nextRank.totalPoints - ytdPoints;
+              if (pointsToNextRank > 0 && pointsToNextRank < 1000) {
+                suggestions.push({
+                  id: 'rank-up',
+                  priority: 'low',
+                  icon: <Trophy className="w-5 h-5" />,
+                  title: `${pointsToNextRank.toLocaleString()} points to rank #${myRank - 1}`,
+                  description: `You're close to overtaking ${nextRank.name} on the leaderboard!`,
+                  action: 'Log Production',
+                  href: '/agent/dashboard/production',
+                  color: 'from-amber-400 to-orange-400',
+                });
+              }
+            }
+          }
+
+          // Low Priority: Pending commissions to review
+          if (pendingCommissions > 0) {
+            suggestions.push({
+              id: 'pending-commissions',
+              priority: 'low',
+              icon: <DollarSign className="w-5 h-5" />,
+              title: 'Review pending commissions',
+              description: `You have $${pendingCommissions.toLocaleString()} in pending commissions.`,
+              action: 'View Commissions',
+              href: '/agent/dashboard/commissions',
+              color: 'from-emerald-400 to-green-400',
+            });
+          }
+
+          // Sort by priority
+          const priorityOrder = { high: 0, medium: 1, low: 2 };
+          suggestions.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+
+          // Take top 3 suggestions
+          const topSuggestions = suggestions.slice(0, 3);
+
+          if (topSuggestions.length === 0) {
+            return null;
+          }
+
+          return (
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Lightbulb className="w-5 h-5 text-amber-500" /> What to Do Today
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {topSuggestions.map((suggestion, index) => (
+                  <Link
+                    key={suggestion.id}
+                    href={suggestion.href}
+                    className="group relative overflow-hidden rounded-2xl bg-white border border-gray-200 p-4 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  >
+                    {/* Priority indicator */}
+                    {suggestion.priority === 'high' && (
+                      <div className="absolute top-0 right-0 px-2 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-bl-lg">
+                        Priority
+                      </div>
+                    )}
+
+                    {/* Gradient icon background */}
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${suggestion.color} flex items-center justify-center text-white mb-3 group-hover:scale-110 transition-transform`}>
+                      {suggestion.icon}
+                    </div>
+
+                    <h3 className="font-semibold text-gray-900 mb-1 pr-12">
+                      {suggestion.title}
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-3 line-clamp-2">
+                      {suggestion.description}
+                    </p>
+
+                    <span className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 group-hover:text-blue-700">
+                      {suggestion.action}
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Production KPIs - BSCpro Style */}
         <div className="mb-8">
