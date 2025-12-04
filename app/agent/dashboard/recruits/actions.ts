@@ -44,6 +44,7 @@ export async function createRecruit(formData: FormData) {
       },
     });
 
+    revalidatePath('/agent/dashboard');
     revalidatePath('/agent/dashboard/recruits');
     return { success: true, data: recruit };
   } catch (error) {
@@ -82,6 +83,7 @@ export async function updateRecruit(id: string, formData: FormData) {
       },
     });
 
+    revalidatePath('/agent/dashboard');
     revalidatePath('/agent/dashboard/recruits');
     return { success: true, data: recruit };
   } catch (error) {
@@ -96,6 +98,7 @@ export async function deleteRecruit(id: string) {
 
   try {
     await db.recruit.delete({ where: { id } });
+    revalidatePath('/agent/dashboard');
     revalidatePath('/agent/dashboard/recruits');
     return { success: true };
   } catch (error) {
@@ -137,6 +140,7 @@ export async function updateMilestone(
       data: updateData,
     });
 
+    revalidatePath('/agent/dashboard');
     revalidatePath('/agent/dashboard/recruits');
     return { success: true, data: recruit };
   } catch (error) {
@@ -167,6 +171,7 @@ export async function updateLicensingProgress(
       data: updates as any,
     });
 
+    revalidatePath('/agent/dashboard');
     revalidatePath('/agent/dashboard/recruits');
     revalidatePath('/agent/dashboard/licensing');
     return { success: true, data: recruit };
@@ -186,6 +191,7 @@ export async function updateRecruitStatus(id: string, status: string) {
       data: { status: status as any },
     });
 
+    revalidatePath('/agent/dashboard');
     revalidatePath('/agent/dashboard/recruits');
     return { success: true, data: recruit };
   } catch (error) {

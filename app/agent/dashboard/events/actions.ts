@@ -41,6 +41,7 @@ export async function createBPM(formData: FormData) {
       },
     });
 
+    revalidatePath('/agent/dashboard');
     revalidatePath('/agent/dashboard/events');
     return { success: true, data: bpm };
   } catch (error) {
@@ -79,6 +80,7 @@ export async function updateBPM(id: string, formData: FormData) {
       },
     });
 
+    revalidatePath('/agent/dashboard');
     revalidatePath('/agent/dashboard/events');
     revalidatePath(`/agent/dashboard/events/${id}`);
     return { success: true, data: bpm };
@@ -94,6 +96,7 @@ export async function deleteBPM(id: string) {
 
   try {
     await db.bPM.delete({ where: { id } });
+    revalidatePath('/agent/dashboard');
     revalidatePath('/agent/dashboard/events');
     return { success: true };
   } catch (error) {
@@ -125,6 +128,7 @@ export async function addGuest(bpmId: string, formData: FormData) {
       },
     });
 
+    revalidatePath('/agent/dashboard');
     revalidatePath('/agent/dashboard/events');
     revalidatePath(`/agent/dashboard/events/${bpmId}`);
     return { success: true, data: guest };
@@ -158,6 +162,7 @@ export async function updateGuestStatus(
       data: updates as any,
     });
 
+    revalidatePath('/agent/dashboard');
     revalidatePath('/agent/dashboard/events');
     return { success: true, data: guest };
   } catch (error) {
@@ -180,6 +185,7 @@ export async function checkInGuest(guestId: string) {
       },
     });
 
+    revalidatePath('/agent/dashboard');
     revalidatePath('/agent/dashboard/events');
     return { success: true, data: guest };
   } catch (error) {
@@ -203,6 +209,7 @@ export async function deleteGuest(guestId: string) {
     if (guest) {
       revalidatePath(`/agent/dashboard/events/${guest.bpmId}`);
     }
+    revalidatePath('/agent/dashboard');
     revalidatePath('/agent/dashboard/events');
     return { success: true };
   } catch (error) {
@@ -221,6 +228,7 @@ export async function updateBPMStatus(id: string, status: string) {
       data: { status: status as any },
     });
 
+    revalidatePath('/agent/dashboard');
     revalidatePath('/agent/dashboard/events');
     revalidatePath(`/agent/dashboard/events/${id}`);
     return { success: true, data: bpm };

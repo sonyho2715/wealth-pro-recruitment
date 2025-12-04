@@ -61,6 +61,7 @@ export async function createProduction(formData: FormData) {
       },
     });
 
+    revalidatePath('/agent/dashboard');
     revalidatePath('/agent/dashboard/production');
     return { success: true, data: production };
   } catch (error) {
@@ -119,6 +120,7 @@ export async function updateProduction(id: string, formData: FormData) {
       },
     });
 
+    revalidatePath('/agent/dashboard');
     revalidatePath('/agent/dashboard/production');
     return { success: true, data: production };
   } catch (error) {
@@ -133,6 +135,7 @@ export async function deleteProduction(id: string) {
 
   try {
     await db.production.delete({ where: { id } });
+    revalidatePath('/agent/dashboard');
     revalidatePath('/agent/dashboard/production');
     return { success: true };
   } catch (error) {
@@ -151,6 +154,7 @@ export async function updateProductionStatus(id: string, status: string) {
       data: { status: status as any },
     });
 
+    revalidatePath('/agent/dashboard');
     revalidatePath('/agent/dashboard/production');
     return { success: true, data: production };
   } catch (error) {
