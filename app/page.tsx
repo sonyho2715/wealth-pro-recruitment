@@ -86,13 +86,8 @@ export default function HomePage() {
                 </span>
               </h1>
 
-              <p className="text-xl text-gray-600 mb-6">
-                Most families believe they're financially secure. Then life happens.
-                A single unexpected event reveals the gaps they never knew existed.
-              </p>
-              <p className="text-lg text-gray-500 mb-10">
-                <span className="font-medium text-gray-700">In just 10 minutes</span>, you'll discover exactly where you stand,
-                what's missing, and the precise steps to protect the people who matter most.
+              <p className="text-xl text-gray-600 mb-8">
+                Most families think they're covered. <span className="font-medium text-gray-700">In 10 minutes</span>, discover your gaps before life does.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
@@ -215,14 +210,10 @@ export default function HomePage() {
               <AlertTriangle className="w-4 h-4" />
               <span className="text-sm font-medium">The Uncomfortable Truth</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              What Most People Don't Realize<br />
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              What Most Don't Realize<br />
               <span className="text-blue-400">Until It's Too Late</span>
             </h2>
-            <p className="text-gray-400 max-w-3xl mx-auto text-lg">
-              You've worked hard. You've saved. You've done what you were told. But somewhere along the way,
-              the rules changed. And nobody sent you the memo.
-            </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-16">
@@ -231,21 +222,21 @@ export default function HomePage() {
                 icon: Eye,
                 stat: '78%',
                 title: 'Are Underinsured',
-                description: 'Nearly 8 out of 10 families have significant protection gaps they don\'t even know about. The question isn\'t if you have gaps. It\'s how big they are.',
+                description: 'Most families have gaps they don\'t know about.',
                 color: 'from-red-500 to-orange-500',
               },
               {
                 icon: Clock,
                 stat: '64%',
                 title: 'Will Outlive Savings',
-                description: 'The average person will exhaust their retirement savings years before they pass. Traditional planning assumes a world that no longer exists.',
+                description: 'Retirement funds run out before they do.',
                 color: 'from-amber-500 to-yellow-500',
               },
               {
                 icon: Brain,
                 stat: '91%',
-                title: 'Lack Financial Clarity',
-                description: 'Almost everyone is making major life decisions based on incomplete information. You can\'t optimize what you can\'t see.',
+                title: 'Lack Clarity',
+                description: 'Making decisions with incomplete info.',
                 color: 'from-purple-500 to-pink-500',
               },
             ].map((item, index) => (
@@ -260,19 +251,14 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-8 md:p-12">
-            <div className="max-w-3xl mx-auto text-center">
-              <Lightbulb className="w-12 h-12 text-yellow-400 mx-auto mb-6" />
-              <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
-                Here's What Changes Everything
+          <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-8">
+            <div className="max-w-2xl mx-auto text-center">
+              <Lightbulb className="w-10 h-10 text-yellow-400 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-white mb-3">
+                The Difference?
               </h3>
-              <p className="text-gray-300 text-lg mb-6">
-                The families who thrive aren't luckier. They simply <span className="text-blue-400 font-medium">see what others miss</span>.
-                They have a clear, honest picture of where they stand today, and a precise map to where they want to be.
-              </p>
-              <p className="text-gray-400">
-                When you can see your complete financial picture, something remarkable happens:
-                the path forward becomes obvious. Decisions become clear. Worry transforms into confidence.
+              <p className="text-gray-300">
+                Thriving families <span className="text-blue-400 font-medium">see what others miss</span>. Clarity turns worry into confidence.
               </p>
             </div>
           </div>
@@ -288,36 +274,30 @@ export default function HomePage() {
                 <Sparkles className="w-4 h-4" />
                 <span className="text-sm font-medium">Why Wealth Pro</span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                We Built the Tool We Wished<br />
-                <span className="text-blue-600">Someone Had Given Us</span>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Complete Financial Clarity<br />
+                <span className="text-blue-600">In 10 Minutes</span>
               </h2>
-              <p className="text-gray-600 text-lg mb-6">
-                After watching too many families discover their financial gaps at the worst possible moment,
-                we knew there had to be a better way. Not someday. <span className="font-medium">Now.</span>
-              </p>
-              <p className="text-gray-600 mb-8">
-                Wealth Pro isn't just another calculator. It's a complete financial clarity system that shows you
-                exactly where you stand, identifies what's missing, and maps out your path to genuine security.
-                All in the time it takes to drink your morning coffee.
+              <p className="text-gray-600 mb-6">
+                See where you stand, find what's missing, and get your path to security.
               </p>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {[
                   {
                     icon: Target,
-                    title: 'Precision Analysis',
-                    description: 'Not vague estimates. Exact numbers. Your real situation, clearly displayed.',
+                    title: 'Exact Numbers',
+                    description: 'Your real situation, clearly displayed.',
                   },
                   {
                     icon: Shield,
-                    title: 'Gap Identification',
-                    description: 'We find what\'s missing before life does. Protection gaps. Coverage shortfalls. Hidden risks.',
+                    title: 'Gap Detection',
+                    description: 'Find protection gaps before life does.',
                   },
                   {
                     icon: Compass,
-                    title: 'Clear Direction',
-                    description: 'Not 50 options that confuse you. The specific steps for your specific situation.',
+                    title: 'Clear Steps',
+                    description: 'Specific actions for your situation.',
                   },
                 ].map((item, index) => (
                   <div key={index} className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
@@ -410,12 +390,9 @@ export default function HomePage() {
       {/* Features Grid */}
       <section className="py-20 px-4 bg-gray-50">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Two Paths to Financial Clarity</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Whether you want to secure your family's future or build a career helping others do the same,
-              the journey starts with understanding where you truly stand.
-            </p>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Two Paths Forward</h2>
+            <p className="text-gray-600">Secure your family or build a career. Both start here.</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
@@ -465,11 +442,10 @@ export default function HomePage() {
 
               <ul className="space-y-3 mb-6">
                 {[
-                  'See your income potential (real numbers)',
-                  'Compare: your life with vs. without this path',
-                  'Discover how many years earlier you could retire',
-                  'Calculate your true wealth building trajectory',
-                  'Explore the training and mentorship provided'
+                  'See real income potential',
+                  'Compare your path with vs. without',
+                  'Retire years earlier',
+                  'Full training & mentorship'
                 ].map((item, index) => (
                   <li key={index} className="flex items-center gap-3 text-gray-700">
                     <CheckCircle2 className="w-5 h-5 text-purple-500 flex-shrink-0" />
@@ -508,17 +484,12 @@ export default function HomePage() {
       {/* Testimonials Section */}
       <section className="py-20 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-700 px-4 py-2 rounded-full mb-6">
-              <Heart className="w-4 h-4" />
-              <span className="text-sm font-medium">Real Stories, Real Results</span>
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              They Were Exactly Where You Are Now
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              Real Results
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-              The only difference? They took 10 minutes to see what they couldn't see before.
-              Here's what happened next.
+            <p className="text-gray-600">
+              10 minutes changed everything for them.
             </p>
           </div>
 
@@ -526,26 +497,26 @@ export default function HomePage() {
             {[
               {
                 name: 'Sarah & Michael',
-                role: 'Young Family, 2 Kids',
+                role: 'Young Family',
                 image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200',
-                quote: 'We thought we were doing fine. The review revealed a $500,000 protection gap we had no idea existed. For the first time, I actually sleep through the night knowing my kids are truly protected.',
-                highlight: '$500K gap discovered',
+                quote: 'We thought we were fine. The review revealed a $500K gap we had no idea existed. Now I sleep knowing my kids are protected.',
+                highlight: '$500K gap found',
                 rating: 5,
               },
               {
-                name: 'James Thompson',
-                role: 'Former Restaurant Manager',
+                name: 'James T.',
+                role: 'Former Manager',
                 image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200',
-                quote: 'I was working 60 hours a week and barely getting by. The career path they showed me seemed too good to be true. Three years later, I make more than I ever imagined, and I set my own schedule.',
-                highlight: '3x income in year 3',
+                quote: 'Working 60 hours and barely getting by. Three years later, I make 3x more and set my own schedule.',
+                highlight: '3x income',
                 rating: 5,
               },
               {
-                name: 'Lisa Chen',
-                role: 'Registered Nurse',
+                name: 'Lisa C.',
+                role: 'Nurse',
                 image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200',
-                quote: 'The Balance Sheet was eye-opening. I could finally see my entire financial picture in one place. Now I know exactly what I need to do, and I\'m on track to retire at 58 instead of 65.',
-                highlight: '7 years earlier retirement',
+                quote: 'Finally saw my complete picture. Now on track to retire at 58 instead of 65.',
+                highlight: '7 yrs earlier',
                 rating: 5,
               },
             ].map((testimonial, index) => (
@@ -611,25 +582,16 @@ export default function HomePage() {
             </div>
 
             <div>
-              <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full mb-6">
+              <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full mb-4">
                 <Award className="w-4 h-4" />
                 <span className="text-sm font-medium">Our Mission</span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                We Believe Everyone Deserves<br />
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Everyone Deserves<br />
                 <span className="text-blue-600">Financial Clarity</span>
               </h2>
-              <p className="text-gray-600 text-lg mb-4">
-                Most financial tools are built for financial advisors. We built this one for <span className="font-medium">you</span>.
-              </p>
               <p className="text-gray-600 mb-6">
-                Our team of financial professionals, technologists, and educators came together with one goal:
-                make the kind of financial clarity that used to cost thousands of dollars available to everyone.
-                No complicated jargon. No pressure. Just honest answers to the questions that keep you up at night.
-              </p>
-              <p className="text-gray-600 mb-8">
-                Because we've seen what happens when families finally understand their complete financial picture.
-                Decisions become easier. Stress transforms into confidence. And the future stops feeling like a guess.
+                We built this for <span className="font-medium">you</span>, not financial advisors. No jargon. No pressure. Just honest answers.
               </p>
 
               <div className="grid grid-cols-3 gap-4 mb-8">
@@ -661,35 +623,24 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="order-2 lg:order-1">
-              <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full mb-6">
+              <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full mb-4">
                 <Briefcase className="w-4 h-4" />
                 <span className="text-sm font-medium">Career Opportunity</span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                What If Your Income Had<br />
-                <span className="text-purple-600">No Ceiling?</span>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Income With<br />
+                <span className="text-purple-600">No Ceiling</span>
               </h2>
-              <p className="text-gray-600 text-lg mb-4">
-                There's a strange thing that happens when you help families protect what matters most.
-                <span className="font-medium"> You start protecting your own future too.</span>
-              </p>
               <p className="text-gray-600 mb-6">
-                Our agents don't just earn well. They build something. Residual income that grows year after year.
-                The freedom to work when and where they want. And the deep satisfaction of knowing their work
-                genuinely changes lives.
-              </p>
-              <p className="text-gray-600 mb-8">
-                If you've ever wondered whether there's more to your career than trading time for money,
-                this is your invitation to find out.
+                Build residual income. Set your own schedule. Help families while securing your own future.
               </p>
 
-              <ul className="space-y-4 mb-8">
+              <ul className="space-y-3 mb-6">
                 {[
-                  'Complete training system (no experience needed)',
-                  'Mentorship from agents earning $200K+',
-                  'Cutting-edge tools like Wealth Pro',
-                  'Build income that pays you even when you\'re not working',
-                  'Set your own schedule. Be your own boss.',
+                  'Full training (no experience needed)',
+                  '$200K+ mentors',
+                  'Residual income that grows',
+                  'Be your own boss',
                 ].map((item, index) => (
                   <li key={index} className="flex items-center gap-3 text-gray-700">
                     <CheckCircle2 className="w-5 h-5 text-purple-500 flex-shrink-0" />
@@ -746,15 +697,12 @@ export default function HomePage() {
             <Clock className="w-4 h-4" />
             <span className="text-sm font-medium">Takes Less Than 10 Minutes</span>
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             A Year From Now, You'll Wish<br />
             <span className="text-blue-300">You Started Today</span>
           </h2>
-          <p className="text-xl text-blue-100 mb-4 max-w-2xl mx-auto">
-            The families who thrive don't have more time. They simply stopped waiting for the "perfect moment" and took the first step.
-          </p>
-          <p className="text-blue-200/80 mb-10 max-w-xl mx-auto">
-            You're already here. You're already curious. The only question left is whether you'll discover what you can't currently see, or continue hoping everything works out.
+          <p className="text-lg text-blue-100 mb-8 max-w-xl mx-auto">
+            You're already here. Take 10 minutes to see what you're missing.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <Link href="/prospect" className="bg-white text-blue-900 font-semibold text-lg px-10 py-5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 inline-flex items-center gap-3">
