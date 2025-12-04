@@ -51,6 +51,7 @@ model Organization {
   recruits          Recruit[]
   productions       Production[]
   matchupRequests   MatchupRequest[]
+  teamInvites       TeamInvite[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -760,6 +761,7 @@ model Agent {
   productions               Production[]     @relation("WrittenBy")
   matchupRequestsMade       MatchupRequest[] @relation("MatchupRequestor")
   matchupRequestsReceived   MatchupRequest[] @relation("MatchupTrainer")
+  teamInvitesSent           TeamInvite[]     @relation("InvitedBy")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1202,4 +1204,46 @@ enum MatchupStatus {
   COMPLETED
   CANCELLED
   NO_SHOW
+}
+
+// ============================================
+// TEAM INVITE SYSTEM
+// ============================================
+
+model TeamInvite {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Inviter
+  invitedById     String
+  invitedBy       Agent    @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  // Invite details
+  email           String
+  firstName       String?
+  lastName        String?
+  role            AgentRole @default(AGENT)
+
+  // Token for signup link
+  token           String   @unique
+  expiresAt       DateTime
+
+  // Status
+  status          InviteStatus @default(PENDING)
+  acceptedAt      DateTime?
+  acceptedById    String?  // The agent ID who accepted (after signup)
+
+  createdAt       DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([token])
+  @@index([email])
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  CANCELLED
 }

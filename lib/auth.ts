@@ -5,7 +5,9 @@ export interface SessionData {
   agentId?: string;
   prospectId?: string;
   email?: string;
-  role?: 'agent' | 'prospect';
+  firstName?: string;
+  role?: 'agent' | 'prospect' | 'AGENT' | 'MANAGER' | 'ADMIN';
+  organizationId?: string;
   isLoggedIn: boolean;
 }
 
