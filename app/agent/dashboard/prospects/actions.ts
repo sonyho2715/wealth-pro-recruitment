@@ -627,6 +627,7 @@ export async function convertProspectToRecruit(
       data: { status: 'AGENT_PROSPECT' },
     });
 
+    revalidatePath('/agent/dashboard');
     revalidatePath('/agent/dashboard/prospects');
     revalidatePath('/agent/dashboard/recruits');
 

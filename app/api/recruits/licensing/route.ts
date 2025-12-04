@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/db';
 import { getSession } from '@/lib/auth';
 
@@ -82,6 +83,11 @@ export async function POST(req: NextRequest) {
       where: { id: recruitId },
       data: updateData,
     });
+
+    // Revalidate related paths
+    revalidatePath('/agent/dashboard');
+    revalidatePath('/agent/dashboard/recruits');
+    revalidatePath('/agent/dashboard/licensing');
 
     return NextResponse.json({ success: true, data: updated });
   } catch (error) {
