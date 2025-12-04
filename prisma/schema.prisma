@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 // ============================================
@@ -121,6 +122,10 @@ model Contact {
   @@index([agentId])
   @@index([temperature])
   @@index([nextFollowUpAt])
+  // Composite indexes for filtering and dashboard queries
+  @@index([organizationId, agentId])
+  @@index([agentId, temperature])
+  @@index([organizationId, temperature])
 }
 
 enum ContactRelationship {
@@ -512,6 +517,10 @@ model Prospect {
 
   @@index([agentId])
   @@index([referredByAgentId])
+  // Composite indexes for pipeline and dashboard queries
+  @@index([agentId, status])
+  @@index([agentId, stage])
+  @@index([status, stage])
 }
 
 enum ProspectStatus {
@@ -769,6 +778,9 @@ model Agent {
   @@index([organizationId])
   @@index([uplineId])
   @@index([referralCode])
+  // Composite indexes for common queries
+  @@index([organizationId, email])
+  @@index([organizationId, role])
 }
 
 enum AgentRole {
@@ -1112,6 +1124,11 @@ model Production {
   @@index([writingAgentId])
   @@index([writtenDate])
   @@index([status])
+  // Composite indexes for reporting and leaderboard queries
+  @@index([organizationId, writtenDate])
+  @@index([organizationId, status])
+  @@index([writingAgentId, writtenDate])
+  @@index([writingAgentId, status])
 }
 
 enum ProductType {
