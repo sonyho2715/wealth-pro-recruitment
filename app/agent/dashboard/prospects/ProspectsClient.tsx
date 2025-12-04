@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Search,
@@ -16,6 +16,13 @@ import {
   Link2,
   Copy,
   Check,
+  MoreVertical,
+  CalendarCheck,
+  UserPlus,
+  Handshake,
+  X,
+  Calendar,
+  MessageSquare,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Pagination from '@/components/Pagination';
@@ -25,7 +32,16 @@ import {
   STATUS_LABELS,
   getValidNextStatuses,
 } from '@/lib/constants/prospect-statuses';
-import { shareProspectWithAgent, updateProspectStage, getOrCreateReferralCode } from './actions';
+import {
+  shareProspectWithAgent,
+  updateProspectStage,
+  getOrCreateReferralCode,
+  getUpcomingBPMEvents,
+  inviteProspectToBPM,
+  getAvailableTrainers,
+  requestMatchup,
+  convertProspectToRecruit,
+} from './actions';
 
 interface Prospect {
   id: string;
@@ -85,6 +101,21 @@ interface ProspectsClientProps {
   shareableAgents: ShareableAgent[];
 }
 
+interface BPMEvent {
+  id: string;
+  name: string;
+  date: Date;
+  location: string | null;
+  isVirtual: boolean;
+}
+
+interface Trainer {
+  id: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+}
+
 export default function ProspectsClient({ prospects, shareableAgents }: ProspectsClientProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -96,6 +127,120 @@ export default function ProspectsClient({ prospects, shareableAgents }: Prospect
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [showReferralModal, setShowReferralModal] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
+
+  // Quick Actions Modal State
+  const [quickActionsProspect, setQuickActionsProspect] = useState<Prospect | null>(null);
+  const [quickActionTab, setQuickActionTab] = useState<'bpm' | 'matchup' | 'recruit'>('bpm');
+  const [bpmEvents, setBpmEvents] = useState<BPMEvent[]>([]);
+  const [trainers, setTrainers] = useState<Trainer[]>([]);
+  const [selectedBpmId, setSelectedBpmId] = useState<string>('');
+  const [selectedTrainerId, setSelectedTrainerId] = useState<string>('');
+  const [matchupDate, setMatchupDate] = useState<string>('');
+  const [matchupNotes, setMatchupNotes] = useState<string>('');
+  const [recruitCodeNumber, setRecruitCodeNumber] = useState<string>('');
+  const [recruitCodeExpiry, setRecruitCodeExpiry] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Load BPM events and trainers when opening quick actions
+  const openQuickActions = async (prospect: Prospect) => {
+    setQuickActionsProspect(prospect);
+    setQuickActionTab('bpm');
+    setSelectedBpmId('');
+    setSelectedTrainerId('');
+    setMatchupDate('');
+    setMatchupNotes('');
+    setRecruitCodeNumber('');
+    setRecruitCodeExpiry('');
+
+    // Load BPM events
+    const eventsResult = await getUpcomingBPMEvents();
+    if (eventsResult.success && eventsResult.events) {
+      setBpmEvents(eventsResult.events as BPMEvent[]);
+    }
+
+    // Load trainers
+    const trainersResult = await getAvailableTrainers();
+    if (trainersResult.success && trainersResult.trainers) {
+      setTrainers(trainersResult.trainers as Trainer[]);
+    }
+  };
+
+  const closeQuickActions = () => {
+    setQuickActionsProspect(null);
+  };
+
+  // Handle BPM invite
+  const handleBpmInvite = async () => {
+    if (!quickActionsProspect || !selectedBpmId) {
+      toast.error('Please select an event');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const result = await inviteProspectToBPM(quickActionsProspect.id, selectedBpmId);
+      if (result.success) {
+        toast.success(result.message || 'Invited to BPM');
+        closeQuickActions();
+      } else {
+        toast.error(result.error || 'Failed to invite');
+      }
+    } catch (error) {
+      toast.error('Failed to invite to BPM');
+    }
+    setIsSubmitting(false);
+  };
+
+  // Handle matchup request
+  const handleMatchupRequest = async () => {
+    if (!quickActionsProspect || !selectedTrainerId || !matchupDate) {
+      toast.error('Please select a trainer and date');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const result = await requestMatchup(
+        quickActionsProspect.id,
+        selectedTrainerId,
+        matchupDate,
+        matchupNotes
+      );
+      if (result.success) {
+        toast.success(result.message || 'Matchup request submitted');
+        closeQuickActions();
+      } else {
+        toast.error(result.error || 'Failed to submit request');
+      }
+    } catch (error) {
+      toast.error('Failed to submit matchup request');
+    }
+    setIsSubmitting(false);
+  };
+
+  // Handle convert to recruit
+  const handleConvertToRecruit = async () => {
+    if (!quickActionsProspect) return;
+
+    setIsSubmitting(true);
+    try {
+      const result = await convertProspectToRecruit(
+        quickActionsProspect.id,
+        recruitCodeNumber || undefined,
+        recruitCodeExpiry || undefined
+      );
+      if (result.success) {
+        toast.success(result.message || 'Converted to recruit');
+        closeQuickActions();
+        window.location.reload();
+      } else {
+        toast.error(result.error || 'Failed to convert');
+      }
+    } catch (error) {
+      toast.error('Failed to convert to recruit');
+    }
+    setIsSubmitting(false);
+  };
 
   const filteredProspects = useMemo(() => {
     return prospects.filter((p) => {
@@ -595,6 +740,14 @@ export default function ProspectsClient({ prospects, shareableAgents }: Prospect
                               )}
                             </div>
                           )}
+                          {/* Quick Actions Button */}
+                          <button
+                            onClick={() => openQuickActions(prospect)}
+                            className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                            title="Quick Actions"
+                          >
+                            <MoreVertical className="w-5 h-5" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -708,6 +861,240 @@ export default function ProspectsClient({ prospects, shareableAgents }: Prospect
               >
                 {copiedCode ? 'Copied!' : 'Copy Link'}
               </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Quick Actions Modal */}
+      {quickActionsProspect && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/50 z-40"
+            onClick={closeQuickActions}
+          />
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl z-50 w-full max-w-lg">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
+                <p className="text-sm text-gray-600">
+                  {quickActionsProspect.firstName} {quickActionsProspect.lastName}
+                </p>
+              </div>
+              <button
+                onClick={closeQuickActions}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Tab Navigation */}
+            <div className="flex border-b border-gray-200">
+              <button
+                onClick={() => setQuickActionTab('bpm')}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+                  quickActionTab === 'bpm'
+                    ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                <CalendarCheck className="w-4 h-4" />
+                BPM Invite
+              </button>
+              <button
+                onClick={() => setQuickActionTab('matchup')}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+                  quickActionTab === 'matchup'
+                    ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                <Handshake className="w-4 h-4" />
+                Matchup
+              </button>
+              <button
+                onClick={() => setQuickActionTab('recruit')}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+                  quickActionTab === 'recruit'
+                    ? 'text-green-600 border-b-2 border-green-600 bg-green-50'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                <UserPlus className="w-4 h-4" />
+                Convert
+              </button>
+            </div>
+
+            {/* Tab Content */}
+            <div className="p-4">
+              {/* BPM Invite Tab */}
+              {quickActionTab === 'bpm' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Select BPM Event
+                    </label>
+                    {bpmEvents.length === 0 ? (
+                      <div className="text-center py-6 bg-gray-50 rounded-lg">
+                        <CalendarCheck className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                        <p className="text-gray-500 text-sm">No upcoming BPM events</p>
+                        <Link
+                          href="/agent/dashboard/events"
+                          className="text-sm text-blue-600 hover:text-blue-700 mt-1 inline-block"
+                          onClick={closeQuickActions}
+                        >
+                          Create an event
+                        </Link>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {bpmEvents.map((event) => (
+                          <label
+                            key={event.id}
+                            className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                              selectedBpmId === event.id
+                                ? 'border-blue-500 bg-blue-50'
+                                : 'border-gray-200 hover:bg-gray-50'
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name="bpmEvent"
+                              value={event.id}
+                              checked={selectedBpmId === event.id}
+                              onChange={(e) => setSelectedBpmId(e.target.value)}
+                              className="w-4 h-4 text-blue-600"
+                            />
+                            <div className="flex-1">
+                              <p className="font-medium text-gray-900">{event.name}</p>
+                              <p className="text-xs text-gray-500">
+                                {new Date(event.date).toLocaleDateString()} • {event.isVirtual ? 'Virtual' : event.location || 'TBD'}
+                              </p>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {bpmEvents.length > 0 && (
+                    <button
+                      onClick={handleBpmInvite}
+                      disabled={!selectedBpmId || isSubmitting}
+                      className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting ? 'Sending Invite...' : 'Send BPM Invite'}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Matchup Tab */}
+              {quickActionTab === 'matchup' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Select Trainer
+                    </label>
+                    {trainers.length === 0 ? (
+                      <div className="text-center py-6 bg-gray-50 rounded-lg">
+                        <Handshake className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                        <p className="text-gray-500 text-sm">No trainers available</p>
+                      </div>
+                    ) : (
+                      <select
+                        value={selectedTrainerId}
+                        onChange={(e) => setSelectedTrainerId(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      >
+                        <option value="">Choose a trainer...</option>
+                        {trainers.map((trainer) => (
+                          <option key={trainer.id} value={trainer.id}>
+                            {trainer.firstName} {trainer.lastName} ({trainer.role})
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Requested Date
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={matchupDate}
+                      onChange={(e) => setMatchupDate(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Notes (Optional)
+                    </label>
+                    <textarea
+                      value={matchupNotes}
+                      onChange={(e) => setMatchupNotes(e.target.value)}
+                      placeholder="Any additional details about the appointment..."
+                      rows={2}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                    />
+                  </div>
+                  <button
+                    onClick={handleMatchupRequest}
+                    disabled={!selectedTrainerId || !matchupDate || isSubmitting}
+                    className="w-full py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? 'Submitting...' : 'Request Matchup'}
+                  </button>
+                </div>
+              )}
+
+              {/* Convert to Recruit Tab */}
+              {quickActionTab === 'recruit' && (
+                <div className="space-y-4">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <p className="text-sm text-green-800">
+                      Converting this prospect to a recruit will:
+                    </p>
+                    <ul className="text-sm text-green-700 mt-2 space-y-1 list-disc list-inside">
+                      <li>Create a new recruit record</li>
+                      <li>Start tracking their licensing progress</li>
+                      <li>Update prospect status to Agent Prospect</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Insurance Code Number (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={recruitCodeNumber}
+                      onChange={(e) => setRecruitCodeNumber(e.target.value)}
+                      placeholder="e.g., ABC123456"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Code Expiry Date (Optional)
+                    </label>
+                    <input
+                      type="date"
+                      value={recruitCodeExpiry}
+                      onChange={(e) => setRecruitCodeExpiry(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                  </div>
+                  <button
+                    onClick={handleConvertToRecruit}
+                    disabled={isSubmitting}
+                    className="w-full py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? 'Converting...' : 'Convert to Recruit'}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </>

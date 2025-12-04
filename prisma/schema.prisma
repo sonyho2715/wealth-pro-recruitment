@@ -7,6 +7,471 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============================================
+// MULTI-TENANT SAAS FOUNDATION
+// ============================================
+
+model Organization {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique // for URLs: app.com/org/[slug]
+
+  // Branding (white-label)
+  logo          String?
+  primaryColor  String?  @default("#3B82F6")
+  secondaryColor String? @default("#1E40AF")
+
+  // Subscription
+  plan          PlanType @default(FREE)
+  planExpiresAt DateTime?
+  stripeCustomerId String?
+  stripeSubscriptionId String?
+
+  // Feature flags based on plan
+  maxAgents     Int      @default(1)
+  maxContacts   Int      @default(100)
+  smsEnabled    Boolean  @default(false)
+  eSignEnabled  Boolean  @default(false)
+
+  // Twilio SMS Configuration (per org)
+  twilioAccountSid   String?
+  twilioAuthToken    String?
+  twilioPhoneNumber  String?
+
+  // Relations
+  agents            Agent[]
+  contacts          Contact[]
+  scripts           Script[]
+  disclosures       Disclosure[]
+  trainingModules   TrainingModule[]
+  messages          Message[]
+
+  // BSCpro feature relations
+  bpms              BPM[]
+  recruits          Recruit[]
+  productions       Production[]
+  matchupRequests   MatchupRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+}
+
+enum PlanType {
+  FREE          // 1 agent, 100 contacts, no SMS
+  STARTER       // 3 agents, 500 contacts, SMS
+  PROFESSIONAL  // 10 agents, 2000 contacts, SMS + eSign
+  ENTERPRISE    // Unlimited, all features, white-label
+}
+
+// ============================================
+// WARM MARKET / CONTACTS SYSTEM
+// ============================================
+
+model Contact {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  agentId         String
+  agent           Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  // Basic info
+  firstName       String
+  lastName        String
+  phone           String?
+  email           String?
+
+  // Warm market specifics
+  relationship    ContactRelationship?
+  temperature     ContactTemperature @default(COLD)
+  source          ContactSource @default(MANUAL)
+
+  // Relationship mapping (who referred them)
+  referredById    String?
+  referredBy      Contact? @relation("ContactReferrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals       Contact[] @relation("ContactReferrals")
+
+  // Conversion tracking
+  prospectId      String?  @unique
+  prospect        Prospect? @relation(fields: [prospectId], references: [id], onDelete: SetNull)
+  convertedAt     DateTime?
+
+  // Follow-up tracking
+  lastContactedAt DateTime?
+  nextFollowUpAt  DateTime?
+  followUpNotes   String?
+
+  // Metadata
+  notes           String?
+  tags            String[] @default([])
+  birthday        DateTime?
+  occupation      String?
+  company         String?
+
+  // Relations
+  messages        Message[]
+  bpmGuests       BPMGuest[]  // Guests invited to BPM events
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([agentId])
+  @@index([temperature])
+  @@index([nextFollowUpAt])
+}
+
+enum ContactRelationship {
+  FAMILY
+  FRIEND
+  COWORKER
+  NEIGHBOR
+  CHURCH
+  GYM
+  SOCIAL_MEDIA
+  REFERRAL
+  COLD_LEAD
+  OTHER
+}
+
+enum ContactTemperature {
+  COLD           // Never contacted
+  WARMING        // Initial contact made
+  WARM           // Interested, in conversation
+  HOT            // Ready for presentation
+  CONVERTED      // Became prospect/client
+  NOT_INTERESTED // Declined
+}
+
+enum ContactSource {
+  MANUAL         // Manually added
+  IMPORT         // Phone/CSV import
+  REFERRAL       // From another contact
+  WEBSITE        // From website form
+  SOCIAL         // Social media
+}
+
+// ============================================
+// SMS / MESSAGING SYSTEM
+// ============================================
+
+model Message {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  agentId         String
+  agent           Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  contactId       String?
+  contact         Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  // Message details
+  type            MessageType
+  direction       MessageDirection
+  content         String   @db.Text
+
+  // Recipient info (for when contact is deleted)
+  recipientPhone  String?
+  recipientEmail  String?
+  recipientName   String?
+
+  // Status tracking
+  status          MessageStatus @default(PENDING)
+  errorMessage    String?
+
+  // External IDs
+  twilioSid       String?
+  emailMessageId  String?
+
+  // Timestamps
+  sentAt          DateTime?
+  deliveredAt     DateTime?
+  readAt          DateTime?
+
+  createdAt       DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([agentId])
+  @@index([contactId])
+  @@index([status])
+}
+
+enum MessageType {
+  SMS
+  EMAIL
+  WHATSAPP
+}
+
+enum MessageDirection {
+  OUTBOUND
+  INBOUND
+}
+
+enum MessageStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  READ
+}
+
+// ============================================
+// SCRIPTS / TEMPLATES LIBRARY
+// ============================================
+
+model Script {
+  id              String   @id @default(cuid())
+  organizationId  String?  // null = system default
+  organization    Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  title           String
+  description     String?
+  content         String   @db.Text
+  category        ScriptCategory
+
+  // Organization
+  tags            String[] @default([])
+  isSystem        Boolean  @default(false) // System templates can't be deleted
+  isActive        Boolean  @default(true)
+
+  // Usage tracking
+  usageCount      Int      @default(0)
+  lastUsedAt      DateTime?
+
+  // Creator
+  createdById     String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([category])
+}
+
+enum ScriptCategory {
+  PHONE_OPENING        // Initial call scripts
+  PHONE_FOLLOW_UP      // Follow-up call scripts
+  OBJECTION_HANDLING   // Common objections
+  APPOINTMENT_SETTING  // Getting meetings
+  PRESENTATION         // During presentation
+  CLOSING              // Closing the deal
+  RECRUITING           // Agent recruitment
+  TEXT_TEMPLATE        // SMS templates
+  EMAIL_TEMPLATE       // Email templates
+  SOCIAL_MEDIA         // Social media posts/DMs
+}
+
+// ============================================
+// COMPLIANCE / E-SIGNATURE SYSTEM
+// ============================================
+
+model Disclosure {
+  id              String   @id @default(cuid())
+  organizationId  String?  // null = system default
+  organization    Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  title           String
+  description     String?
+  content         String   @db.Text
+
+  // Versioning
+  version         Int      @default(1)
+  isActive        Boolean  @default(true)
+
+  // When is this required?
+  requiredFor     DisclosureRequirement[]
+  requiresSignature Boolean @default(true)
+
+  // Relations
+  signatures      DisclosureSignature[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+}
+
+enum DisclosureRequirement {
+  PROSPECT_INTAKE      // Before financial intake
+  BEFORE_PRESENTATION  // Before showing numbers
+  BEFORE_APPLICATION   // Before submitting app
+  AGENT_ONBOARDING     // When agent joins
+  ANNUAL_COMPLIANCE    // Yearly acknowledgment
+}
+
+model DisclosureSignature {
+  id              String   @id @default(cuid())
+  disclosureId    String
+  disclosure      Disclosure @relation(fields: [disclosureId], references: [id], onDelete: Cascade)
+
+  // Who signed
+  signerType      SignerType
+  signerId        String   // prospectId or agentId
+  signerName      String
+  signerEmail     String
+
+  // Signature data
+  signatureData   String   @db.Text // Base64 encoded signature image
+  signatureType   SignatureType @default(DRAWN)
+
+  // Audit trail
+  ipAddress       String
+  userAgent       String
+
+  // Document snapshot
+  disclosureVersion Int
+  disclosureContent String @db.Text // Copy of content at time of signing
+
+  signedAt        DateTime @default(now())
+
+  @@index([disclosureId])
+  @@index([signerId])
+}
+
+enum SignerType {
+  PROSPECT
+  AGENT
+}
+
+enum SignatureType {
+  DRAWN          // Hand-drawn signature
+  TYPED          // Typed name
+  CLICK          // Click to sign
+}
+
+// ============================================
+// TRAINING / ONBOARDING SYSTEM
+// ============================================
+
+model TrainingModule {
+  id              String   @id @default(cuid())
+  organizationId  String?  // null = system default
+  organization    Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  title           String
+  description     String?
+  content         String   @db.Text // Markdown or HTML
+
+  // Media
+  videoUrl        String?  // YouTube, Vimeo, etc.
+  thumbnailUrl    String?
+  duration        Int?     // in minutes
+
+  // Organization
+  category        TrainingCategory
+  order           Int      @default(0)
+
+  // Requirements
+  requiredForRoles AgentRole[] @default([])
+  prerequisiteIds  String[]    @default([]) // Must complete these first
+
+  // Quiz (optional)
+  hasQuiz         Boolean  @default(false)
+  quizQuestions   Json?    // Array of {question, options, correctAnswer}
+  passingScore    Int?     @default(70)
+
+  // Status
+  isSystem        Boolean  @default(false)
+  isActive        Boolean  @default(true)
+
+  // Relations
+  completions     TrainingCompletion[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([category])
+}
+
+enum TrainingCategory {
+  ONBOARDING         // Getting started
+  PRODUCT_KNOWLEDGE  // Insurance products
+  SALES_SKILLS       // Selling techniques
+  COMPLIANCE         // Rules and regulations
+  SYSTEM_TRAINING    // How to use the platform
+  RECRUITING         // Building a team
+  LEADERSHIP         // For managers
+}
+
+model TrainingCompletion {
+  id              String   @id @default(cuid())
+  moduleId        String
+  module          TrainingModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  agentId         String
+  agent           Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  // Progress
+  status          CompletionStatus @default(IN_PROGRESS)
+  progress        Int      @default(0) // 0-100
+
+  // Quiz results
+  quizScore       Int?
+  quizAttempts    Int      @default(0)
+  quizPassedAt    DateTime?
+
+  // Timestamps
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+
+  @@unique([moduleId, agentId])
+  @@index([agentId])
+}
+
+enum CompletionStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+// ============================================
+// PRESENTATION MODE DATA
+// ============================================
+
+model PresentationSession {
+  id              String   @id @default(cuid())
+  agentId         String
+  agent           Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  prospectId      String
+  prospect        Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+
+  // Session tracking
+  startedAt       DateTime @default(now())
+  endedAt         DateTime?
+
+  // Slides shown
+  slidesViewed    String[] @default([])
+  currentSlide    String?
+
+  // Engagement metrics
+  totalDuration   Int?     // seconds
+  interactionCount Int     @default(0)
+
+  // Device info
+  deviceType      String?  // mobile, tablet, desktop
+  userAgent       String?
+
+  // Outcome
+  outcome         PresentationOutcome?
+  notes           String?
+
+  @@index([agentId])
+  @@index([prospectId])
+}
+
+enum PresentationOutcome {
+  COMPLETED
+  INTERRUPTED
+  FOLLOW_UP_NEEDED
+  APPLICATION_STARTED
+  DECLINED
+}
+
+// ============================================
+// CORE MODELS (UPDATED)
+// ============================================
+
 // Core prospect/client model
 model Prospect {
   id        String   @id @default(cuid())
@@ -39,6 +504,10 @@ model Prospect {
   commissions      Commission[]
   documents        Document[]
   sharedWith       ProspectShare[]
+
+  // SaaS feature relations
+  contact              Contact?             // Link from warm market
+  presentationSessions PresentationSession[]
 
   @@index([agentId])
   @@index([referredByAgentId])
@@ -257,6 +726,10 @@ model Agent {
   licenseDate  DateTime?
   monthlyGoal  Decimal? @db.Decimal(12, 2)
 
+  // Multi-tenant organization
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
   // Referral system (generated on first access if null)
   referralCode String? @unique
 
@@ -265,7 +738,7 @@ model Agent {
   upline       Agent?   @relation("AgentHierarchy", fields: [uplineId], references: [id])
   downlines    Agent[]  @relation("AgentHierarchy")
 
-  // Relations
+  // Core CRM relations
   prospects         Prospect[]
   referredProspects Prospect[] @relation("ReferredProspects")
   activities        Activity[]
@@ -274,9 +747,24 @@ model Agent {
   sharedByMe        ProspectShare[] @relation("SharedByAgent")
   sharedWithMe      ProspectShare[] @relation("SharedWithAgent")
 
+  // SaaS feature relations
+  contacts             Contact[]
+  messages             Message[]
+  trainingCompletions  TrainingCompletion[]
+  presentationSessions PresentationSession[]
+
+  // BSCpro feature relations
+  bpmInvites                BPMGuest[]       @relation("BPMInviter")
+  recruits                  Recruit[]        @relation("RecruitedBy")
+  trainees                  Recruit[]        @relation("FieldTrainerOf")
+  productions               Production[]     @relation("WrittenBy")
+  matchupRequestsMade       MatchupRequest[] @relation("MatchupRequestor")
+  matchupRequestsReceived   MatchupRequest[] @relation("MatchupTrainer")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([organizationId])
   @@index([uplineId])
   @@index([referralCode])
 }
@@ -387,4 +875,331 @@ model EmailTemplate {
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+// ============================================
+// BPM (BUSINESS PRESENTATION MEETINGS) SYSTEM
+// ============================================
+
+model BPM {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Event details
+  name            String
+  date            DateTime
+  location        String?
+  address         String?
+  isVirtual       Boolean  @default(false)
+  virtualLink     String?
+
+  // Goals
+  inviteGoal      Int      @default(10)
+  attendanceGoal  Int      @default(5)
+
+  // Status
+  status          BPMStatus @default(SCHEDULED)
+
+  // Relations
+  guests          BPMGuest[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([date])
+}
+
+enum BPMStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model BPMGuest {
+  id              String   @id @default(cuid())
+  bpmId           String
+  bpm             BPM      @relation(fields: [bpmId], references: [id], onDelete: Cascade)
+
+  // Inviter (agent who invited this guest)
+  inviterId       String
+  inviter         Agent    @relation("BPMInviter", fields: [inviterId], references: [id], onDelete: Cascade)
+
+  // Guest info (can be linked to contact or standalone)
+  contactId       String?
+  contact         Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  // Guest details (for standalone or backup)
+  guestName       String
+  guestPhone      String?
+  guestEmail      String?
+
+  // Attendance tracking
+  status          BPMGuestStatus @default(INVITED)
+  arrived         Boolean  @default(false)
+  arrivedAt       DateTime?
+  confirmedAt     DateTime?
+
+  // Follow-up
+  isClient        Boolean  @default(false)
+  isRecruit       Boolean  @default(false)
+  rescheduled     Boolean  @default(false)
+  notInterested   Boolean  @default(false)
+  leftMessage     Boolean  @default(false)
+
+  // Notes
+  notes           String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([bpmId])
+  @@index([inviterId])
+  @@index([status])
+}
+
+enum BPMGuestStatus {
+  INVITED
+  CONFIRMED
+  RESCHEDULED
+  NOT_INTERESTED
+  ARRIVED
+  NO_SHOW
+}
+
+// ============================================
+// RECRUIT TRACKING SYSTEM (Speed Filters)
+// ============================================
+
+model Recruit {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Recruiter who brought them in
+  recruiterId     String
+  recruiter       Agent    @relation("RecruitedBy", fields: [recruiterId], references: [id], onDelete: Cascade)
+
+  // Field trainer assigned
+  fieldTrainerId  String?
+  fieldTrainer    Agent?   @relation("FieldTrainerOf", fields: [fieldTrainerId], references: [id], onDelete: SetNull)
+
+  // Basic info
+  firstName       String
+  lastName        String
+  phone           String
+  email           String?
+  codeNumber      String?  // Agent code number once licensed
+
+  // Location
+  country         String   @default("USA")
+  state           String?
+
+  // Status
+  status          RecruitStatus @default(ACTIVE)
+  startDate       DateTime @default(now())
+
+  // Onboarding milestones (BSCpro "Speed Filters")
+  meetSpouse      Boolean  @default(false)
+  meetSpouseDate  DateTime?
+  submitLic       Boolean  @default(false)
+  submitLicDate   DateTime?
+  prospectList    Boolean  @default(false)
+  prospectListDate DateTime?
+  threeThreeThirty Boolean @default(false)  // 3-3-30 program
+  threeThreeThirtyDate DateTime?
+  fna             Boolean  @default(false)  // Financial Needs Analysis
+  fnaDate         DateTime?
+  fastStartSchool Boolean  @default(false)
+  fastStartSchoolDate DateTime?
+
+  // Licensing progress
+  codeExpiryDate  DateTime?
+  hoursCompleted  Int      @default(0)
+  examPassed      Boolean  @default(false)
+  examPassedDate  DateTime?
+  fingerprinting  Boolean  @default(false)
+  fingerprintDate DateTime?
+  licenseIssued   Boolean  @default(false)
+  licenseIssuedDate DateTime?
+
+  // Notes and tags
+  notes           String?
+  tags            String[] @default([])
+
+  // Relations
+  productions     Production[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([recruiterId])
+  @@index([status])
+}
+
+enum RecruitStatus {
+  ACTIVE
+  LICENSED
+  INACTIVE
+  NOT_INTERESTED
+  FAST_START_COMPLETE
+}
+
+// ============================================
+// PRODUCTION TRACKING SYSTEM
+// ============================================
+
+model Production {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Writing agent(s)
+  writingAgentId  String
+  writingAgent    Agent    @relation("WrittenBy", fields: [writingAgentId], references: [id], onDelete: Cascade)
+
+  // Trainee (optional)
+  traineeId       String?
+  trainee         Recruit? @relation(fields: [traineeId], references: [id], onDelete: SetNull)
+  isTrainee       Boolean  @default(false)
+
+  // Client info
+  clientName      String
+  clientPhone     String?
+  clientEmail     String?
+  clientBirthday  DateTime?
+
+  // Policy details
+  provider        String?
+  product         String?
+  productType     ProductType?
+  policyNumber    String?
+  description     String?
+
+  // Points/Premium
+  totalPoints     Decimal  @db.Decimal(12, 2) @default(0)
+  baseshopPoints  Decimal  @db.Decimal(12, 2) @default(0)
+  premium         Decimal? @db.Decimal(12, 2)
+
+  // Split (for multiple agents)
+  splitRatio      Int      @default(100) // Percentage
+
+  // Dates
+  writtenDate     DateTime @default(now())
+  dropDate        DateTime? // Case closing deadline
+
+  // Status
+  status          ProductionStatus @default(PENDING)
+
+  // Advanced tracking (for persistency)
+  advPaid         Boolean  @default(false)
+  pd1Paid         Boolean  @default(false)
+  pd2Paid         Boolean  @default(false)
+
+  // Notes and tags
+  notes           String?
+  tags            String[] @default([])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([writingAgentId])
+  @@index([writtenDate])
+  @@index([status])
+}
+
+enum ProductType {
+  TERM_LIFE
+  WHOLE_LIFE
+  IUL
+  ANNUITY
+  DISABILITY
+  LTC
+  HEALTH
+  AUTO
+  HOME
+  OTHER
+}
+
+enum ProductionStatus {
+  PENDING
+  SUBMITTED
+  APPROVED
+  ISSUED
+  PAID
+  CANCELLED
+  CHARGEBACK
+}
+
+// ============================================
+// MATCHUP / APPOINTMENT REQUESTS
+// ============================================
+
+model MatchupRequest {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Requesting agent
+  requestingAgentId String
+  requestingAgent Agent    @relation("MatchupRequestor", fields: [requestingAgentId], references: [id], onDelete: Cascade)
+
+  // Assigned trainer (optional)
+  assignedTrainerId String?
+  assignedTrainer Agent?   @relation("MatchupTrainer", fields: [assignedTrainerId], references: [id], onDelete: SetNull)
+
+  // Appointment details
+  appointmentDate DateTime
+  duration        Int      @default(30) // minutes
+  appointmentType MatchupType
+  isVirtual       Boolean  @default(false)
+
+  // Location (if in-person)
+  address         String?
+  city            String?
+  state           String?
+  zip             String?
+
+  // Contact info
+  contactName     String
+  contactPhone    String
+  contactEmail    String?
+  spouseName      String?
+
+  // Profile rating (1-8 scale from BSCpro)
+  profileRating   Int?
+
+  // Status
+  status          MatchupStatus @default(PENDING)
+
+  // Notes
+  notes           String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([requestingAgentId])
+  @@index([appointmentDate])
+}
+
+enum MatchupType {
+  BPM_INVITE
+  ONE_ON_ONE
+  KITCHEN_TABLE
+  FOLLOW_UP
+  CLOSING
+  RECRUIT_INTERVIEW
+}
+
+enum MatchupStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
 }
