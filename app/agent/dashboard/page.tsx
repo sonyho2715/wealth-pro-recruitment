@@ -422,11 +422,52 @@ export default async function DashboardOverviewPage() {
 
           return (
             <div className="mb-8">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
                 <Lightbulb className="w-5 h-5 text-amber-500" /> What to Do Today
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {topSuggestions.map((suggestion, index) => (
+
+              {/* Mobile: Horizontal scroll, Desktop: Grid */}
+              <div className="md:hidden -mx-6 px-6">
+                <div className="flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
+                  {topSuggestions.map((suggestion) => (
+                    <Link
+                      key={suggestion.id}
+                      href={suggestion.href}
+                      className="group relative flex-shrink-0 w-[280px] snap-start overflow-hidden rounded-2xl bg-white border border-gray-200 p-4 active:scale-[0.98] transition-transform"
+                    >
+                      {/* Priority indicator */}
+                      {suggestion.priority === 'high' && (
+                        <div className="absolute top-0 right-0 px-2 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-bl-lg">
+                          Priority
+                        </div>
+                      )}
+
+                      <div className="flex items-start gap-3">
+                        {/* Gradient icon background */}
+                        <div className={`w-11 h-11 flex-shrink-0 rounded-xl bg-gradient-to-br ${suggestion.color} flex items-center justify-center text-white`}>
+                          {suggestion.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 text-sm leading-tight mb-1 pr-8">
+                            {suggestion.title}
+                          </h3>
+                          <p className="text-xs text-gray-500 line-clamp-2 mb-2">
+                            {suggestion.description}
+                          </p>
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600">
+                            {suggestion.action}
+                            <ArrowRight className="w-3 h-3" />
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              {/* Desktop: Grid layout */}
+              <div className="hidden md:grid md:grid-cols-3 gap-4">
+                {topSuggestions.map((suggestion) => (
                   <Link
                     key={suggestion.id}
                     href={suggestion.href}
