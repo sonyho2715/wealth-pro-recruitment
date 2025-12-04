@@ -3,8 +3,13 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import * as bcrypt from 'bcryptjs';
-import { requireAgent } from '@/lib/auth';
+import crypto from 'crypto';
+import { requireAgent, getSession } from '@/lib/auth';
 import { db } from '@/lib/db';
+
+function generateInviteToken(): string {
+  return crypto.randomBytes(32).toString('hex');
+}
 
 const addTeamMemberSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -264,5 +269,148 @@ export async function getTeamMemberDetails(memberId: string) {
       success: false,
       error: 'Failed to fetch team member details',
     };
+  }
+}
+
+// ============================================
+// TEAM INVITE FUNCTIONS
+// ============================================
+
+export async function sendTeamInvite(formData: FormData) {
+  const session = await getSession();
+  if (!session.agentId) return { success: false, error: 'Unauthorized' };
+
+  const agent = await db.agent.findUnique({
+    where: { id: session.agentId },
+    include: {
+      organization: {
+        select: {
+          id: true,
+          maxAgents: true,
+          _count: {
+            select: { agents: true },
+          },
+        },
+      },
+    },
+  });
+
+  if (!agent?.organization) {
+    return { success: false, error: 'No organization found' };
+  }
+
+  // Check if org has room for more agents
+  if (agent.organization._count.agents >= agent.organization.maxAgents) {
+    return {
+      success: false,
+      error: `Your plan allows up to ${agent.organization.maxAgents} team members. Please upgrade to add more.`
+    };
+  }
+
+  const email = (formData.get('email') as string)?.toLowerCase();
+  const firstName = formData.get('firstName') as string;
+  const lastName = formData.get('lastName') as string;
+  const role = (formData.get('role') as string) || 'AGENT';
+
+  if (!email) {
+    return { success: false, error: 'Email is required' };
+  }
+
+  // Check if email already exists as an agent
+  const existingAgent = await db.agent.findUnique({
+    where: { email },
+  });
+
+  if (existingAgent) {
+    return { success: false, error: 'This email is already registered' };
+  }
+
+  // Check for existing pending invite
+  const existingInvite = await db.teamInvite.findFirst({
+    where: {
+      email,
+      organizationId: agent.organization.id,
+      status: 'PENDING',
+    },
+  });
+
+  if (existingInvite) {
+    return { success: false, error: 'An invite has already been sent to this email' };
+  }
+
+  try {
+    const token = generateInviteToken();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+    const invite = await db.teamInvite.create({
+      data: {
+        organizationId: agent.organization.id,
+        invitedById: session.agentId,
+        email,
+        firstName: firstName || null,
+        lastName: lastName || null,
+        role: role as any,
+        token,
+        expiresAt,
+      },
+    });
+
+    const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/invite/${token}`;
+
+    revalidatePath('/agent/dashboard');
+    revalidatePath('/agent/dashboard/team');
+    return {
+      success: true,
+      data: invite,
+      inviteUrl,
+    };
+  } catch (error) {
+    console.error('Error creating invite:', error);
+    return { success: false, error: 'Failed to send invite' };
+  }
+}
+
+export async function cancelInvite(inviteId: string) {
+  const session = await getSession();
+  if (!session.agentId) return { success: false, error: 'Unauthorized' };
+
+  try {
+    await db.teamInvite.update({
+      where: { id: inviteId },
+      data: { status: 'CANCELLED' },
+    });
+
+    revalidatePath('/agent/dashboard/team');
+    return { success: true };
+  } catch (error) {
+    console.error('Error cancelling invite:', error);
+    return { success: false, error: 'Failed to cancel invite' };
+  }
+}
+
+export async function resendInvite(inviteId: string) {
+  const session = await getSession();
+  if (!session.agentId) return { success: false, error: 'Unauthorized' };
+
+  try {
+    const token = generateInviteToken();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    await db.teamInvite.update({
+      where: { id: inviteId },
+      data: {
+        token,
+        expiresAt,
+        status: 'PENDING',
+      },
+    });
+
+    const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/invite/${token}`;
+
+    revalidatePath('/agent/dashboard/team');
+    return { success: true, inviteUrl };
+  } catch (error) {
+    console.error('Error resending invite:', error);
+    return { success: false, error: 'Failed to resend invite' };
   }
 }
