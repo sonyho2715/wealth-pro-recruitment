@@ -426,52 +426,13 @@ export default async function DashboardOverviewPage() {
                 <Lightbulb className="w-5 h-5 text-amber-500" /> What to Do Today
               </h2>
 
-              {/* Mobile: Horizontal scroll, Desktop: Grid */}
-              <div className="md:hidden -mx-6 px-6">
-                <div className="flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
-                  {topSuggestions.map((suggestion) => (
-                    <Link
-                      key={suggestion.id}
-                      href={suggestion.href}
-                      className="group relative flex-shrink-0 w-[280px] snap-start overflow-hidden rounded-2xl bg-white border border-gray-200 p-4 active:scale-[0.98] transition-transform"
-                    >
-                      {/* Priority indicator */}
-                      {suggestion.priority === 'high' && (
-                        <div className="absolute top-0 right-0 px-2 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-bl-lg">
-                          Priority
-                        </div>
-                      )}
-
-                      <div className="flex items-start gap-3">
-                        {/* Gradient icon background */}
-                        <div className={`w-11 h-11 flex-shrink-0 rounded-xl bg-gradient-to-br ${suggestion.color} flex items-center justify-center text-white`}>
-                          {suggestion.icon}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900 text-sm leading-tight mb-1 pr-8">
-                            {suggestion.title}
-                          </h3>
-                          <p className="text-xs text-gray-500 line-clamp-2 mb-2">
-                            {suggestion.description}
-                          </p>
-                          <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600">
-                            {suggestion.action}
-                            <ArrowRight className="w-3 h-3" />
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              {/* Desktop: Grid layout */}
-              <div className="hidden md:grid md:grid-cols-3 gap-4">
+              {/* Mobile: Stacked cards, Desktop: Grid */}
+              <div className="flex flex-col gap-3 md:grid md:grid-cols-3 md:gap-4">
                 {topSuggestions.map((suggestion) => (
                   <Link
                     key={suggestion.id}
                     href={suggestion.href}
-                    className="group relative overflow-hidden rounded-2xl bg-white border border-gray-200 p-4 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                    className="group relative overflow-hidden rounded-xl md:rounded-2xl bg-white border border-gray-200 p-3 md:p-4 active:bg-gray-50 md:hover:shadow-lg transition-all md:hover:-translate-y-1"
                   >
                     {/* Priority indicator */}
                     {suggestion.priority === 'high' && (
@@ -480,19 +441,28 @@ export default async function DashboardOverviewPage() {
                       </div>
                     )}
 
-                    {/* Gradient icon background */}
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${suggestion.color} flex items-center justify-center text-white mb-3 group-hover:scale-110 transition-transform`}>
-                      {suggestion.icon}
+                    {/* Mobile: Horizontal layout */}
+                    <div className="flex items-center gap-3 md:block">
+                      {/* Gradient icon background */}
+                      <div className={`w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-xl bg-gradient-to-br ${suggestion.color} flex items-center justify-center text-white md:mb-3 group-hover:scale-110 transition-transform`}>
+                        {suggestion.icon}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="font-semibold text-gray-900 text-sm md:text-base md:mb-1 md:pr-12 truncate md:whitespace-normal">
+                            {suggestion.title}
+                          </h3>
+                          <ArrowRight className="w-4 h-4 text-gray-400 flex-shrink-0 md:hidden" />
+                        </div>
+                        <p className="text-xs md:text-sm text-gray-500 md:mb-3 line-clamp-1 md:line-clamp-2">
+                          {suggestion.description}
+                        </p>
+                      </div>
                     </div>
 
-                    <h3 className="font-semibold text-gray-900 mb-1 pr-12">
-                      {suggestion.title}
-                    </h3>
-                    <p className="text-sm text-gray-500 mb-3 line-clamp-2">
-                      {suggestion.description}
-                    </p>
-
-                    <span className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 group-hover:text-blue-700">
+                    {/* Desktop: Action link */}
+                    <span className="hidden md:inline-flex items-center gap-1 text-sm font-medium text-blue-600 group-hover:text-blue-700">
                       {suggestion.action}
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </span>
