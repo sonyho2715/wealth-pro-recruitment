@@ -16,7 +16,17 @@ import {
   Shield,
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Contact2,
+  MessageSquare,
+  FileText,
+  GraduationCap,
+  Presentation,
+  FileSignature,
+  CalendarCheck,
+  UserPlus,
+  TrendingUp,
+  ClipboardList,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -29,13 +39,22 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { name: 'Overview', href: '/agent/dashboard', icon: LayoutDashboard },
+  { name: 'BPM Events', href: '/agent/dashboard/events', icon: CalendarCheck },
+  { name: 'Recruits', href: '/agent/dashboard/recruits', icon: UserPlus },
+  { name: 'Production', href: '/agent/dashboard/production', icon: TrendingUp },
+  { name: 'Licensing', href: '/agent/dashboard/licensing', icon: ClipboardList },
+  { name: 'Contacts', href: '/agent/dashboard/contacts', icon: Contact2 },
   { name: 'Prospects', href: '/agent/dashboard/prospects', icon: Users },
   { name: 'Balance Sheets', href: '/agent/dashboard/balance-sheets', icon: FileSpreadsheet },
+  { name: 'Presentations', href: '/agent/dashboard/presentations', icon: Presentation },
   { name: 'Activities', href: '/agent/dashboard/activities', icon: Calendar },
   { name: 'Team', href: '/agent/dashboard/team', icon: UsersRound },
   { name: 'Commissions', href: '/agent/dashboard/commissions', icon: DollarSign },
+  { name: 'Scripts', href: '/agent/dashboard/scripts', icon: FileText },
+  { name: 'Training', href: '/agent/dashboard/training', icon: GraduationCap },
   { name: 'Documents', href: '/agent/dashboard/documents', icon: FolderOpen },
-  { name: 'Email Templates', href: '/agent/dashboard/emails', icon: Mail },
+  { name: 'Messages', href: '/agent/dashboard/messages', icon: MessageSquare },
+  { name: 'Disclosures', href: '/agent/dashboard/disclosures', icon: FileSignature },
   { name: 'Reports', href: '/agent/dashboard/reports', icon: BarChart3 },
 ];
 
