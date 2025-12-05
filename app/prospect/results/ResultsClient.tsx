@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -22,15 +22,33 @@ import {
   Mail,
   Loader2,
   Check,
-  Pencil
+  Pencil,
+  Target,
+  Printer
 } from 'lucide-react';
 import ScenarioModal from '@/components/ScenarioModal';
 import IncomeSlider, { IncomeProjection } from '@/components/IncomeSlider';
 import ComplianceDisclaimer from '@/components/ComplianceDisclaimer';
 import FinancialSnapshot from '@/components/FinancialSnapshot';
 import EditFinancialDataModal from '@/components/EditFinancialDataModal';
+import ProtectionOverview from '@/components/ProtectionOverview';
+import GoalsConcerns from '@/components/GoalsConcerns';
+import CashFlowDiagram from '@/components/CashFlowDiagram';
+import AgentCareerComparison from '@/components/AgentCareerComparison';
+import ClientHeader from '@/components/ClientHeader';
 import { sendFinancialSnapshot, updateFinancialProfile } from '../actions';
 import { FINANCIAL_ASSUMPTIONS } from '@/lib/config';
+
+// Goals interface
+interface Goal {
+  id: string;
+  icon: string;
+  title: string;
+  description?: string;
+  targetDate?: string;
+  targetAmount?: number;
+  completed: boolean;
+}
 
 interface InsuranceNeed {
   id: string;
@@ -106,7 +124,7 @@ interface Prospect {
 }
 
 // State A tabs (Current Reality)
-type RealityTab = 'balance-sheet' | 'insurance' | 'trajectory';
+type RealityTab = 'balance-sheet' | 'protection' | 'goals' | 'cash-flow' | 'insurance' | 'trajectory';
 // State B tabs (Scenario Mode)
 type ScenarioTab = 'opportunity' | 'comparison';
 
@@ -135,6 +153,13 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
 
   // Edit modal state
   const [showEditModal, setShowEditModal] = useState(false);
+
+  // Goals state
+  const [goals, setGoals] = useState<Goal[]>([
+    { id: '1', icon: 'briefcase', title: 'Retire comfortably', description: 'Financial independence', completed: false },
+    { id: '2', icon: 'graduation', title: "Pay for children's education", description: '4 years of college', completed: false },
+    { id: '3', icon: 'dollar', title: 'Build emergency fund', description: '6 months of expenses', completed: false },
+  ]);
 
   const profile = prospect.financialProfile!;
 
@@ -213,6 +238,29 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
     router.refresh();
   };
 
+  // Goal handlers
+  const handleAddGoal = (goal: Omit<Goal, 'id'>) => {
+    const newGoal: Goal = { ...goal, id: Date.now().toString() };
+    setGoals([...goals, newGoal]);
+  };
+
+  const handleUpdateGoal = (id: string, updates: Partial<Goal>) => {
+    setGoals(goals.map(g => g.id === id ? { ...g, ...updates } : g));
+  };
+
+  const handleDeleteGoal = (id: string) => {
+    setGoals(goals.filter(g => g.id !== id));
+  };
+
+  const handleToggleGoalComplete = (id: string) => {
+    setGoals(goals.map(g => g.id === id ? { ...g, completed: !g.completed } : g));
+  };
+
+  // Print handler
+  const handlePrint = () => {
+    window.print();
+  };
+
   const insuranceTypeLabels: Record<string, { label: string; icon: React.ReactNode }> = {
     TERM_LIFE: { label: 'Term Life Insurance', icon: <Shield className="w-5 h-5" /> },
     WHOLE_LIFE: { label: 'Whole Life Insurance', icon: <Heart className="w-5 h-5" /> },
@@ -224,6 +272,9 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
   // State A tabs configuration
   const realityTabs = [
     { id: 'balance-sheet' as RealityTab, label: 'Financial Snapshot', icon: <PieChart className="w-5 h-5" /> },
+    { id: 'protection' as RealityTab, label: 'Protection Overview', icon: <Shield className="w-5 h-5" /> },
+    { id: 'goals' as RealityTab, label: 'Goals', icon: <Target className="w-5 h-5" /> },
+    { id: 'cash-flow' as RealityTab, label: 'Cash Flow', icon: <DollarSign className="w-5 h-5" /> },
     { id: 'insurance' as RealityTab, label: 'Insurance Gaps', icon: <Shield className="w-5 h-5" /> },
     { id: 'trajectory' as RealityTab, label: 'Current Trajectory', icon: <TrendingUp className="w-5 h-5" /> },
   ];
@@ -366,6 +417,30 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
               )}
             </button>
           </div>
+
+          {/* Client Header */}
+          {!isScenarioMode && (
+            <div className="mb-8">
+              <ClientHeader
+                clientName={`${prospect.firstName} ${prospect.lastName}`}
+                email={prospect.email}
+                age={profile.age}
+                dependents={profile.dependents}
+                occupation="Professional"
+                spouse={profile.spouseAge ? {
+                  name: "Spouse",
+                  age: profile.spouseAge,
+                  occupation: profile.spouseIncome ? "Professional" : undefined
+                } : undefined}
+                taxRates={{
+                  federal: 22,
+                  state: 5,
+                  capitalGains: 15
+                }}
+                onPrint={handlePrint}
+              />
+            </div>
+          )}
 
           {/* Quick Stats - Different for each mode */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -536,6 +611,51 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
                   }}
                 />
               </div>
+            )}
+
+            {/* Protection Overview Tab */}
+            {!isScenarioMode && realityTab === 'protection' && (
+              <ProtectionOverview
+                data={{
+                  lifeInsurance: profile.currentLifeInsurance || 0,
+                  disabilityMonthly: profile.currentDisability || 0,
+                  autoInsurance: true,
+                  homeownersInsurance: profile.homeEquity > 0,
+                  umbrellaPolicy: false,
+                  healthInsurance: true,
+                  longTermCare: false,
+                  hasWill: false,
+                  hasTrust: false,
+                  hasPowerOfAttorney: false,
+                  hasLivingWill: false,
+                  lifeInsuranceNeed: profile.protectionGap + (profile.currentLifeInsurance || 0),
+                  disabilityNeed: Math.round(totalIncome / 12 * 0.6),
+                  annualIncome: totalIncome
+                }}
+              />
+            )}
+
+            {/* Goals & Concerns Tab */}
+            {!isScenarioMode && realityTab === 'goals' && (
+              <GoalsConcerns
+                goals={goals}
+                onAddGoal={handleAddGoal}
+                onUpdateGoal={handleUpdateGoal}
+                onDeleteGoal={handleDeleteGoal}
+                onToggleComplete={handleToggleGoalComplete}
+              />
+            )}
+
+            {/* Cash Flow Diagram Tab */}
+            {!isScenarioMode && realityTab === 'cash-flow' && (
+              <CashFlowDiagram
+                annualIncome={totalIncome}
+                monthlyExpenses={profile.monthlyExpenses}
+                monthlySavings={profile.monthlyGap > 0 ? profile.monthlyGap : 0}
+                growthStocksAllocation={30}
+                balancedAllocation={40}
+                fixedIncomeAllocation={30}
+              />
             )}
 
             {!isScenarioMode && realityTab === 'insurance' && (
@@ -779,81 +899,21 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
 
             {isScenarioMode && scenarioTab === 'comparison' && (
               <div>
-                <h2 className="text-xl font-bold text-emerald-900 mb-2 flex items-center gap-2">
-                  <TrendingUp className="w-6 h-6 text-emerald-600" />
-                  Hypothetical Future Comparison
-                </h2>
-                <p className="text-emerald-700 text-sm mb-6">
-                  Compare your current trajectory with a hypothetical scenario where you add the projected income.
-                </p>
-
-                <div className="grid md:grid-cols-2 gap-6 mb-8">
-                  {/* Current Path */}
-                  <div className="border-2 border-slate-200 rounded-xl p-6 bg-slate-50">
-                    <div className="text-center mb-6">
-                      <div className="inline-flex items-center gap-2 bg-slate-200 text-slate-700 px-4 py-2 rounded-full mb-4">
-                        <Clock className="w-4 h-4" />
-                        Current Path
-                      </div>
-                      <h3 className="text-xl font-bold text-slate-900">Without Additional Income</h3>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center py-2 border-b border-slate-200">
-                        <span className="text-slate-600">Retirement Age Target</span>
-                        <span className="font-bold text-slate-900">{profile.retirementAge}</span>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b border-slate-200">
-                        <span className="text-slate-600">Projected Savings at Retirement</span>
-                        <span className="font-bold text-slate-900">${projectedRetirementSavings.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between items-center py-2">
-                        <span className="text-slate-600">Retirement Readiness</span>
-                        <span className="font-bold text-slate-900">
-                          {Math.round((projectedRetirementSavings / retirementNeed) * 100)}%
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Hypothetical Path */}
-                  <div className="border-2 border-emerald-400 rounded-xl p-6 bg-gradient-to-br from-emerald-50 to-green-50">
-                    <div className="text-center mb-6">
-                      <div className="inline-flex items-center gap-2 bg-emerald-200 text-emerald-800 px-4 py-2 rounded-full mb-4">
-                        <Sparkles className="w-4 h-4" />
-                        Hypothetical Path
-                      </div>
-                      <h3 className="text-xl font-bold text-emerald-900">With Projected Income*</h3>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center py-2 border-b border-emerald-200">
-                        <span className="text-emerald-700">Could Retire As Early As</span>
-                        <span className="font-bold text-emerald-800">
-                          {Math.max(profile.age + 5, profile.retirementAge - Math.floor((userProjection?.year1Income || 0) / 10000))}
-                          <span className="text-emerald-600 text-sm ml-1">
-                            (hypothetical)
-                          </span>
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b border-emerald-200">
-                        <span className="text-emerald-700">Potential Retirement Savings</span>
-                        <span className="font-bold text-emerald-800">
-                          ${(projectedRetirementSavings + (userProjection?.lifetimeValue || 0) * 0.5).toLocaleString()}*
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center py-2">
-                        <span className="text-emerald-700">Potential Readiness</span>
-                        <span className="font-bold text-emerald-800">
-                          {Math.min(150, Math.round(((projectedRetirementSavings + (userProjection?.lifetimeValue || 0) * 0.5) / retirementNeed) * 100))}%*
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                {/* Agent Career Comparison Component */}
+                <AgentCareerComparison
+                  currentAge={profile.age}
+                  retirementAge={profile.retirementAge}
+                  currentIncome={totalIncome}
+                  currentSavings={profile.savings + profile.investments + profile.retirement401k}
+                  monthlySavingsRate={profile.monthlyGap > 0 ? profile.monthlyGap : 0}
+                  agentYear1Income={userProjection?.year1Income || 25000}
+                  agentYear5Income={userProjection?.year5Income || 75000}
+                />
 
                 {/* Disclaimer */}
-                <ComplianceDisclaimer variant="income" />
+                <div className="mt-6">
+                  <ComplianceDisclaimer variant="income" />
+                </div>
 
                 {/* CTA */}
                 <div className="mt-8 text-center">
