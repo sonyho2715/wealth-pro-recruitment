@@ -64,8 +64,14 @@ export async function saveFinancialProfile(prospectId: string, data: FinancialPr
   try {
     const validated = financialProfileSchema.parse(data);
 
-    // Calculate derived values
-    const netWorth = calculateNetWorth(validated);
+    // Calculate home equity from market value and mortgage
+    const homeEquity = Math.max(0, validated.homeMarketValue - validated.mortgage);
+
+    // Calculate derived values using the calculated home equity
+    const netWorth = calculateNetWorth({
+      ...validated,
+      homeEquity,
+    });
     const monthlyGap = calculateMonthlyGap(validated);
     const protectionGap = calculateProtectionGap({
       annualIncome: validated.annualIncome,
@@ -87,6 +93,8 @@ export async function saveFinancialProfile(prospectId: string, data: FinancialPr
       create: {
         prospectId,
         ...validated,
+        homeMarketValue: validated.homeMarketValue,
+        homeEquity,  // Calculated: homeMarketValue - mortgage
         spouseIncome: validated.spouseIncome ?? null,
         otherIncome: validated.otherIncome ?? null,
         spouseAge: validated.spouseAge ?? null,
@@ -96,6 +104,8 @@ export async function saveFinancialProfile(prospectId: string, data: FinancialPr
       },
       update: {
         ...validated,
+        homeMarketValue: validated.homeMarketValue,
+        homeEquity,  // Calculated: homeMarketValue - mortgage
         spouseIncome: validated.spouseIncome ?? null,
         otherIncome: validated.otherIncome ?? null,
         spouseAge: validated.spouseAge ?? null,
@@ -107,7 +117,16 @@ export async function saveFinancialProfile(prospectId: string, data: FinancialPr
 
     // Generate and save insurance recommendations
     const recommendations = generateInsuranceRecommendations({
-      ...validated,
+      annualIncome: validated.annualIncome,
+      spouseIncome: validated.spouseIncome,
+      age: validated.age,
+      retirementAge: validated.retirementAge,
+      dependents: validated.dependents,
+      mortgage: validated.mortgage,
+      carLoans: validated.carLoans,
+      studentLoans: validated.studentLoans,
+      creditCards: validated.creditCards,
+      otherDebts: validated.otherDebts,
       currentLifeInsurance: validated.currentLifeInsurance || 0,
       currentDisability: validated.currentDisability || 0
     });

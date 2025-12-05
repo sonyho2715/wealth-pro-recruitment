@@ -2,9 +2,34 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Check, Users, User, Zap, Shield, Phone, FileSignature, ArrowRight } from 'lucide-react';
+import { Check, Users, User, Zap, Shield, Phone, FileSignature, ArrowRight, Sparkles } from 'lucide-react';
 
 const plans = [
+  {
+    id: 'basic',
+    name: 'Basic',
+    description: 'Get started with essential tools for new agents',
+    price: 9,
+    interval: 'month',
+    features: [
+      '1 agent seat',
+      'Up to 50 contacts',
+      'Financial calculator',
+      'Personal balance sheet',
+      'Income replacement calculator',
+      'Basic prospect tracking',
+      'Community support',
+    ],
+    limits: {
+      agents: 1,
+      contacts: 50,
+      sms: false,
+      esign: false,
+    },
+    popular: false,
+    icon: Sparkles,
+    cta: 'Get Started',
+  },
   {
     id: 'solo',
     name: 'Solo Agent',
@@ -14,10 +39,10 @@ const plans = [
     features: [
       '1 agent seat',
       'Up to 100 contacts',
-      'Prospect management',
-      'Financial calculator',
+      'Everything in Basic, plus:',
       'Production tracking',
       'Scripts library',
+      'Training modules',
       'Basic reports',
       'Email support',
     ],
@@ -177,7 +202,7 @@ export default function PricingPage() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
           {plans.map((plan) => {
             const Icon = plan.icon;
             return (
@@ -251,6 +276,7 @@ export default function PricingPage() {
               <thead>
                 <tr className="border-b border-slate-700">
                   <th className="py-4 px-4 text-slate-400 font-medium">Feature</th>
+                  <th className="py-4 px-4 text-center text-white">Basic</th>
                   <th className="py-4 px-4 text-center text-white">Solo</th>
                   <th className="py-4 px-4 text-center text-white">Team</th>
                   <th className="py-4 px-4 text-center text-white">Agency</th>
@@ -261,21 +287,56 @@ export default function PricingPage() {
                 <tr className="border-b border-slate-700/50">
                   <td className="py-3 px-4">Agent Seats</td>
                   <td className="py-3 px-4 text-center">1</td>
+                  <td className="py-3 px-4 text-center">1</td>
                   <td className="py-3 px-4 text-center">5</td>
                   <td className="py-3 px-4 text-center">25</td>
                   <td className="py-3 px-4 text-center">Unlimited</td>
                 </tr>
                 <tr className="border-b border-slate-700/50">
                   <td className="py-3 px-4">Contacts</td>
+                  <td className="py-3 px-4 text-center">50</td>
                   <td className="py-3 px-4 text-center">100</td>
                   <td className="py-3 px-4 text-center">500</td>
                   <td className="py-3 px-4 text-center">2,000</td>
                   <td className="py-3 px-4 text-center">Unlimited</td>
                 </tr>
                 <tr className="border-b border-slate-700/50">
+                  <td className="py-3 px-4">Financial Calculator</td>
+                  <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
+                  <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
+                  <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
+                  <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
+                  <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
+                </tr>
+                <tr className="border-b border-slate-700/50">
+                  <td className="py-3 px-4">Income Replacement Calculator</td>
+                  <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
+                  <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
+                  <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
+                  <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
+                  <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
+                </tr>
+                <tr className="border-b border-slate-700/50">
+                  <td className="py-3 px-4">Scripts Library</td>
+                  <td className="py-3 px-4 text-center text-slate-500">-</td>
+                  <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
+                  <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
+                  <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
+                  <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
+                </tr>
+                <tr className="border-b border-slate-700/50">
+                  <td className="py-3 px-4">Training Modules</td>
+                  <td className="py-3 px-4 text-center text-slate-500">-</td>
+                  <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
+                  <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
+                  <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
+                  <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
+                </tr>
+                <tr className="border-b border-slate-700/50">
                   <td className="py-3 px-4 flex items-center gap-2">
                     <Phone className="w-4 h-4" /> SMS Messaging
                   </td>
+                  <td className="py-3 px-4 text-center text-slate-500">-</td>
                   <td className="py-3 px-4 text-center text-slate-500">-</td>
                   <td className="py-3 px-4 text-center">100/mo</td>
                   <td className="py-3 px-4 text-center">500/mo</td>
@@ -287,11 +348,13 @@ export default function PricingPage() {
                   </td>
                   <td className="py-3 px-4 text-center text-slate-500">-</td>
                   <td className="py-3 px-4 text-center text-slate-500">-</td>
+                  <td className="py-3 px-4 text-center text-slate-500">-</td>
                   <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
                   <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
                 </tr>
                 <tr className="border-b border-slate-700/50">
                   <td className="py-3 px-4">White-label Branding</td>
+                  <td className="py-3 px-4 text-center text-slate-500">-</td>
                   <td className="py-3 px-4 text-center text-slate-500">-</td>
                   <td className="py-3 px-4 text-center text-slate-500">-</td>
                   <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
@@ -300,6 +363,7 @@ export default function PricingPage() {
                 <tr className="border-b border-slate-700/50">
                   <td className="py-3 px-4">Recruit Tracking</td>
                   <td className="py-3 px-4 text-center text-slate-500">-</td>
+                  <td className="py-3 px-4 text-center text-slate-500">-</td>
                   <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
                   <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
                   <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
@@ -307,12 +371,14 @@ export default function PricingPage() {
                 <tr className="border-b border-slate-700/50">
                   <td className="py-3 px-4">BPM Events</td>
                   <td className="py-3 px-4 text-center text-slate-500">-</td>
+                  <td className="py-3 px-4 text-center text-slate-500">-</td>
                   <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
                   <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
                   <td className="py-3 px-4 text-center"><Check className="w-4 h-4 mx-auto text-green-400" /></td>
                 </tr>
                 <tr className="border-b border-slate-700/50">
                   <td className="py-3 px-4">API Access</td>
+                  <td className="py-3 px-4 text-center text-slate-500">-</td>
                   <td className="py-3 px-4 text-center text-slate-500">-</td>
                   <td className="py-3 px-4 text-center text-slate-500">-</td>
                   <td className="py-3 px-4 text-center text-slate-500">-</td>

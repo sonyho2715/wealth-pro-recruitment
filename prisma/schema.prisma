@@ -591,7 +591,8 @@ model FinancialProfile {
   savings       Decimal @db.Decimal(12, 2) @default(0)
   investments   Decimal @db.Decimal(12, 2) @default(0)
   retirement401k Decimal @db.Decimal(12, 2) @default(0)
-  homeEquity    Decimal @db.Decimal(12, 2) @default(0)
+  homeMarketValue Decimal @db.Decimal(12, 2) @default(0)  // Home market value (user input)
+  homeEquity    Decimal @db.Decimal(12, 2) @default(0)    // Calculated: homeMarketValue - mortgage
   otherAssets   Decimal @db.Decimal(12, 2) @default(0)
 
   // Liabilities

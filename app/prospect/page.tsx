@@ -56,7 +56,7 @@ export default function ProspectIntakePage() {
     savings: 10000,
     investments: 25000,
     retirement401k: 50000,
-    homeEquity: 75000,
+    homeMarketValue: 500000,  // User enters home market value
     otherAssets: 0,
 
     // Liabilities
@@ -137,7 +137,7 @@ export default function ProspectIntakePage() {
       savings: formData.savings,
       investments: formData.investments,
       retirement401k: formData.retirement401k,
-      homeEquity: formData.homeEquity,
+      homeMarketValue: formData.homeMarketValue,
       otherAssets: formData.otherAssets,
       mortgage: formData.mortgage,
       carLoans: formData.carLoans,
@@ -388,30 +388,58 @@ export default function ProspectIntakePage() {
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">401(k) / IRA / Retirement</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                  <input
-                    type="number"
-                    value={formData.retirement401k}
-                    onChange={e => handleChange('retirement401k', parseInt(e.target.value) || 0)}
-                    className="input-field pl-8"
-                  />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">401(k) / IRA / Retirement</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <input
+                  type="number"
+                  value={formData.retirement401k}
+                  onChange={e => handleChange('retirement401k', parseInt(e.target.value) || 0)}
+                  className="input-field pl-8"
+                />
+              </div>
+            </div>
+
+            {/* Real Estate Section */}
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
+              <h4 className="font-medium text-gray-900">Real Estate</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Home Market Value</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <input
+                      type="number"
+                      value={formData.homeMarketValue}
+                      onChange={e => handleChange('homeMarketValue', parseInt(e.target.value) || 0)}
+                      className="input-field pl-8"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Current estimated value of your home</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Mortgage Balance</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <input
+                      type="number"
+                      value={formData.mortgage}
+                      onChange={e => handleChange('mortgage', parseInt(e.target.value) || 0)}
+                      className="input-field pl-8"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Remaining balance on your mortgage</p>
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Home Equity</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                  <input
-                    type="number"
-                    value={formData.homeEquity}
-                    onChange={e => handleChange('homeEquity', parseInt(e.target.value) || 0)}
-                    className="input-field pl-8"
-                  />
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-blue-800">Calculated Home Equity</span>
+                  <span className="text-lg font-bold text-blue-600">
+                    ${Math.max(0, formData.homeMarketValue - formData.mortgage).toLocaleString()}
+                  </span>
                 </div>
+                <p className="text-xs text-blue-600 mt-1">Home Market Value minus Mortgage Balance</p>
               </div>
             </div>
 
@@ -432,9 +460,10 @@ export default function ProspectIntakePage() {
               <div className="flex items-center justify-between">
                 <span className="font-medium text-green-800">Total Assets</span>
                 <span className="text-xl font-bold text-green-600">
-                  ${(formData.savings + formData.investments + formData.retirement401k + formData.homeEquity + formData.otherAssets).toLocaleString()}
+                  ${(formData.savings + formData.investments + formData.retirement401k + Math.max(0, formData.homeMarketValue - formData.mortgage) + formData.otherAssets).toLocaleString()}
                 </span>
               </div>
+              <p className="text-xs text-green-600 mt-1">Includes calculated home equity (Market Value - Mortgage)</p>
             </div>
           </div>
         );
@@ -444,23 +473,22 @@ export default function ProspectIntakePage() {
           <div className="space-y-6">
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
               <p className="text-amber-700 text-sm">
-                Enter your current debt balances. This helps us identify protection needs and calculate your net worth.
+                Enter your current debt balances (excluding mortgage, which was entered with your home value).
+                This helps us identify protection needs and calculate your net worth.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Mortgage Balance</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                  <input
-                    type="number"
-                    value={formData.mortgage}
-                    onChange={e => handleChange('mortgage', parseInt(e.target.value) || 0)}
-                    className="input-field pl-8"
-                  />
-                </div>
+            {/* Show mortgage from previous step */}
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-600">Mortgage Balance (from previous step)</span>
+                <span className="text-lg font-semibold text-gray-800">
+                  ${formData.mortgage.toLocaleString()}
+                </span>
               </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Car Loans</label>
                 <div className="relative">
@@ -473,9 +501,6 @@ export default function ProspectIntakePage() {
                   />
                 </div>
               </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Student Loans</label>
                 <div className="relative">
@@ -488,6 +513,9 @@ export default function ProspectIntakePage() {
                   />
                 </div>
               </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Credit Card Debt</label>
                 <div className="relative">
@@ -500,18 +528,17 @@ export default function ProspectIntakePage() {
                   />
                 </div>
               </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Other Debts</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                <input
-                  type="number"
-                  value={formData.otherDebts}
-                  onChange={e => handleChange('otherDebts', parseInt(e.target.value) || 0)}
-                  className="input-field pl-8"
-                />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Other Debts</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <input
+                    type="number"
+                    value={formData.otherDebts}
+                    onChange={e => handleChange('otherDebts', parseInt(e.target.value) || 0)}
+                    className="input-field pl-8"
+                  />
+                </div>
               </div>
             </div>
 
@@ -528,9 +555,10 @@ export default function ProspectIntakePage() {
               <div className="flex items-center justify-between">
                 <span className="font-medium text-blue-800">Net Worth</span>
                 <span className="text-xl font-bold text-blue-600">
-                  ${((formData.savings + formData.investments + formData.retirement401k + formData.homeEquity + formData.otherAssets) - (formData.mortgage + formData.carLoans + formData.studentLoans + formData.creditCards + formData.otherDebts)).toLocaleString()}
+                  ${((formData.savings + formData.investments + formData.retirement401k + formData.homeMarketValue + formData.otherAssets) - (formData.mortgage + formData.carLoans + formData.studentLoans + formData.creditCards + formData.otherDebts)).toLocaleString()}
                 </span>
               </div>
+              <p className="text-xs text-blue-600 mt-1">Total Assets (including Home Market Value) minus Total Liabilities (including Mortgage)</p>
             </div>
           </div>
         );
