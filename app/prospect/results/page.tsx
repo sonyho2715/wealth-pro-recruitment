@@ -34,6 +34,7 @@ export default async function ResultsPage({ searchParams }: PageProps) {
       savings: Number(prospect.financialProfile.savings),
       investments: Number(prospect.financialProfile.investments),
       retirement401k: Number(prospect.financialProfile.retirement401k),
+      homeMarketValue: Number(prospect.financialProfile.homeMarketValue),
       homeEquity: Number(prospect.financialProfile.homeEquity),
       otherAssets: Number(prospect.financialProfile.otherAssets),
       mortgage: Number(prospect.financialProfile.mortgage),

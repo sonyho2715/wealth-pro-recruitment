@@ -283,6 +283,134 @@ export async function getProspectData(prospectId: string) {
   }
 }
 
+export async function updateFinancialProfile(prospectId: string, data: {
+  currentLifeInsurance: number;
+  currentDisability: number;
+  savings: number;
+  investments: number;
+  retirement401k: number;
+  homeMarketValue: number;
+  otherAssets: number;
+  mortgage: number;
+  carLoans: number;
+  studentLoans: number;
+  creditCards: number;
+  otherDebts: number;
+  annualIncome: number;
+  spouseIncome: number | null;
+  monthlyExpenses: number;
+}) {
+  try {
+    // Calculate derived values
+    const homeEquity = Math.max(0, data.homeMarketValue - data.mortgage);
+
+    const netWorth = calculateNetWorth({
+      savings: data.savings,
+      investments: data.investments,
+      retirement401k: data.retirement401k,
+      homeEquity,
+      otherAssets: data.otherAssets,
+      mortgage: data.mortgage,
+      carLoans: data.carLoans,
+      studentLoans: data.studentLoans,
+      creditCards: data.creditCards,
+      otherDebts: data.otherDebts,
+    });
+
+    const totalMonthlyIncome = (data.annualIncome + (data.spouseIncome || 0)) / 12;
+    const monthlyGap = totalMonthlyIncome - data.monthlyExpenses;
+
+    // Get existing profile for fields we don't update
+    const existingProfile = await db.financialProfile.findUnique({
+      where: { prospectId }
+    });
+
+    if (!existingProfile) {
+      return { success: false, error: 'Financial profile not found' };
+    }
+
+    const protectionGap = calculateProtectionGap({
+      annualIncome: data.annualIncome,
+      spouseIncome: data.spouseIncome,
+      age: existingProfile.age,
+      retirementAge: existingProfile.retirementAge,
+      dependents: existingProfile.dependents,
+      mortgage: data.mortgage,
+      carLoans: data.carLoans,
+      studentLoans: data.studentLoans,
+      creditCards: data.creditCards,
+      otherDebts: data.otherDebts,
+      currentLifeInsurance: data.currentLifeInsurance,
+    });
+
+    // Update the financial profile
+    await db.financialProfile.update({
+      where: { prospectId },
+      data: {
+        savings: data.savings,
+        investments: data.investments,
+        retirement401k: data.retirement401k,
+        homeMarketValue: data.homeMarketValue,
+        homeEquity,
+        otherAssets: data.otherAssets,
+        mortgage: data.mortgage,
+        carLoans: data.carLoans,
+        studentLoans: data.studentLoans,
+        creditCards: data.creditCards,
+        otherDebts: data.otherDebts,
+        annualIncome: data.annualIncome,
+        spouseIncome: data.spouseIncome,
+        monthlyExpenses: data.monthlyExpenses,
+        currentLifeInsurance: data.currentLifeInsurance,
+        currentDisability: data.currentDisability,
+        netWorth,
+        monthlyGap,
+        protectionGap,
+      }
+    });
+
+    // Regenerate insurance recommendations
+    const recommendations = generateInsuranceRecommendations({
+      annualIncome: data.annualIncome,
+      spouseIncome: data.spouseIncome,
+      age: existingProfile.age,
+      retirementAge: existingProfile.retirementAge,
+      dependents: existingProfile.dependents,
+      mortgage: data.mortgage,
+      carLoans: data.carLoans,
+      studentLoans: data.studentLoans,
+      creditCards: data.creditCards,
+      otherDebts: data.otherDebts,
+      currentLifeInsurance: data.currentLifeInsurance,
+      currentDisability: data.currentDisability,
+    });
+
+    // Delete existing recommendations and create new ones
+    await db.insuranceNeed.deleteMany({ where: { prospectId } });
+
+    for (const rec of recommendations) {
+      await db.insuranceNeed.create({
+        data: {
+          prospectId,
+          type: rec.type,
+          recommendedCoverage: rec.recommendedCoverage,
+          currentCoverage: rec.currentCoverage,
+          gap: rec.gap,
+          monthlyPremium: rec.estimatedMonthlyPremium,
+          priority: rec.priority,
+          reasoning: rec.reasoning
+        }
+      });
+    }
+
+    revalidatePath('/prospect/results');
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating financial profile:', error);
+    return { success: false, error: 'Failed to update financial profile' };
+  }
+}
+
 export async function sendFinancialSnapshot(prospectId: string) {
   try {
     const prospect = await db.prospect.findUnique({

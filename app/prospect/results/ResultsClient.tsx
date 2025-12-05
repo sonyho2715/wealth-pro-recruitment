@@ -21,13 +21,15 @@ import {
   Home,
   Mail,
   Loader2,
-  Check
+  Check,
+  Pencil
 } from 'lucide-react';
 import ScenarioModal from '@/components/ScenarioModal';
 import IncomeSlider, { IncomeProjection } from '@/components/IncomeSlider';
 import ComplianceDisclaimer from '@/components/ComplianceDisclaimer';
 import FinancialSnapshot from '@/components/FinancialSnapshot';
-import { sendFinancialSnapshot } from '../actions';
+import EditFinancialDataModal from '@/components/EditFinancialDataModal';
+import { sendFinancialSnapshot, updateFinancialProfile } from '../actions';
 import { FINANCIAL_ASSUMPTIONS } from '@/lib/config';
 
 interface InsuranceNeed {
@@ -51,6 +53,7 @@ interface FinancialProfile {
   savings: number;
   investments: number;
   retirement401k: number;
+  homeMarketValue: number;
   homeEquity: number;
   otherAssets: number;
   mortgage: number;
@@ -130,6 +133,9 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
   // Email state
   const [emailStatus, setEmailStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
+  // Edit modal state
+  const [showEditModal, setShowEditModal] = useState(false);
+
   const profile = prospect.financialProfile!;
 
   const totalAssets = profile.savings + profile.investments + profile.retirement401k + profile.homeEquity + profile.otherAssets;
@@ -180,6 +186,31 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
       setEmailStatus('error');
       setTimeout(() => setEmailStatus('idle'), 3000);
     }
+  };
+
+  const handleSaveFinancialData = async (data: {
+    currentLifeInsurance: number;
+    currentDisability: number;
+    savings: number;
+    investments: number;
+    retirement401k: number;
+    homeMarketValue: number;
+    otherAssets: number;
+    mortgage: number;
+    carLoans: number;
+    studentLoans: number;
+    creditCards: number;
+    otherDebts: number;
+    annualIncome: number;
+    spouseIncome: number | null;
+    monthlyExpenses: number;
+  }) => {
+    const result = await updateFinancialProfile(prospect.id, data);
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to save');
+    }
+    // Refresh the page to show updated data
+    router.refresh();
   };
 
   const insuranceTypeLabels: Record<string, { label: string; icon: React.ReactNode }> = {
@@ -434,40 +465,77 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
             {/* STATE A: CURRENT REALITY TABS                */}
             {/* ============================================ */}
             {!isScenarioMode && realityTab === 'balance-sheet' && (
-              <FinancialSnapshot
-                clientName={`${prospect.firstName} ${prospect.lastName}`}
-                data={{
-                  protection: {
-                    liability: 0,
-                    disabilityMonthly: profile.currentDisability || 0,
-                    hospitalDaily: 0,
-                    hasWill: false,
-                    hasTrust: false,
-                    lifeInsuranceClient: profile.currentLifeInsurance || 0,
-                    lifeInsuranceSpouse: 0,
-                  },
-                  assets: {
-                    personalProperty: profile.otherAssets,
+              <div>
+                {/* Edit Button */}
+                <div className="flex justify-end mb-4">
+                  <button
+                    onClick={() => setShowEditModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
+                  >
+                    <Pencil className="w-4 h-4" />
+                    Edit Data
+                  </button>
+                </div>
+
+                <FinancialSnapshot
+                  clientName={`${prospect.firstName} ${prospect.lastName}`}
+                  data={{
+                    protection: {
+                      liability: 0,
+                      disabilityMonthly: profile.currentDisability || 0,
+                      hospitalDaily: 0,
+                      hasWill: false,
+                      hasTrust: false,
+                      lifeInsuranceClient: profile.currentLifeInsurance || 0,
+                      lifeInsuranceSpouse: 0,
+                    },
+                    assets: {
+                      personalProperty: profile.otherAssets,
+                      savings: profile.savings,
+                      investments: profile.investments,
+                      retirement: profile.retirement401k,
+                      realEstate: profile.homeEquity,
+                      business: 0,
+                    },
+                    liabilities: {
+                      shortTerm: profile.creditCards + profile.carLoans,
+                      taxes: 0,
+                      mortgages: profile.mortgage,
+                      businessDebt: profile.studentLoans + profile.otherDebts,
+                    },
+                    cashFlow: {
+                      annualIncome: totalIncome,
+                      insuranceCosts: 0,
+                      annualSavings: profile.monthlyGap > 0 ? profile.monthlyGap * 12 : 0,
+                      debtAndTaxCosts: profile.debtPayments * 12,
+                    },
+                  }}
+                />
+
+                {/* Edit Modal */}
+                <EditFinancialDataModal
+                  isOpen={showEditModal}
+                  onClose={() => setShowEditModal(false)}
+                  onSave={handleSaveFinancialData}
+                  initialData={{
+                    currentLifeInsurance: profile.currentLifeInsurance || 0,
+                    currentDisability: profile.currentDisability || 0,
                     savings: profile.savings,
                     investments: profile.investments,
-                    retirement: profile.retirement401k,
-                    realEstate: profile.homeEquity,
-                    business: 0,
-                  },
-                  liabilities: {
-                    shortTerm: profile.creditCards + profile.carLoans,
-                    taxes: 0,
-                    mortgages: profile.mortgage,
-                    businessDebt: profile.studentLoans + profile.otherDebts,
-                  },
-                  cashFlow: {
-                    annualIncome: totalIncome,
-                    insuranceCosts: 0,
-                    annualSavings: profile.monthlyGap > 0 ? profile.monthlyGap * 12 : 0,
-                    debtAndTaxCosts: profile.debtPayments * 12,
-                  },
-                }}
-              />
+                    retirement401k: profile.retirement401k,
+                    homeMarketValue: profile.homeMarketValue || profile.homeEquity + profile.mortgage,
+                    otherAssets: profile.otherAssets,
+                    mortgage: profile.mortgage,
+                    carLoans: profile.carLoans,
+                    studentLoans: profile.studentLoans,
+                    creditCards: profile.creditCards,
+                    otherDebts: profile.otherDebts,
+                    annualIncome: profile.annualIncome,
+                    spouseIncome: profile.spouseIncome,
+                    monthlyExpenses: profile.monthlyExpenses,
+                  }}
+                />
+              </div>
             )}
 
             {!isScenarioMode && realityTab === 'insurance' && (
