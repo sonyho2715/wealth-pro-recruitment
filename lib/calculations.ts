@@ -199,6 +199,59 @@ export function generateInsuranceRecommendations(profile: {
   return recommendations.sort((a, b) => a.priority - b.priority);
 }
 
+// Calculate income replacement insurance need
+// Formula: Monthly Need × 12 × Years = Total Income Replacement Insurance Need
+export function calculateIncomeReplacement(params: {
+  monthlyIncome: number;
+  monthlyExpenses: number;
+  yearsOfCoverage: number;
+  inflationRate?: number;  // Optional: adjust for inflation
+}): {
+  monthlyNeed: number;
+  annualNeed: number;
+  totalNeed: number;
+  breakdown: {
+    year: number;
+    annualNeed: number;
+    cumulativeNeed: number;
+  }[];
+} {
+  const inflationRate = params.inflationRate ?? 0.03; // Default 3% inflation
+
+  // Monthly need is typically the higher of 60-70% of income or actual expenses
+  const incomeBasedNeed = params.monthlyIncome * 0.6;
+  const monthlyNeed = Math.max(incomeBasedNeed, params.monthlyExpenses);
+  const annualNeed = monthlyNeed * 12;
+
+  // Calculate year-by-year breakdown with inflation adjustment
+  const breakdown: { year: number; annualNeed: number; cumulativeNeed: number }[] = [];
+  let cumulativeNeed = 0;
+
+  for (let year = 1; year <= params.yearsOfCoverage; year++) {
+    // Adjust for inflation each year
+    const inflationAdjustedNeed = annualNeed * Math.pow(1 + inflationRate, year - 1);
+    cumulativeNeed += inflationAdjustedNeed;
+
+    breakdown.push({
+      year,
+      annualNeed: Math.round(inflationAdjustedNeed),
+      cumulativeNeed: Math.round(cumulativeNeed),
+    });
+  }
+
+  // Total need is the sum of all years (inflation-adjusted)
+  const totalNeed = breakdown.length > 0
+    ? breakdown[breakdown.length - 1].cumulativeNeed
+    : annualNeed * params.yearsOfCoverage;
+
+  return {
+    monthlyNeed: Math.round(monthlyNeed),
+    annualNeed: Math.round(annualNeed),
+    totalNeed: Math.round(totalNeed),
+    breakdown,
+  };
+}
+
 // Calculate agent income projection
 export function calculateAgentProjection(params: {
   hoursPerWeek: number;

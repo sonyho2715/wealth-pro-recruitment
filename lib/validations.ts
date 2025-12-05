@@ -22,7 +22,7 @@ export const financialProfileSchema = z.object({
   savings: z.number().min(0).default(0),
   investments: z.number().min(0).default(0),
   retirement401k: z.number().min(0).default(0),
-  homeEquity: z.number().min(0).default(0),
+  homeMarketValue: z.number().min(0).default(0),  // User enters market value
   otherAssets: z.number().min(0).default(0),
 
   // Liabilities
