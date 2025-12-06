@@ -1,6 +1,7 @@
 'use client';
 
 import { Shield, AlertTriangle, CheckCircle, AlertCircle, Car, Home, Umbrella, Heart, Stethoscope, Clock, FileText, Users, Scale } from 'lucide-react';
+import { DISABILITY_ASSUMPTIONS } from '@/lib/config';
 
 interface ProtectionData {
   // Insurance Coverage
@@ -40,7 +41,7 @@ function getLifeInsuranceStatus(current: number, need: number): StatusLevel {
 
 function getDisabilityStatus(current: number, income: number): StatusLevel {
   const monthlyIncome = income / 12;
-  const targetCoverage = monthlyIncome * 0.6; // 60% income replacement
+  const targetCoverage = monthlyIncome * DISABILITY_ASSUMPTIONS.incomeReplacementRate;
   if (current === 0) return 'warning';
   const ratio = current / targetCoverage;
   if (ratio >= 0.8) return 'optimal';

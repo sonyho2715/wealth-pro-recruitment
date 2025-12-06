@@ -3,33 +3,48 @@ import {
   AGENT_ASSUMPTIONS,
   PREMIUM_ESTIMATES,
   FINANCIAL_ASSUMPTIONS,
+  DISABILITY_ASSUMPTIONS,
   DIME_ASSUMPTIONS,
 } from './config';
 
 // Calculate net worth from financial profile
 export function calculateNetWorth(profile: {
   savings: number;
+  emergencyFund?: number;
   investments: number;
+  hsaFsa?: number;
   retirement401k: number;
+  rothIra?: number;
+  pensionValue?: number;
   homeEquity: number;
+  investmentProperty?: number;
+  businessEquity?: number;
   otherAssets: number;
   mortgage: number;
   carLoans: number;
   studentLoans: number;
+  personalLoans?: number;
   creditCards: number;
   otherDebts: number;
 }): number {
   const totalAssets =
     profile.savings +
+    (profile.emergencyFund || 0) +
     profile.investments +
+    (profile.hsaFsa || 0) +
     profile.retirement401k +
+    (profile.rothIra || 0) +
+    (profile.pensionValue || 0) +
     profile.homeEquity +
+    (profile.investmentProperty || 0) +
+    (profile.businessEquity || 0) +
     profile.otherAssets;
 
   const totalLiabilities =
     profile.mortgage +
     profile.carLoans +
     profile.studentLoans +
+    (profile.personalLoans || 0) +
     profile.creditCards +
     profile.otherDebts;
 
@@ -62,6 +77,7 @@ export function calculateProtectionGap(profile: {
   mortgage: number;
   carLoans: number;
   studentLoans: number;
+  personalLoans?: number;
   creditCards: number;
   otherDebts: number;
   currentLifeInsurance: number;
@@ -73,6 +89,7 @@ export function calculateProtectionGap(profile: {
     profile.mortgage +
     profile.carLoans +
     profile.studentLoans +
+    (profile.personalLoans || 0) +
     profile.creditCards +
     profile.otherDebts;
 
@@ -104,6 +121,7 @@ export function generateInsuranceRecommendations(profile: {
   mortgage: number;
   carLoans: number;
   studentLoans: number;
+  personalLoans?: number;
   creditCards: number;
   otherDebts: number;
   currentLifeInsurance: number;
@@ -150,7 +168,7 @@ export function generateInsuranceRecommendations(profile: {
 
   // Disability Insurance
   const monthlyIncome = profile.annualIncome / 12;
-  const disabilityNeed = monthlyIncome * 0.6; // 60% income replacement
+  const disabilityNeed = monthlyIncome * DISABILITY_ASSUMPTIONS.incomeReplacementRate;
   const disabilityGap = disabilityNeed - profile.currentDisability;
 
   if (disabilityGap > 0) {
@@ -216,10 +234,10 @@ export function calculateIncomeReplacement(params: {
     cumulativeNeed: number;
   }[];
 } {
-  const inflationRate = params.inflationRate ?? 0.03; // Default 3% inflation
+  const inflationRate = params.inflationRate ?? FINANCIAL_ASSUMPTIONS.inflationRate; // Default from config
 
-  // Monthly need is typically the higher of 60-70% of income or actual expenses
-  const incomeBasedNeed = params.monthlyIncome * 0.6;
+  // Monthly need is typically the higher of 60% of income or actual expenses
+  const incomeBasedNeed = params.monthlyIncome * DISABILITY_ASSUMPTIONS.incomeReplacementRate;
   const monthlyNeed = Math.max(incomeBasedNeed, params.monthlyExpenses);
   const annualNeed = monthlyNeed * 12;
 
