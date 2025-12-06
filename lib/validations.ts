@@ -18,17 +18,36 @@ export const financialProfileSchema = z.object({
   housingCost: z.number().min(0),
   debtPayments: z.number().min(0),
 
-  // Assets
+  // Savings & Contributions
+  monthlySavingsContribution: z.number().min(0).default(0),
+  employer401kMatch: z.number().min(0).max(100).default(0),
+
+  // Cash & Liquid Assets
   savings: z.number().min(0).default(0),
+  emergencyFund: z.number().min(0).default(0),
+
+  // Investment Accounts
   investments: z.number().min(0).default(0),
+  hsaFsa: z.number().min(0).default(0),
+
+  // Retirement Accounts
   retirement401k: z.number().min(0).default(0),
-  homeMarketValue: z.number().min(0).default(0),  // User enters market value
+  rothIra: z.number().min(0).default(0),
+  pensionValue: z.number().min(0).default(0),
+
+  // Real Estate
+  homeMarketValue: z.number().min(0).default(0),
+  investmentProperty: z.number().min(0).default(0),
+
+  // Business & Other Assets
+  businessEquity: z.number().min(0).default(0),
   otherAssets: z.number().min(0).default(0),
 
   // Liabilities
   mortgage: z.number().min(0).default(0),
   carLoans: z.number().min(0).default(0),
   studentLoans: z.number().min(0).default(0),
+  personalLoans: z.number().min(0).default(0),
   creditCards: z.number().min(0).default(0),
   otherDebts: z.number().min(0).default(0),
 
@@ -37,6 +56,9 @@ export const financialProfileSchema = z.object({
   spouseAge: z.number().min(18).max(100).optional(),
   dependents: z.number().min(0).default(0),
   retirementAge: z.number().min(50).max(80).default(65),
+  occupation: z.string().optional(),
+  spouseOccupation: z.string().optional(),
+  stateOfResidence: z.string().optional(),
 
   // Current coverage
   currentLifeInsurance: z.number().min(0).default(0),

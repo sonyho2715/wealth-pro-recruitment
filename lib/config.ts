@@ -59,6 +59,12 @@ export const FINANCIAL_ASSUMPTIONS = {
 
   // Savings Behavior
   agentIncomeSavingsRate: 0.30,    // Save 30% of agent income
+  surplusSavingsRate: 0.30,        // Save 30% of monthly surplus (gap)
+};
+
+// Disability Insurance Assumptions
+export const DISABILITY_ASSUMPTIONS = {
+  incomeReplacementRate: 0.60,     // 60% income replacement (industry standard, tax-free)
 };
 
 // Insurance Needs (DIME Method)

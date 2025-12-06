@@ -1,12 +1,19 @@
 'use client';
 
-import { User, Mail, Phone, Calendar, Users, Briefcase, MapPin, Printer, Share2, Download } from 'lucide-react';
+import { useState } from 'react';
+import { User, Mail, Phone, Calendar, Users, Briefcase, MapPin, Printer, Share2, Download, Edit3, Check, X } from 'lucide-react';
 
 interface FamilyMember {
   name: string;
   relationship: string;
   age: number;
   dateOfBirth?: string;
+}
+
+interface TaxRates {
+  federal?: number;
+  state?: number;
+  capitalGains?: number;
 }
 
 interface ClientHeaderProps {
@@ -24,14 +31,11 @@ interface ClientHeaderProps {
   };
   dependents: number;
   familyMembers?: FamilyMember[];
-  taxRates?: {
-    federal?: number;
-    state?: number;
-    capitalGains?: number;
-  };
+  taxRates?: TaxRates;
   onPrint?: () => void;
   onExport?: () => void;
   onShare?: () => void;
+  onTaxRatesChange?: (rates: TaxRates) => void;
 }
 
 export default function ClientHeader({
@@ -49,7 +53,29 @@ export default function ClientHeader({
   onPrint,
   onExport,
   onShare,
+  onTaxRatesChange,
 }: ClientHeaderProps) {
+  const [isEditingTaxRates, setIsEditingTaxRates] = useState(false);
+  const [editedRates, setEditedRates] = useState<TaxRates>({
+    federal: taxRates?.federal || 22,
+    state: taxRates?.state || 5,
+    capitalGains: taxRates?.capitalGains || 15,
+  });
+
+  const handleSaveTaxRates = () => {
+    onTaxRatesChange?.(editedRates);
+    setIsEditingTaxRates(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditedRates({
+      federal: taxRates?.federal || 22,
+      state: taxRates?.state || 5,
+      capitalGains: taxRates?.capitalGains || 15,
+    });
+    setIsEditingTaxRates(false);
+  };
+
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
@@ -225,10 +251,90 @@ export default function ClientHeader({
 
           {/* Tax Rates */}
           <div>
-            <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">
-              Tax Rates
-            </h3>
-            {taxRates ? (
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">
+                Tax Rates
+              </h3>
+              {!isEditingTaxRates ? (
+                <button
+                  onClick={() => setIsEditingTaxRates(true)}
+                  className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 transition-colors"
+                >
+                  <Edit3 className="w-3 h-3" />
+                  <span>Edit</span>
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleSaveTaxRates}
+                    className="flex items-center gap-1 text-xs text-green-600 hover:text-green-700 transition-colors"
+                  >
+                    <Check className="w-3 h-3" />
+                    <span>Save</span>
+                  </button>
+                  <button
+                    onClick={handleCancelEdit}
+                    className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-600 transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                    <span>Cancel</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {isEditingTaxRates ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between bg-blue-50 rounded-lg px-4 py-3 border border-blue-200">
+                  <label className="text-slate-600">Federal Income</label>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min="0"
+                      max="50"
+                      step="0.5"
+                      value={editedRates.federal || 22}
+                      onChange={(e) => setEditedRates({ ...editedRates, federal: parseFloat(e.target.value) || 0 })}
+                      className="w-16 px-2 py-1 text-right font-bold text-slate-800 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <span className="font-bold text-slate-800">%</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between bg-blue-50 rounded-lg px-4 py-3 border border-blue-200">
+                  <label className="text-slate-600">State Income</label>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min="0"
+                      max="15"
+                      step="0.5"
+                      value={editedRates.state || 5}
+                      onChange={(e) => setEditedRates({ ...editedRates, state: parseFloat(e.target.value) || 0 })}
+                      className="w-16 px-2 py-1 text-right font-bold text-slate-800 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <span className="font-bold text-slate-800">%</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between bg-blue-50 rounded-lg px-4 py-3 border border-blue-200">
+                  <label className="text-slate-600">Capital Gains</label>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min="0"
+                      max="30"
+                      step="0.5"
+                      value={editedRates.capitalGains || 15}
+                      onChange={(e) => setEditedRates({ ...editedRates, capitalGains: parseFloat(e.target.value) || 0 })}
+                      className="w-16 px-2 py-1 text-right font-bold text-slate-800 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <span className="font-bold text-slate-800">%</span>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500 mt-2">
+                  Adjust rates based on client&apos;s tax situation
+                </p>
+              </div>
+            ) : taxRates ? (
               <div className="space-y-3">
                 <div className="flex items-center justify-between bg-slate-50 rounded-lg px-4 py-3">
                   <span className="text-slate-600">Federal Income</span>

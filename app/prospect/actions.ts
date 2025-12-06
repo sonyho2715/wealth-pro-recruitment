@@ -17,6 +17,7 @@ import {
   type ProspectInput,
   type FinancialProfileInput
 } from '@/lib/validations';
+import { FINANCIAL_ASSUMPTIONS } from '@/lib/config';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -82,6 +83,7 @@ export async function saveFinancialProfile(prospectId: string, data: FinancialPr
       mortgage: validated.mortgage,
       carLoans: validated.carLoans,
       studentLoans: validated.studentLoans,
+      personalLoans: validated.personalLoans,
       creditCards: validated.creditCards,
       otherDebts: validated.otherDebts,
       currentLifeInsurance: validated.currentLifeInsurance || 0
@@ -125,6 +127,7 @@ export async function saveFinancialProfile(prospectId: string, data: FinancialPr
       mortgage: validated.mortgage,
       carLoans: validated.carLoans,
       studentLoans: validated.studentLoans,
+      personalLoans: validated.personalLoans,
       creditCards: validated.creditCards,
       otherDebts: validated.otherDebts,
       currentLifeInsurance: validated.currentLifeInsurance || 0,
@@ -210,7 +213,7 @@ export async function generateAgentProjection(prospectId: string, hoursPerWeek: 
       retirementAge: profile.retirementAge,
       currentIncome: Number(profile.annualIncome),
       currentSavings: Number(profile.savings) + Number(profile.investments) + Number(profile.retirement401k),
-      monthlyContribution: Math.max(0, Number(profile.monthlyGap) * 0.3),
+      monthlyContribution: Math.max(0, Number(profile.monthlyGap) * FINANCIAL_ASSUMPTIONS.surplusSavingsRate),
       agentYear1Income: agentProjection.year1Income,
       agentYear5Income: agentProjection.year5Income
     });

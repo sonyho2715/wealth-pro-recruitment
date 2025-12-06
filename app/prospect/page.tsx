@@ -43,6 +43,9 @@ export default function ProspectIntakePage() {
     spouseAge: undefined as number | undefined,
     dependents: 0,
     retirementAge: 65,
+    occupation: '',
+    spouseOccupation: '',
+    stateOfResidence: '',
 
     // Income
     annualIncome: 75000,
@@ -51,18 +54,27 @@ export default function ProspectIntakePage() {
     monthlyExpenses: 4000,
     housingCost: 1500,
     debtPayments: 500,
+    employer401kMatch: 0,
+    monthlySavingsContribution: 0,
 
     // Assets
     savings: 10000,
+    emergencyFund: 0,
     investments: 25000,
     retirement401k: 50000,
-    homeMarketValue: 500000,  // User enters home market value
+    rothIra: 0,
+    pensionValue: 0,
+    hsaFsa: 0,
+    homeMarketValue: 500000,
+    investmentProperty: 0,
+    businessEquity: 0,
     otherAssets: 0,
 
     // Liabilities
     mortgage: 250000,
     carLoans: 15000,
     studentLoans: 0,
+    personalLoans: 0,
     creditCards: 5000,
     otherDebts: 0,
 
@@ -128,26 +140,59 @@ export default function ProspectIntakePage() {
     setError(null);
 
     const result = await saveFinancialProfile(prospectId, {
+      // Income
       annualIncome: formData.annualIncome,
       spouseIncome: formData.spouseIncome,
       otherIncome: formData.otherIncome,
+
+      // Monthly Expenses
       monthlyExpenses: formData.monthlyExpenses,
       housingCost: formData.housingCost,
       debtPayments: formData.debtPayments,
+
+      // Savings & Contributions
+      monthlySavingsContribution: formData.monthlySavingsContribution,
+      employer401kMatch: formData.employer401kMatch,
+
+      // Cash & Liquid Assets
       savings: formData.savings,
+      emergencyFund: formData.emergencyFund,
+
+      // Investment Accounts
       investments: formData.investments,
+      hsaFsa: formData.hsaFsa,
+
+      // Retirement Accounts
       retirement401k: formData.retirement401k,
+      rothIra: formData.rothIra,
+      pensionValue: formData.pensionValue,
+
+      // Real Estate
       homeMarketValue: formData.homeMarketValue,
+      investmentProperty: formData.investmentProperty,
+
+      // Business & Other Assets
+      businessEquity: formData.businessEquity,
       otherAssets: formData.otherAssets,
+
+      // Liabilities
       mortgage: formData.mortgage,
       carLoans: formData.carLoans,
       studentLoans: formData.studentLoans,
+      personalLoans: formData.personalLoans,
       creditCards: formData.creditCards,
       otherDebts: formData.otherDebts,
+
+      // Demographics
       age: formData.age,
       spouseAge: formData.spouseAge,
       dependents: formData.dependents,
       retirementAge: formData.retirementAge,
+      occupation: formData.occupation || undefined,
+      spouseOccupation: formData.spouseOccupation || undefined,
+      stateOfResidence: formData.stateOfResidence || undefined,
+
+      // Protection
       currentLifeInsurance: formData.currentLifeInsurance,
       currentDisability: formData.currentDisability
     });
@@ -261,6 +306,92 @@ export default function ProspectIntakePage() {
                 />
               </div>
             </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Your Occupation</label>
+                <input
+                  type="text"
+                  value={formData.occupation}
+                  onChange={e => handleChange('occupation', e.target.value)}
+                  className="input-field"
+                  placeholder="e.g., Software Engineer"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">State of Residence</label>
+                <select
+                  value={formData.stateOfResidence}
+                  onChange={e => handleChange('stateOfResidence', e.target.value)}
+                  className="input-field"
+                >
+                  <option value="">Select state...</option>
+                  <option value="AL">Alabama</option>
+                  <option value="AK">Alaska</option>
+                  <option value="AZ">Arizona</option>
+                  <option value="AR">Arkansas</option>
+                  <option value="CA">California</option>
+                  <option value="CO">Colorado</option>
+                  <option value="CT">Connecticut</option>
+                  <option value="DE">Delaware</option>
+                  <option value="FL">Florida</option>
+                  <option value="GA">Georgia</option>
+                  <option value="HI">Hawaii</option>
+                  <option value="ID">Idaho</option>
+                  <option value="IL">Illinois</option>
+                  <option value="IN">Indiana</option>
+                  <option value="IA">Iowa</option>
+                  <option value="KS">Kansas</option>
+                  <option value="KY">Kentucky</option>
+                  <option value="LA">Louisiana</option>
+                  <option value="ME">Maine</option>
+                  <option value="MD">Maryland</option>
+                  <option value="MA">Massachusetts</option>
+                  <option value="MI">Michigan</option>
+                  <option value="MN">Minnesota</option>
+                  <option value="MS">Mississippi</option>
+                  <option value="MO">Missouri</option>
+                  <option value="MT">Montana</option>
+                  <option value="NE">Nebraska</option>
+                  <option value="NV">Nevada</option>
+                  <option value="NH">New Hampshire</option>
+                  <option value="NJ">New Jersey</option>
+                  <option value="NM">New Mexico</option>
+                  <option value="NY">New York</option>
+                  <option value="NC">North Carolina</option>
+                  <option value="ND">North Dakota</option>
+                  <option value="OH">Ohio</option>
+                  <option value="OK">Oklahoma</option>
+                  <option value="OR">Oregon</option>
+                  <option value="PA">Pennsylvania</option>
+                  <option value="RI">Rhode Island</option>
+                  <option value="SC">South Carolina</option>
+                  <option value="SD">South Dakota</option>
+                  <option value="TN">Tennessee</option>
+                  <option value="TX">Texas</option>
+                  <option value="UT">Utah</option>
+                  <option value="VT">Vermont</option>
+                  <option value="VA">Virginia</option>
+                  <option value="WA">Washington</option>
+                  <option value="WV">West Virginia</option>
+                  <option value="WI">Wisconsin</option>
+                  <option value="WY">Wyoming</option>
+                </select>
+              </div>
+            </div>
+
+            {formData.spouseAge && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Spouse Occupation</label>
+                <input
+                  type="text"
+                  value={formData.spouseOccupation}
+                  onChange={e => handleChange('spouseOccupation', e.target.value)}
+                  className="input-field"
+                  placeholder="e.g., Nurse"
+                />
+              </div>
+            )}
           </div>
         );
 
@@ -349,6 +480,42 @@ export default function ProspectIntakePage() {
                 </div>
               </div>
             </div>
+
+            <hr className="my-6" />
+
+            <h4 className="font-medium text-gray-800 mb-4">Savings & Contributions</h4>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Monthly Savings Contribution</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <input
+                    type="number"
+                    value={formData.monthlySavingsContribution}
+                    onChange={e => handleChange('monthlySavingsContribution', parseInt(e.target.value) || 0)}
+                    className="input-field pl-8"
+                    placeholder="0"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">How much you save each month</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Employer 401(k) Match %</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={formData.employer401kMatch}
+                    onChange={e => handleChange('employer401kMatch', parseInt(e.target.value) || 0)}
+                    className="input-field pr-8"
+                    placeholder="0"
+                    min="0"
+                    max="100"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">e.g., 3% = employer matches 3% of salary</p>
+              </div>
+            </div>
           </div>
         );
 
@@ -361,43 +528,115 @@ export default function ProspectIntakePage() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Savings Accounts</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                  <input
-                    type="number"
-                    value={formData.savings}
-                    onChange={e => handleChange('savings', parseInt(e.target.value) || 0)}
-                    className="input-field pl-8"
-                  />
+            {/* Cash & Liquid Assets */}
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
+              <h4 className="font-medium text-gray-900">Cash & Liquid Assets</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Checking/Savings</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <input
+                      type="number"
+                      value={formData.savings}
+                      onChange={e => handleChange('savings', parseInt(e.target.value) || 0)}
+                      className="input-field pl-8"
+                    />
+                  </div>
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Investments (Stocks, Bonds)</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                  <input
-                    type="number"
-                    value={formData.investments}
-                    onChange={e => handleChange('investments', parseInt(e.target.value) || 0)}
-                    className="input-field pl-8"
-                  />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Emergency Fund</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <input
+                      type="number"
+                      value={formData.emergencyFund}
+                      onChange={e => handleChange('emergencyFund', parseInt(e.target.value) || 0)}
+                      className="input-field pl-8"
+                      placeholder="0"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Separate from regular savings</p>
                 </div>
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">401(k) / IRA / Retirement</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                <input
-                  type="number"
-                  value={formData.retirement401k}
-                  onChange={e => handleChange('retirement401k', parseInt(e.target.value) || 0)}
-                  className="input-field pl-8"
-                />
+            {/* Investment Accounts */}
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
+              <h4 className="font-medium text-gray-900">Investment Accounts</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Taxable Investments</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <input
+                      type="number"
+                      value={formData.investments}
+                      onChange={e => handleChange('investments', parseInt(e.target.value) || 0)}
+                      className="input-field pl-8"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Stocks, bonds, mutual funds</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">HSA / FSA Balance</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <input
+                      type="number"
+                      value={formData.hsaFsa}
+                      onChange={e => handleChange('hsaFsa', parseInt(e.target.value) || 0)}
+                      className="input-field pl-8"
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Retirement Accounts */}
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
+              <h4 className="font-medium text-gray-900">Retirement Accounts</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">401(k) / 403(b) / TSP</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <input
+                      type="number"
+                      value={formData.retirement401k}
+                      onChange={e => handleChange('retirement401k', parseInt(e.target.value) || 0)}
+                      className="input-field pl-8"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Roth IRA</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <input
+                      type="number"
+                      value={formData.rothIra}
+                      onChange={e => handleChange('rothIra', parseInt(e.target.value) || 0)}
+                      className="input-field pl-8"
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Pension Value (if applicable)</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <input
+                    type="number"
+                    value={formData.pensionValue}
+                    onChange={e => handleChange('pensionValue', parseInt(e.target.value) || 0)}
+                    className="input-field pl-8"
+                    placeholder="0"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Estimated lump sum value or 0 if monthly pension</p>
               </div>
             </div>
 
@@ -406,7 +645,7 @@ export default function ProspectIntakePage() {
               <h4 className="font-medium text-gray-900">Real Estate</h4>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Home Market Value</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Primary Home Value</label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
                     <input
@@ -416,7 +655,7 @@ export default function ProspectIntakePage() {
                       className="input-field pl-8"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Current estimated value of your home</p>
+                  <p className="text-xs text-gray-500 mt-1">Current estimated market value</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Mortgage Balance</label>
@@ -429,7 +668,7 @@ export default function ProspectIntakePage() {
                       className="input-field pl-8"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Remaining balance on your mortgage</p>
+                  <p className="text-xs text-gray-500 mt-1">Remaining balance owed</p>
                 </div>
               </div>
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
@@ -439,20 +678,54 @@ export default function ProspectIntakePage() {
                     ${Math.max(0, formData.homeMarketValue - formData.mortgage).toLocaleString()}
                   </span>
                 </div>
-                <p className="text-xs text-blue-600 mt-1">Home Market Value minus Mortgage Balance</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Investment Property (Net Equity)</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <input
+                    type="number"
+                    value={formData.investmentProperty}
+                    onChange={e => handleChange('investmentProperty', parseInt(e.target.value) || 0)}
+                    className="input-field pl-8"
+                    placeholder="0"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Rental properties: market value minus mortgages</p>
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Other Assets (vehicles, etc.)</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                <input
-                  type="number"
-                  value={formData.otherAssets}
-                  onChange={e => handleChange('otherAssets', parseInt(e.target.value) || 0)}
-                  className="input-field pl-8"
-                />
+            {/* Business & Other Assets */}
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
+              <h4 className="font-medium text-gray-900">Business & Other Assets</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Equity</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <input
+                      type="number"
+                      value={formData.businessEquity}
+                      onChange={e => handleChange('businessEquity', parseInt(e.target.value) || 0)}
+                      className="input-field pl-8"
+                      placeholder="0"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Ownership stake in any businesses</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Other Assets</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <input
+                      type="number"
+                      value={formData.otherAssets}
+                      onChange={e => handleChange('otherAssets', parseInt(e.target.value) || 0)}
+                      className="input-field pl-8"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Vehicles, collectibles, etc.</p>
+                </div>
               </div>
             </div>
 
@@ -460,10 +733,22 @@ export default function ProspectIntakePage() {
               <div className="flex items-center justify-between">
                 <span className="font-medium text-green-800">Total Assets</span>
                 <span className="text-xl font-bold text-green-600">
-                  ${(formData.savings + formData.investments + formData.retirement401k + Math.max(0, formData.homeMarketValue - formData.mortgage) + formData.otherAssets).toLocaleString()}
+                  ${(
+                    formData.savings +
+                    formData.emergencyFund +
+                    formData.investments +
+                    formData.hsaFsa +
+                    formData.retirement401k +
+                    formData.rothIra +
+                    formData.pensionValue +
+                    Math.max(0, formData.homeMarketValue - formData.mortgage) +
+                    formData.investmentProperty +
+                    formData.businessEquity +
+                    formData.otherAssets
+                  ).toLocaleString()}
                 </span>
               </div>
-              <p className="text-xs text-green-600 mt-1">Includes calculated home equity (Market Value - Mortgage)</p>
+              <p className="text-xs text-green-600 mt-1">Includes all liquid, investment, retirement, and real estate assets</p>
             </div>
           </div>
         );
@@ -529,24 +814,45 @@ export default function ProspectIntakePage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Other Debts</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Personal Loans</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
                   <input
                     type="number"
-                    value={formData.otherDebts}
-                    onChange={e => handleChange('otherDebts', parseInt(e.target.value) || 0)}
+                    value={formData.personalLoans}
+                    onChange={e => handleChange('personalLoans', parseInt(e.target.value) || 0)}
                     className="input-field pl-8"
                   />
                 </div>
               </div>
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Other Debts</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <input
+                  type="number"
+                  value={formData.otherDebts}
+                  onChange={e => handleChange('otherDebts', parseInt(e.target.value) || 0)}
+                  className="input-field pl-8"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Medical bills, tax debt, etc.</p>
+            </div>
+
             <div className="bg-red-50 border border-red-200 rounded-xl p-4">
               <div className="flex items-center justify-between">
                 <span className="font-medium text-red-800">Total Liabilities</span>
                 <span className="text-xl font-bold text-red-600">
-                  ${(formData.mortgage + formData.carLoans + formData.studentLoans + formData.creditCards + formData.otherDebts).toLocaleString()}
+                  ${(
+                    formData.mortgage +
+                    formData.carLoans +
+                    formData.studentLoans +
+                    formData.personalLoans +
+                    formData.creditCards +
+                    formData.otherDebts
+                  ).toLocaleString()}
                 </span>
               </div>
             </div>
@@ -555,10 +861,30 @@ export default function ProspectIntakePage() {
               <div className="flex items-center justify-between">
                 <span className="font-medium text-blue-800">Net Worth</span>
                 <span className="text-xl font-bold text-blue-600">
-                  ${((formData.savings + formData.investments + formData.retirement401k + formData.homeMarketValue + formData.otherAssets) - (formData.mortgage + formData.carLoans + formData.studentLoans + formData.creditCards + formData.otherDebts)).toLocaleString()}
+                  ${(
+                    // Assets
+                    formData.savings +
+                    formData.emergencyFund +
+                    formData.investments +
+                    formData.hsaFsa +
+                    formData.retirement401k +
+                    formData.rothIra +
+                    formData.pensionValue +
+                    formData.homeMarketValue +
+                    formData.investmentProperty +
+                    formData.businessEquity +
+                    formData.otherAssets -
+                    // Liabilities
+                    formData.mortgage -
+                    formData.carLoans -
+                    formData.studentLoans -
+                    formData.personalLoans -
+                    formData.creditCards -
+                    formData.otherDebts
+                  ).toLocaleString()}
                 </span>
               </div>
-              <p className="text-xs text-blue-600 mt-1">Total Assets (including Home Market Value) minus Total Liabilities (including Mortgage)</p>
+              <p className="text-xs text-blue-600 mt-1">Total Assets minus Total Liabilities</p>
             </div>
           </div>
         );

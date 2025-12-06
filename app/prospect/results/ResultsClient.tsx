@@ -37,7 +37,7 @@ import CashFlowDiagram from '@/components/CashFlowDiagram';
 import AgentCareerComparison from '@/components/AgentCareerComparison';
 import ClientHeader from '@/components/ClientHeader';
 import { sendFinancialSnapshot, updateFinancialProfile } from '../actions';
-import { FINANCIAL_ASSUMPTIONS } from '@/lib/config';
+import { FINANCIAL_ASSUMPTIONS, DISABILITY_ASSUMPTIONS } from '@/lib/config';
 
 // Goals interface
 interface Goal {
@@ -161,6 +161,13 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
     { id: '3', icon: 'dollar', title: 'Build emergency fund', description: '6 months of expenses', completed: false },
   ]);
 
+  // Tax rates state (editable)
+  const [taxRates, setTaxRates] = useState({
+    federal: 22,
+    state: 5,
+    capitalGains: 15,
+  });
+
   const profile = prospect.financialProfile!;
 
   const totalAssets = profile.savings + profile.investments + profile.retirement401k + profile.homeEquity + profile.otherAssets;
@@ -259,6 +266,15 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
   // Print handler
   const handlePrint = () => {
     window.print();
+  };
+
+  // Tax rates handler
+  const handleTaxRatesChange = (rates: { federal?: number; state?: number; capitalGains?: number }) => {
+    setTaxRates({
+      federal: rates.federal ?? taxRates.federal,
+      state: rates.state ?? taxRates.state,
+      capitalGains: rates.capitalGains ?? taxRates.capitalGains,
+    });
   };
 
   const insuranceTypeLabels: Record<string, { label: string; icon: React.ReactNode }> = {
@@ -432,11 +448,8 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
                   age: profile.spouseAge,
                   occupation: profile.spouseIncome ? "Professional" : undefined
                 } : undefined}
-                taxRates={{
-                  federal: 22,
-                  state: 5,
-                  capitalGains: 15
-                }}
+                taxRates={taxRates}
+                onTaxRatesChange={handleTaxRatesChange}
                 onPrint={handlePrint}
               />
             </div>
@@ -629,7 +642,7 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
                   hasPowerOfAttorney: false,
                   hasLivingWill: false,
                   lifeInsuranceNeed: profile.protectionGap + (profile.currentLifeInsurance || 0),
-                  disabilityNeed: Math.round(totalIncome / 12 * 0.6),
+                  disabilityNeed: Math.round(totalIncome / 12 * DISABILITY_ASSUMPTIONS.incomeReplacementRate),
                   annualIncome: totalIncome
                 }}
               />
@@ -655,6 +668,7 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
                 growthStocksAllocation={30}
                 balancedAllocation={40}
                 fixedIncomeAllocation={30}
+                taxRate={taxRates.federal + taxRates.state}
               />
             )}
 

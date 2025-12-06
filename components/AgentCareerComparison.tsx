@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { TrendingUp, Play, Pause, RotateCcw, Users, DollarSign, Calendar, ArrowRight, Sparkles } from 'lucide-react';
+import { FINANCIAL_ASSUMPTIONS } from '@/lib/config';
 
 interface AgentCareerComparisonProps {
   currentAge: number;
@@ -37,8 +38,8 @@ export default function AgentCareerComparison({
   const [viewMode, setViewMode] = useState<'netWorth' | 'income' | 'death'>('netWorth');
 
   const yearsToRetirement = retirementAge - currentAge;
-  const annualReturn = 0.07; // 7% annual return
-  const annualRaise = 0.03; // 3% annual raise
+  const annualReturn = FINANCIAL_ASSUMPTIONS.nominalReturnRate; // 7% annual return
+  const annualRaise = FINANCIAL_ASSUMPTIONS.annualRaiseRate; // 3% annual raise
 
   // Calculate projections
   const projections = useMemo((): YearlyData[] => {
@@ -65,7 +66,7 @@ export default function AgentCareerComparison({
       }
 
       const totalAgentIncome = yearIncome + agentIncome;
-      const agentMonthlySavings = monthlySavingsRate + (agentIncome * 0.3) / 12; // Save 30% of agent income
+      const agentMonthlySavings = monthlySavingsRate + (agentIncome * FINANCIAL_ASSUMPTIONS.agentIncomeSavingsRate) / 12; // Save 30% of agent income
       agentNetWorth = agentNetWorth * (1 + annualReturn) + agentMonthlySavings * 12;
 
       data.push({

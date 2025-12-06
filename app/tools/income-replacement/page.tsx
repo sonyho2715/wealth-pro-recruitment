@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Shield, Calculator, DollarSign, Calendar, TrendingUp, ArrowRight, Info } from 'lucide-react';
 import { calculateIncomeReplacement } from '@/lib/calculations';
+import { FINANCIAL_ASSUMPTIONS } from '@/lib/config';
 
 export default function IncomeReplacementCalculatorPage() {
   const [monthlyIncome, setMonthlyIncome] = useState(6000);
@@ -16,7 +17,7 @@ export default function IncomeReplacementCalculatorPage() {
       monthlyIncome,
       monthlyExpenses,
       yearsOfCoverage,
-      inflationRate: includeInflation ? 0.03 : 0,
+      inflationRate: includeInflation ? FINANCIAL_ASSUMPTIONS.inflationRate : 0,
     });
   }, [monthlyIncome, monthlyExpenses, yearsOfCoverage, includeInflation]);
 
@@ -125,7 +126,7 @@ export default function IncomeReplacementCalculatorPage() {
                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm text-gray-700">Adjust for 3% inflation</span>
+                    <span className="text-sm text-gray-700">Adjust for {(FINANCIAL_ASSUMPTIONS.inflationRate * 100).toFixed(1)}% inflation</span>
                   </div>
                   <button
                     onClick={() => setIncludeInflation(!includeInflation)}

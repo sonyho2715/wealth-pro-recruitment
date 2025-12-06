@@ -582,17 +582,30 @@ model FinancialProfile {
   spouseIncome  Decimal? @db.Decimal(12, 2)
   otherIncome   Decimal? @db.Decimal(12, 2)
 
-  // Monthly Expenses
+  // Monthly Expenses (detailed breakdown)
   monthlyExpenses Decimal @db.Decimal(12, 2)
   housingCost     Decimal @db.Decimal(12, 2)
   debtPayments    Decimal @db.Decimal(12, 2)
+  utilities       Decimal @db.Decimal(12, 2) @default(0)
+  food            Decimal @db.Decimal(12, 2) @default(0)
+  transportation  Decimal @db.Decimal(12, 2) @default(0)
+  insurance       Decimal @db.Decimal(12, 2) @default(0)
+  childcare       Decimal @db.Decimal(12, 2) @default(0)
+  entertainment   Decimal @db.Decimal(12, 2) @default(0)
+  otherExpenses   Decimal @db.Decimal(12, 2) @default(0)
 
   // Assets
   savings       Decimal @db.Decimal(12, 2) @default(0)
+  emergencyFund Decimal @db.Decimal(12, 2) @default(0)
   investments   Decimal @db.Decimal(12, 2) @default(0)
   retirement401k Decimal @db.Decimal(12, 2) @default(0)
+  rothIra       Decimal @db.Decimal(12, 2) @default(0)
+  pensionValue  Decimal @db.Decimal(12, 2) @default(0)
+  hsaFsa        Decimal @db.Decimal(12, 2) @default(0)
   homeMarketValue Decimal @db.Decimal(12, 2) @default(0)  // Home market value (user input)
   homeEquity    Decimal @db.Decimal(12, 2) @default(0)    // Calculated: homeMarketValue - mortgage
+  investmentProperty Decimal @db.Decimal(12, 2) @default(0)
+  businessEquity Decimal @db.Decimal(12, 2) @default(0)
   otherAssets   Decimal @db.Decimal(12, 2) @default(0)
 
   // Liabilities
@@ -600,6 +613,7 @@ model FinancialProfile {
   carLoans     Decimal @db.Decimal(12, 2) @default(0)
   studentLoans Decimal @db.Decimal(12, 2) @default(0)
   creditCards  Decimal @db.Decimal(12, 2) @default(0)
+  personalLoans Decimal @db.Decimal(12, 2) @default(0)
   otherDebts   Decimal @db.Decimal(12, 2) @default(0)
 
   // Demographics
@@ -607,6 +621,22 @@ model FinancialProfile {
   spouseAge     Int?
   dependents    Int @default(0)
   retirementAge Int @default(65)
+  occupation    String?
+  spouseOccupation String?
+  stateOfResidence String?
+
+  // Tax Information
+  federalTaxRate   Decimal @db.Decimal(5, 2) @default(22)
+  stateTaxRate     Decimal @db.Decimal(5, 2) @default(5)
+  capitalGainsTaxRate Decimal @db.Decimal(5, 2) @default(15)
+  filingStatus     FilingStatus @default(SINGLE)
+
+  // Monthly Contributions
+  monthlySavingsContribution Decimal @db.Decimal(12, 2) @default(0)
+  employer401kMatch Decimal @db.Decimal(5, 2) @default(0)  // Percentage
+
+  // Social Security
+  expectedSocialSecurity Decimal @db.Decimal(12, 2) @default(0)
 
   // Calculated fields
   netWorth      Decimal @db.Decimal(12, 2) @default(0)
@@ -619,6 +649,13 @@ model FinancialProfile {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum FilingStatus {
+  SINGLE
+  MARRIED_FILING_JOINTLY
+  MARRIED_FILING_SEPARATELY
+  HEAD_OF_HOUSEHOLD
 }
 
 // Insurance recommendations
