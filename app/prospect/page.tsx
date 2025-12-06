@@ -967,16 +967,16 @@ export default function ProspectIntakePage() {
         </div>
       </nav>
 
-      <div className="py-8 px-4">
+      <div className="py-6 md:py-10 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Financial Review</h1>
-          <p className="text-gray-600">Complete this assessment to see your full financial picture</p>
+        <div className="text-center mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Financial Review</h1>
+          <p className="text-gray-600 text-sm md:text-base">Complete this assessment to see your full financial picture</p>
         </div>
 
         {/* Progress Steps */}
-        <div className="flex items-center justify-between mb-8 overflow-x-auto pb-4">
+        <div className="flex items-center justify-between mb-6 md:mb-8 overflow-x-auto pb-2 scrollbar-hide">
           {steps.map((step, index) => (
             <div key={step.id} className="flex items-center">
               <div

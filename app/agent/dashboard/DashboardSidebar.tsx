@@ -85,14 +85,14 @@ export default function DashboardSidebar({ agent }: DashboardSidebarProps) {
 
   return (
     <aside
-      className={`fixed left-0 top-0 h-full bg-white border-r border-gray-200 flex flex-col transition-all duration-300 z-40 ${
+      className={`fixed left-0 top-0 h-full bg-white/95 backdrop-blur-sm border-r border-gray-200/80 flex flex-col transition-all duration-300 z-40 shadow-soft ${
         collapsed ? 'w-20' : 'w-64'
       }`}
     >
       {/* Header */}
-      <div className="p-4 border-b border-gray-100">
+      <div className="p-4 border-b border-gray-100/80">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/20">
             <Shield className="w-6 h-6 text-white" />
           </div>
           {!collapsed && (

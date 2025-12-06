@@ -254,11 +254,11 @@ export default async function DashboardOverviewPage() {
     };
 
     return (
-      <div className="p-6 lg:p-8">
+      <div className="p-4 md:p-6 lg:p-8">
         {/* Page Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
-          <p className="text-gray-600">Welcome back, {agent.firstName}! Here's your performance snapshot.</p>
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Dashboard Overview</h1>
+          <p className="text-gray-600 text-sm md:text-base mt-1">Welcome back, {agent.firstName}! Here's your performance snapshot.</p>
         </div>
 
         {/* What to Do Today - Smart Suggestions */}

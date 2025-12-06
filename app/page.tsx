@@ -58,7 +58,7 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section with Image */}
-      <section className="relative py-20 px-4 overflow-hidden">
+      <section className="relative py-16 md:py-24 px-4 overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <Image
@@ -68,26 +68,26 @@ export default function HomePage() {
             className="object-cover opacity-10"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/80 via-white/60 to-indigo-50/80" />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/90 via-white/70 to-indigo-50/90" />
         </div>
 
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full mb-6">
+              <div className="inline-flex items-center gap-2 bg-blue-100/80 text-blue-700 px-4 py-2 rounded-full mb-6 backdrop-blur-sm">
                 <CheckCircle2 className="w-4 h-4" />
                 <span className="text-sm font-medium">Free Financial Assessment</span>
               </div>
 
-              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 leading-[1.1] tracking-tight">
                 What You Can't See
-                <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mt-2">
                   Could Cost Your Family Everything
                 </span>
               </h1>
 
-              <p className="text-xl text-gray-600 mb-8">
-                Most families think they're covered. <span className="font-medium text-gray-700">In 10 minutes</span>, discover your gaps before life does.
+              <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
+                Most families think they're covered. <span className="font-semibold text-gray-800">In 10 minutes</span>, discover your gaps before life does.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
@@ -146,11 +146,11 @@ export default function HomePage() {
       </section>
 
       {/* How It Works */}
-      <section className="py-20 px-4 bg-white/50">
+      <section className="py-16 md:py-20 px-4 bg-white/60 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">How It Works</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">How It Works</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto text-base md:text-lg">
               Our comprehensive process helps you understand your finances and discover opportunities
             </p>
           </div>
@@ -388,11 +388,11 @@ export default function HomePage() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-20 px-4 bg-gray-50">
+      <section className="py-16 md:py-20 px-4 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Two Paths Forward</h2>
-            <p className="text-gray-600">Secure your family or build a career. Both start here.</p>
+          <div className="text-center mb-10 md:mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Two Paths Forward</h2>
+            <p className="text-gray-600 text-base md:text-lg">Secure your family or build a career. Both start here.</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
@@ -482,13 +482,13 @@ export default function HomePage() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 px-4 bg-white">
+      <section className="py-16 md:py-20 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          <div className="text-center mb-10 md:mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
               Real Results
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-600 text-base md:text-lg">
               10 minutes changed everything for them.
             </p>
           </div>
@@ -554,9 +554,9 @@ export default function HomePage() {
       </section>
 
       {/* Our Mission Section */}
-      <section className="py-20 px-4 bg-gradient-to-br from-slate-50 to-blue-50">
+      <section className="py-16 md:py-20 px-4 bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
             <div className="relative">
               <div className="relative h-[400px] rounded-2xl overflow-hidden shadow-xl">
                 <Image
@@ -619,9 +619,9 @@ export default function HomePage() {
       </section>
 
       {/* Career Opportunity Section */}
-      <section className="py-20 px-4 bg-white">
+      <section className="py-16 md:py-20 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
             <div className="order-2 lg:order-1">
               <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full mb-4">
                 <Briefcase className="w-4 h-4" />
