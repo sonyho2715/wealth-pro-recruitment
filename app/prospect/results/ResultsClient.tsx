@@ -325,10 +325,10 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
         onDecline={handleConsentDecline}
       />
 
-      <div className="py-8 px-4">
+      <div className="py-6 md:py-8 px-4">
         <div className="max-w-6xl mx-auto">
           {/* Top Navigation */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
             <Link
               href="/"
               className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors"
