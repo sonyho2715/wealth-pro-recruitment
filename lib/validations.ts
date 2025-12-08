@@ -41,6 +41,7 @@ export const financialProfileSchema = z.object({
 
   // Business & Other Assets
   businessEquity: z.number().min(0).default(0),
+  personalProperty: z.number().min(0).default(0),
   otherAssets: z.number().min(0).default(0),
 
   // Liabilities
@@ -49,6 +50,8 @@ export const financialProfileSchema = z.object({
   studentLoans: z.number().min(0).default(0),
   personalLoans: z.number().min(0).default(0),
   creditCards: z.number().min(0).default(0),
+  taxesOwed: z.number().min(0).default(0),
+  businessDebt: z.number().min(0).default(0),
   otherDebts: z.number().min(0).default(0),
 
   // Demographics
@@ -60,9 +63,15 @@ export const financialProfileSchema = z.object({
   spouseOccupation: z.string().optional(),
   stateOfResidence: z.string().optional(),
 
-  // Current coverage
+  // Protection & Insurance
   currentLifeInsurance: z.number().min(0).default(0),
   currentDisability: z.number().min(0).default(0),
+  liabilityInsurance: z.number().min(0).default(0),
+  hospitalDailyBenefit: z.number().min(0).default(0),
+  spouseLifeInsurance: z.number().min(0).default(0),
+  annualInsuranceCosts: z.number().min(0).default(0),
+  hasWill: z.boolean().default(false),
+  hasTrust: z.boolean().default(false),
 });
 
 export const agentProjectionSchema = z.object({

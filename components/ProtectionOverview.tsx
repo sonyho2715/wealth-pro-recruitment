@@ -6,7 +6,10 @@ import { DISABILITY_ASSUMPTIONS } from '@/lib/config';
 interface ProtectionData {
   // Insurance Coverage
   lifeInsurance: number;
+  spouseLifeInsurance?: number;
   disabilityMonthly: number;
+  hospitalDailyBenefit?: number;
+  liabilityInsurance?: number;
   autoInsurance: boolean;
   homeownersInsurance: boolean;
   umbrellaPolicy: boolean;
@@ -23,6 +26,7 @@ interface ProtectionData {
   lifeInsuranceNeed: number;
   disabilityNeed: number;
   annualIncome: number;
+  annualInsuranceCosts?: number;
 }
 
 interface ProtectionOverviewProps {
@@ -138,7 +142,10 @@ export default function ProtectionOverview({ data }: ProtectionOverviewProps) {
 
   // Calculate statuses
   const lifeStatus = getLifeInsuranceStatus(data.lifeInsurance, data.lifeInsuranceNeed);
+  const spouseLifeStatus = (data.spouseLifeInsurance || 0) > 0 ? 'optimal' as StatusLevel : 'moderate' as StatusLevel;
   const disabilityStatus = getDisabilityStatus(data.disabilityMonthly, data.annualIncome);
+  const hospitalStatus = (data.hospitalDailyBenefit || 0) > 0 ? 'optimal' as StatusLevel : 'moderate' as StatusLevel;
+  const liabilityStatus = (data.liabilityInsurance || 0) > 0 ? 'optimal' as StatusLevel : 'moderate' as StatusLevel;
   const autoStatus = getBooleanStatus(data.autoInsurance);
   const homeStatus = getBooleanStatus(data.homeownersInsurance);
   const umbrellaStatus = getBooleanStatus(data.umbrellaPolicy);
@@ -150,7 +157,7 @@ export default function ProtectionOverview({ data }: ProtectionOverviewProps) {
   const livingWillStatus = getBooleanStatus(data.hasLivingWill);
 
   // Count statuses for summary
-  const allStatuses = [lifeStatus, disabilityStatus, autoStatus, homeStatus, umbrellaStatus, healthStatus, ltcStatus, willStatus, trustStatus, poaStatus, livingWillStatus];
+  const allStatuses = [lifeStatus, spouseLifeStatus, disabilityStatus, hospitalStatus, liabilityStatus, autoStatus, homeStatus, umbrellaStatus, healthStatus, ltcStatus, willStatus, trustStatus, poaStatus, livingWillStatus];
   const warningCount = allStatuses.filter(s => s === 'warning').length;
   const moderateCount = allStatuses.filter(s => s === 'moderate').length;
   const optimalCount = allStatuses.filter(s => s === 'optimal').length;
@@ -208,10 +215,17 @@ export default function ProtectionOverview({ data }: ProtectionOverviewProps) {
             <div className="space-y-2">
               <ProtectionItem
                 icon={Shield}
-                label="Life Insurance"
+                label="Life Insurance (You)"
                 value={formatCurrency(data.lifeInsurance)}
                 status={lifeStatus}
                 subtext={`Need: ${formatCurrency(data.lifeInsuranceNeed)}`}
+              />
+              <ProtectionItem
+                icon={Shield}
+                label="Life Insurance (Spouse)"
+                value={formatCurrency(data.spouseLifeInsurance || 0)}
+                status={spouseLifeStatus}
+                subtext="Consider for income protection"
               />
               <ProtectionItem
                 icon={Stethoscope}
@@ -219,6 +233,20 @@ export default function ProtectionOverview({ data }: ProtectionOverviewProps) {
                 value={formatCurrency(data.disabilityMonthly)}
                 status={disabilityStatus}
                 subtext="60% income replacement recommended"
+              />
+              <ProtectionItem
+                icon={Heart}
+                label="Hospital Daily Benefit"
+                value={formatCurrency(data.hospitalDailyBenefit || 0)}
+                status={hospitalStatus}
+                subtext="Covers out-of-pocket hospital costs"
+              />
+              <ProtectionItem
+                icon={Umbrella}
+                label="Liability/Umbrella"
+                value={formatCurrency(data.liabilityInsurance || 0)}
+                status={liabilityStatus}
+                subtext="Protects assets from lawsuits"
               />
               <ProtectionItem
                 icon={Car}
@@ -231,12 +259,6 @@ export default function ProtectionOverview({ data }: ProtectionOverviewProps) {
                 label="Homeowner's Insurance"
                 value={data.homeownersInsurance ? 'Yes' : 'No'}
                 status={homeStatus}
-              />
-              <ProtectionItem
-                icon={Umbrella}
-                label="Umbrella Policy"
-                value={data.umbrellaPolicy ? 'Yes' : 'No'}
-                status={umbrellaStatus}
               />
               <ProtectionItem
                 icon={Heart}

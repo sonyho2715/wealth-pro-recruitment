@@ -647,6 +647,21 @@ model FinancialProfile {
   currentLifeInsurance Decimal @db.Decimal(12, 2) @default(0)
   currentDisability    Decimal @db.Decimal(12, 2) @default(0)
 
+  // NEW: Protection Details
+  liabilityInsurance    Decimal @db.Decimal(12, 2) @default(0)  // Umbrella/liability coverage
+  hospitalDailyBenefit  Decimal @db.Decimal(12, 2) @default(0)  // Daily hospital indemnity
+  spouseLifeInsurance   Decimal @db.Decimal(12, 2) @default(0)  // Spouse's life insurance
+  annualInsuranceCosts  Decimal @db.Decimal(12, 2) @default(0)  // Total annual premiums
+  hasWill               Boolean @default(false)
+  hasTrust              Boolean @default(false)
+
+  // NEW: Assets - Personal Property (separated from otherAssets)
+  personalProperty      Decimal @db.Decimal(12, 2) @default(0)  // Vehicles, jewelry, collectibles
+
+  // NEW: Liabilities - Tax and Business Debt
+  taxesOwed             Decimal @db.Decimal(12, 2) @default(0)  // Back taxes, tax liens
+  businessDebt          Decimal @db.Decimal(12, 2) @default(0)  // Business-related debt
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

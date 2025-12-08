@@ -7,6 +7,12 @@ interface FinancialData {
   // Protection
   currentLifeInsurance: number;
   currentDisability: number;
+  spouseLifeInsurance: number;
+  liabilityInsurance: number;
+  hospitalDailyBenefit: number;
+  annualInsuranceCosts: number;
+  hasWill: boolean;
+  hasTrust: boolean;
 
   // Assets
   savings: number;
@@ -14,13 +20,18 @@ interface FinancialData {
   retirement401k: number;
   homeMarketValue: number;
   otherAssets: number;
+  personalProperty: number;
+  businessEquity: number;
 
   // Liabilities
   mortgage: number;
   carLoans: number;
   studentLoans: number;
   creditCards: number;
+  personalLoans: number;
   otherDebts: number;
+  taxesOwed: number;
+  businessDebt: number;
 
   // Cash Flow
   annualIncome: number;
@@ -47,9 +58,13 @@ export default function EditFinancialDataModal({
 
   if (!isOpen) return null;
 
-  const handleChange = (field: keyof FinancialData, value: string) => {
-    const numValue = parseInt(value.replace(/[^0-9-]/g, '')) || 0;
-    setData(prev => ({ ...prev, [field]: numValue }));
+  const handleChange = (field: keyof FinancialData, value: string | boolean) => {
+    if (typeof value === 'boolean') {
+      setData(prev => ({ ...prev, [field]: value }));
+    } else {
+      const numValue = parseInt(value.replace(/[^0-9-]/g, '')) || 0;
+      setData(prev => ({ ...prev, [field]: numValue }));
+    }
   };
 
   const handleSave = async () => {
@@ -66,8 +81,8 @@ export default function EditFinancialDataModal({
 
   // Calculate derived values
   const homeEquity = Math.max(0, data.homeMarketValue - data.mortgage);
-  const totalAssets = data.savings + data.investments + data.retirement401k + homeEquity + data.otherAssets;
-  const totalLiabilities = data.mortgage + data.carLoans + data.studentLoans + data.creditCards + data.otherDebts;
+  const totalAssets = data.savings + data.investments + data.retirement401k + homeEquity + data.otherAssets + (data.personalProperty || 0) + (data.businessEquity || 0);
+  const totalLiabilities = data.mortgage + data.carLoans + data.studentLoans + data.creditCards + (data.personalLoans || 0) + data.otherDebts + (data.taxesOwed || 0) + (data.businessDebt || 0);
   const netWorth = totalAssets - totalLiabilities;
 
   const formatCurrency = (value: number) => {
@@ -160,17 +175,79 @@ export default function EditFinancialDataModal({
                   <p className="text-amber-700 text-sm">Your current insurance coverage amounts</p>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-4">
-                  <InputField
-                    label="Life Insurance (Client)"
-                    field="currentLifeInsurance"
-                    helpText="Total death benefit coverage"
-                  />
-                  <InputField
-                    label="Disability Insurance (Monthly)"
-                    field="currentDisability"
-                    helpText="Monthly benefit if unable to work"
-                  />
+                {/* Life Insurance */}
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-700 mb-3">Life Insurance</h4>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <InputField
+                      label="Your Life Insurance"
+                      field="currentLifeInsurance"
+                      helpText="Total death benefit coverage"
+                    />
+                    <InputField
+                      label="Spouse Life Insurance"
+                      field="spouseLifeInsurance"
+                      helpText="Spouse's death benefit coverage"
+                    />
+                  </div>
+                </div>
+
+                {/* Other Insurance */}
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-700 mb-3">Other Insurance</h4>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <InputField
+                      label="Disability (Monthly)"
+                      field="currentDisability"
+                      helpText="Monthly benefit if unable to work"
+                    />
+                    <InputField
+                      label="Hospital Daily Benefit"
+                      field="hospitalDailyBenefit"
+                      helpText="Daily hospital coverage amount"
+                    />
+                    <InputField
+                      label="Liability/Umbrella"
+                      field="liabilityInsurance"
+                      helpText="Umbrella policy coverage"
+                    />
+                    <InputField
+                      label="Annual Insurance Costs"
+                      field="annualInsuranceCosts"
+                      helpText="Total yearly premiums"
+                    />
+                  </div>
+                </div>
+
+                {/* Estate Planning */}
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-700 mb-3">Estate Planning</h4>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={data.hasWill || false}
+                        onChange={(e) => handleChange('hasWill', e.target.checked)}
+                        className="w-5 h-5 rounded border-slate-300 text-amber-600 focus:ring-amber-500"
+                      />
+                      <div>
+                        <span className="font-medium text-slate-700">Has Will</span>
+                        <p className="text-xs text-slate-500">Legal will in place</p>
+                      </div>
+                    </label>
+                    <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={data.hasTrust || false}
+                        onChange={(e) => handleChange('hasTrust', e.target.checked)}
+                        className="w-5 h-5 rounded border-slate-300 text-amber-600 focus:ring-amber-500"
+                      />
+                      <div>
+                        <span className="font-medium text-slate-700">Has Trust</span>
+                        <p className="text-xs text-slate-500">Living trust established</p>
+                      </div>
+                    </label>
+                  </div>
                 </div>
               </div>
             )}
@@ -196,7 +273,9 @@ export default function EditFinancialDataModal({
                   <InputField label="Investments" field="investments" helpText="Stocks, bonds, mutual funds" />
                   <InputField label="Retirement (401k/IRA)" field="retirement401k" helpText="Retirement accounts" />
                   <InputField label="Home Market Value" field="homeMarketValue" helpText="Current market value of home" />
-                  <InputField label="Other Assets" field="otherAssets" helpText="Vehicles, personal property, etc." />
+                  <InputField label="Personal Property" field="personalProperty" helpText="Vehicles, jewelry, collectibles" />
+                  <InputField label="Business Equity" field="businessEquity" helpText="Value of business ownership" />
+                  <InputField label="Other Assets" field="otherAssets" helpText="Any other assets not listed" />
                 </div>
 
                 {/* Home Equity Calculator */}
@@ -235,7 +314,10 @@ export default function EditFinancialDataModal({
                   <InputField label="Car Loans" field="carLoans" helpText="Auto loan balances" />
                   <InputField label="Student Loans" field="studentLoans" helpText="Education debt" />
                   <InputField label="Credit Cards" field="creditCards" helpText="Credit card balances" />
-                  <InputField label="Other Debts" field="otherDebts" helpText="Personal loans, etc." />
+                  <InputField label="Personal Loans" field="personalLoans" helpText="Personal loan balances" />
+                  <InputField label="Taxes Owed" field="taxesOwed" helpText="Outstanding tax obligations" />
+                  <InputField label="Business Debt" field="businessDebt" helpText="Business-related debts" />
+                  <InputField label="Other Debts" field="otherDebts" helpText="Any other debts not listed" />
                 </div>
               </div>
             )}

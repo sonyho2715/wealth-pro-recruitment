@@ -74,11 +74,16 @@ interface FinancialProfile {
   homeMarketValue: number;
   homeEquity: number;
   otherAssets: number;
+  personalProperty: number;
+  businessEquity: number;
   mortgage: number;
   carLoans: number;
   studentLoans: number;
   creditCards: number;
+  personalLoans: number;
   otherDebts: number;
+  taxesOwed: number;
+  businessDebt: number;
   age: number;
   spouseAge: number | null;
   dependents: number;
@@ -88,6 +93,12 @@ interface FinancialProfile {
   protectionGap: number;
   currentLifeInsurance: number;
   currentDisability: number;
+  liabilityInsurance: number;
+  hospitalDailyBenefit: number;
+  spouseLifeInsurance: number;
+  annualInsuranceCosts: number;
+  hasWill: boolean;
+  hasTrust: boolean;
 }
 
 interface AgentProjection {
@@ -223,16 +234,27 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
   const handleSaveFinancialData = async (data: {
     currentLifeInsurance: number;
     currentDisability: number;
+    spouseLifeInsurance: number;
+    liabilityInsurance: number;
+    hospitalDailyBenefit: number;
+    annualInsuranceCosts: number;
+    hasWill: boolean;
+    hasTrust: boolean;
     savings: number;
     investments: number;
     retirement401k: number;
     homeMarketValue: number;
     otherAssets: number;
+    personalProperty: number;
+    businessEquity: number;
     mortgage: number;
     carLoans: number;
     studentLoans: number;
     creditCards: number;
+    personalLoans: number;
     otherDebts: number;
+    taxesOwed: number;
+    businessDebt: number;
     annualIncome: number;
     spouseIncome: number | null;
     monthlyExpenses: number;
@@ -569,31 +591,31 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
                   clientName={`${prospect.firstName} ${prospect.lastName}`}
                   data={{
                     protection: {
-                      liability: 0,
+                      liability: profile.liabilityInsurance || 0,
                       disabilityMonthly: profile.currentDisability || 0,
-                      hospitalDaily: 0,
-                      hasWill: false,
-                      hasTrust: false,
+                      hospitalDaily: profile.hospitalDailyBenefit || 0,
+                      hasWill: profile.hasWill ?? false,
+                      hasTrust: profile.hasTrust ?? false,
                       lifeInsuranceClient: profile.currentLifeInsurance || 0,
-                      lifeInsuranceSpouse: 0,
+                      lifeInsuranceSpouse: profile.spouseLifeInsurance || 0,
                     },
                     assets: {
-                      personalProperty: profile.otherAssets,
+                      personalProperty: profile.personalProperty || 0,
                       savings: profile.savings,
                       investments: profile.investments,
                       retirement: profile.retirement401k,
                       realEstate: profile.homeEquity,
-                      business: 0,
+                      business: profile.businessEquity || 0,
                     },
                     liabilities: {
-                      shortTerm: profile.creditCards + profile.carLoans,
-                      taxes: 0,
+                      shortTerm: profile.creditCards + profile.carLoans + profile.personalLoans,
+                      taxes: profile.taxesOwed || 0,
                       mortgages: profile.mortgage,
-                      businessDebt: profile.studentLoans + profile.otherDebts,
+                      businessDebt: (profile.businessDebt || 0) + profile.studentLoans + profile.otherDebts,
                     },
                     cashFlow: {
                       annualIncome: totalIncome,
-                      insuranceCosts: 0,
+                      insuranceCosts: profile.annualInsuranceCosts || 0,
                       annualSavings: profile.monthlyGap > 0 ? profile.monthlyGap * 12 : 0,
                       debtAndTaxCosts: profile.debtPayments * 12,
                     },
@@ -608,16 +630,27 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
                   initialData={{
                     currentLifeInsurance: profile.currentLifeInsurance || 0,
                     currentDisability: profile.currentDisability || 0,
+                    spouseLifeInsurance: profile.spouseLifeInsurance || 0,
+                    liabilityInsurance: profile.liabilityInsurance || 0,
+                    hospitalDailyBenefit: profile.hospitalDailyBenefit || 0,
+                    annualInsuranceCosts: profile.annualInsuranceCosts || 0,
+                    hasWill: profile.hasWill ?? false,
+                    hasTrust: profile.hasTrust ?? false,
                     savings: profile.savings,
                     investments: profile.investments,
                     retirement401k: profile.retirement401k,
                     homeMarketValue: profile.homeMarketValue || profile.homeEquity + profile.mortgage,
                     otherAssets: profile.otherAssets,
+                    personalProperty: profile.personalProperty || 0,
+                    businessEquity: profile.businessEquity || 0,
                     mortgage: profile.mortgage,
                     carLoans: profile.carLoans,
                     studentLoans: profile.studentLoans,
                     creditCards: profile.creditCards,
+                    personalLoans: profile.personalLoans || 0,
                     otherDebts: profile.otherDebts,
+                    taxesOwed: profile.taxesOwed || 0,
+                    businessDebt: profile.businessDebt || 0,
                     annualIncome: profile.annualIncome,
                     spouseIncome: profile.spouseIncome,
                     monthlyExpenses: profile.monthlyExpenses,
@@ -631,19 +664,23 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
               <ProtectionOverview
                 data={{
                   lifeInsurance: profile.currentLifeInsurance || 0,
+                  spouseLifeInsurance: profile.spouseLifeInsurance || 0,
                   disabilityMonthly: profile.currentDisability || 0,
+                  hospitalDailyBenefit: profile.hospitalDailyBenefit || 0,
+                  liabilityInsurance: profile.liabilityInsurance || 0,
                   autoInsurance: true,
                   homeownersInsurance: profile.homeEquity > 0,
-                  umbrellaPolicy: false,
+                  umbrellaPolicy: (profile.liabilityInsurance || 0) > 0,
                   healthInsurance: true,
                   longTermCare: false,
-                  hasWill: false,
-                  hasTrust: false,
+                  hasWill: profile.hasWill ?? false,
+                  hasTrust: profile.hasTrust ?? false,
                   hasPowerOfAttorney: false,
                   hasLivingWill: false,
                   lifeInsuranceNeed: profile.protectionGap + (profile.currentLifeInsurance || 0),
                   disabilityNeed: Math.round(totalIncome / 12 * DISABILITY_ASSUMPTIONS.incomeReplacementRate),
-                  annualIncome: totalIncome
+                  annualIncome: totalIncome,
+                  annualInsuranceCosts: profile.annualInsuranceCosts || 0
                 }}
               />
             )}

@@ -6,6 +6,7 @@ import * as bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { requireAgent, getSession } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { checkPlanLimit } from '@/lib/stripe';
 
 function generateInviteToken(): string {
   return crypto.randomBytes(32).toString('hex');
@@ -30,6 +31,23 @@ const updateTeamMemberSchema = z.object({
 export async function addTeamMember(formData: FormData) {
   try {
     const session = await requireAgent();
+
+    // Get current agent's organization
+    const currentAgent = await db.agent.findUnique({
+      where: { id: session.agentId },
+      select: { organizationId: true },
+    });
+
+    if (currentAgent?.organizationId) {
+      // Check plan limit for adding agents
+      const limitCheck = await checkPlanLimit(currentAgent.organizationId, 'addAgent');
+      if (!limitCheck.allowed) {
+        return {
+          success: false,
+          error: limitCheck.reason || 'Cannot add more agents on current plan',
+        };
+      }
+    }
 
     const validated = addTeamMemberSchema.parse({
       firstName: formData.get('firstName'),

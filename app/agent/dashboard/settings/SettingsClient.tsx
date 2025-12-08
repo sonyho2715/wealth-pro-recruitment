@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { User, Lock, Bell, Target, Save, CheckCircle } from 'lucide-react';
+import Link from 'next/link';
+import { User, Lock, Target, Save, CheckCircle, CreditCard, ChevronRight } from 'lucide-react';
 import { updateAgentSettings, updateAgentPassword } from './actions';
 
 interface SettingsClientProps {
@@ -124,6 +125,25 @@ export default function SettingsClient({ agent }: SettingsClientProps) {
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Settings</h1>
         <p className="text-gray-600">Manage your account settings and preferences</p>
       </div>
+
+      {/* Billing Link (Admin only) */}
+      {agent.role === 'ADMIN' && (
+        <Link
+          href="/agent/dashboard/settings/billing"
+          className="flex items-center justify-between p-4 mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl hover:from-blue-100 hover:to-indigo-100 transition group"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <CreditCard className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-900">Billing & Subscription</h3>
+              <p className="text-sm text-gray-500">Manage your plan, usage, and payment methods</p>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition" />
+        </Link>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-2 mb-6 border-b border-gray-200">
