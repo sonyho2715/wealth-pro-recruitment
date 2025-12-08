@@ -39,6 +39,13 @@ model Organization {
   twilioAuthToken    String?
   twilioPhoneNumber  String?
 
+  // White-Label Database Isolation
+  // When tenantDatabaseProvisioned is true, this org has its own database
+  tenantDatabaseUrl         String?   // Connection URL to dedicated database
+  tenantDatabaseProvisioned Boolean   @default(false)
+  tenantDatabaseProvisionedAt DateTime?
+  tenantRailwayProjectId    String?   // Railway project ID for management
+
   // Relations
   agents            Agent[]
   contacts          Contact[]
