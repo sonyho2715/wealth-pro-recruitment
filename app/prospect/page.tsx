@@ -77,15 +77,26 @@ export default function ProspectIntakePage() {
     personalLoans: 0,
     creditCards: 5000,
     otherDebts: 0,
+    taxesOwed: 0,
+    businessDebt: 0,
 
     // Protection
     currentLifeInsurance: 100000,
-    currentDisability: 0
+    currentDisability: 0,
+    liabilityInsurance: 0,
+    hospitalDailyBenefit: 0,
+    spouseLifeInsurance: 0,
+    annualInsuranceCosts: 0,
+    hasWill: false,
+    hasTrust: false,
+
+    // Assets - Personal Property
+    personalProperty: 0
   });
 
   const currentStepIndex = steps.findIndex(s => s.id === currentStep);
 
-  const handleChange = (field: string, value: string | number | undefined) => {
+  const handleChange = (field: string, value: string | number | boolean | undefined) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -182,6 +193,8 @@ export default function ProspectIntakePage() {
       personalLoans: formData.personalLoans,
       creditCards: formData.creditCards,
       otherDebts: formData.otherDebts,
+      taxesOwed: formData.taxesOwed,
+      businessDebt: formData.businessDebt,
 
       // Demographics
       age: formData.age,
@@ -194,7 +207,16 @@ export default function ProspectIntakePage() {
 
       // Protection
       currentLifeInsurance: formData.currentLifeInsurance,
-      currentDisability: formData.currentDisability
+      currentDisability: formData.currentDisability,
+      liabilityInsurance: formData.liabilityInsurance,
+      hospitalDailyBenefit: formData.hospitalDailyBenefit,
+      spouseLifeInsurance: formData.spouseLifeInsurance,
+      annualInsuranceCosts: formData.annualInsuranceCosts,
+      hasWill: formData.hasWill,
+      hasTrust: formData.hasTrust,
+
+      // Personal Property
+      personalProperty: formData.personalProperty
     });
 
     setLoading(false);
@@ -714,18 +736,33 @@ export default function ProspectIntakePage() {
                   <p className="text-xs text-gray-500 mt-1">Ownership stake in any businesses</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Other Assets</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Personal Property</label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
                     <input
                       type="number"
-                      value={formData.otherAssets}
-                      onChange={e => handleChange('otherAssets', parseInt(e.target.value) || 0)}
+                      value={formData.personalProperty}
+                      onChange={e => handleChange('personalProperty', parseInt(e.target.value) || 0)}
                       className="input-field pl-8"
+                      placeholder="0"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Vehicles, collectibles, etc.</p>
+                  <p className="text-xs text-gray-500 mt-1">Vehicles, jewelry, collectibles</p>
                 </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Other Assets</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <input
+                    type="number"
+                    value={formData.otherAssets}
+                    onChange={e => handleChange('otherAssets', parseInt(e.target.value) || 0)}
+                    className="input-field pl-8"
+                    placeholder="0"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Any other assets not listed above</p>
               </div>
             </div>
 
@@ -744,6 +781,7 @@ export default function ProspectIntakePage() {
                     Math.max(0, formData.homeMarketValue - formData.mortgage) +
                     formData.investmentProperty +
                     formData.businessEquity +
+                    formData.personalProperty +
                     formData.otherAssets
                   ).toLocaleString()}
                 </span>
@@ -827,6 +865,37 @@ export default function ProspectIntakePage() {
               </div>
             </div>
 
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Taxes Owed</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <input
+                    type="number"
+                    value={formData.taxesOwed}
+                    onChange={e => handleChange('taxesOwed', parseInt(e.target.value) || 0)}
+                    className="input-field pl-8"
+                    placeholder="0"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Back taxes, tax liens</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Business Debt</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <input
+                    type="number"
+                    value={formData.businessDebt}
+                    onChange={e => handleChange('businessDebt', parseInt(e.target.value) || 0)}
+                    className="input-field pl-8"
+                    placeholder="0"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Business-related debt obligations</p>
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Other Debts</label>
               <div className="relative">
@@ -836,9 +905,10 @@ export default function ProspectIntakePage() {
                   value={formData.otherDebts}
                   onChange={e => handleChange('otherDebts', parseInt(e.target.value) || 0)}
                   className="input-field pl-8"
+                  placeholder="0"
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">Medical bills, tax debt, etc.</p>
+              <p className="text-xs text-gray-500 mt-1">Medical bills, etc.</p>
             </div>
 
             <div className="bg-red-50 border border-red-200 rounded-xl p-4">
@@ -851,6 +921,8 @@ export default function ProspectIntakePage() {
                     formData.studentLoans +
                     formData.personalLoans +
                     formData.creditCards +
+                    formData.taxesOwed +
+                    formData.businessDebt +
                     formData.otherDebts
                   ).toLocaleString()}
                 </span>
@@ -873,6 +945,7 @@ export default function ProspectIntakePage() {
                     formData.homeMarketValue +
                     formData.investmentProperty +
                     formData.businessEquity +
+                    formData.personalProperty +
                     formData.otherAssets -
                     // Liabilities
                     formData.mortgage -
@@ -880,6 +953,8 @@ export default function ProspectIntakePage() {
                     formData.studentLoans -
                     formData.personalLoans -
                     formData.creditCards -
+                    formData.taxesOwed -
+                    formData.businessDebt -
                     formData.otherDebts
                   ).toLocaleString()}
                 </span>
@@ -894,36 +969,137 @@ export default function ProspectIntakePage() {
           <div className="space-y-6">
             <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-6">
               <p className="text-purple-700 text-sm">
-                Tell us about your current insurance coverage so we can identify any gaps in your protection.
+                Tell us about your current insurance coverage and estate planning so we can identify any gaps.
               </p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Current Life Insurance Coverage</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                <input
-                  type="number"
-                  value={formData.currentLifeInsurance}
-                  onChange={e => handleChange('currentLifeInsurance', parseInt(e.target.value) || 0)}
-                  className="input-field pl-8"
-                />
+            {/* Life Insurance */}
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
+              <h4 className="font-medium text-gray-900">Life Insurance</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Your Life Insurance</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <input
+                      type="number"
+                      value={formData.currentLifeInsurance}
+                      onChange={e => handleChange('currentLifeInsurance', parseInt(e.target.value) || 0)}
+                      className="input-field pl-8"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">All policies (term, whole life, group)</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Spouse Life Insurance</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <input
+                      type="number"
+                      value={formData.spouseLifeInsurance}
+                      onChange={e => handleChange('spouseLifeInsurance', parseInt(e.target.value) || 0)}
+                      className="input-field pl-8"
+                      placeholder="0"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Leave blank if not applicable</p>
+                </div>
               </div>
-              <p className="text-sm text-gray-500 mt-1">Include all policies (term, whole life, group coverage)</p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Monthly Disability Coverage</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                <input
-                  type="number"
-                  value={formData.currentDisability}
-                  onChange={e => handleChange('currentDisability', parseInt(e.target.value) || 0)}
-                  className="input-field pl-8"
-                />
+            {/* Other Insurance */}
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
+              <h4 className="font-medium text-gray-900">Other Insurance Coverage</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Monthly Disability Benefit</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <input
+                      type="number"
+                      value={formData.currentDisability}
+                      onChange={e => handleChange('currentDisability', parseInt(e.target.value) || 0)}
+                      className="input-field pl-8"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Monthly benefit if disabled</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Hospital Daily Benefit</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <input
+                      type="number"
+                      value={formData.hospitalDailyBenefit}
+                      onChange={e => handleChange('hospitalDailyBenefit', parseInt(e.target.value) || 0)}
+                      className="input-field pl-8"
+                      placeholder="0"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Daily indemnity benefit</p>
+                </div>
               </div>
-              <p className="text-sm text-gray-500 mt-1">Monthly benefit amount if you become disabled</p>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Liability/Umbrella Coverage</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <input
+                      type="number"
+                      value={formData.liabilityInsurance}
+                      onChange={e => handleChange('liabilityInsurance', parseInt(e.target.value) || 0)}
+                      className="input-field pl-8"
+                      placeholder="0"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Personal liability protection</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Annual Insurance Costs</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <input
+                      type="number"
+                      value={formData.annualInsuranceCosts}
+                      onChange={e => handleChange('annualInsuranceCosts', parseInt(e.target.value) || 0)}
+                      className="input-field pl-8"
+                      placeholder="0"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Total annual premiums paid</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Estate Planning */}
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
+              <h4 className="font-medium text-gray-900">Estate Planning</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <label className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={formData.hasWill}
+                    onChange={e => handleChange('hasWill', e.target.checked)}
+                    className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <div>
+                    <span className="font-medium text-gray-900">I have a Will</span>
+                    <p className="text-xs text-gray-500">Legal document for asset distribution</p>
+                  </div>
+                </label>
+                <label className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={formData.hasTrust}
+                    onChange={e => handleChange('hasTrust', e.target.checked)}
+                    className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <div>
+                    <span className="font-medium text-gray-900">I have a Trust</span>
+                    <p className="text-xs text-gray-500">Living trust or family trust</p>
+                  </div>
+                </label>
+              </div>
             </div>
 
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 mt-8">

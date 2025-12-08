@@ -289,16 +289,27 @@ export async function getProspectData(prospectId: string) {
 export async function updateFinancialProfile(prospectId: string, data: {
   currentLifeInsurance: number;
   currentDisability: number;
+  spouseLifeInsurance: number;
+  liabilityInsurance: number;
+  hospitalDailyBenefit: number;
+  annualInsuranceCosts: number;
+  hasWill: boolean;
+  hasTrust: boolean;
   savings: number;
   investments: number;
   retirement401k: number;
   homeMarketValue: number;
   otherAssets: number;
+  personalProperty: number;
+  businessEquity: number;
   mortgage: number;
   carLoans: number;
   studentLoans: number;
   creditCards: number;
+  personalLoans: number;
   otherDebts: number;
+  taxesOwed: number;
+  businessDebt: number;
   annualIncome: number;
   spouseIncome: number | null;
   monthlyExpenses: number;
@@ -312,12 +323,12 @@ export async function updateFinancialProfile(prospectId: string, data: {
       investments: data.investments,
       retirement401k: data.retirement401k,
       homeEquity,
-      otherAssets: data.otherAssets,
+      otherAssets: data.otherAssets + (data.personalProperty || 0) + (data.businessEquity || 0),
       mortgage: data.mortgage,
       carLoans: data.carLoans,
       studentLoans: data.studentLoans,
       creditCards: data.creditCards,
-      otherDebts: data.otherDebts,
+      otherDebts: data.otherDebts + (data.personalLoans || 0) + (data.taxesOwed || 0) + (data.businessDebt || 0),
     });
 
     const totalMonthlyIncome = (data.annualIncome + (data.spouseIncome || 0)) / 12;
@@ -342,7 +353,10 @@ export async function updateFinancialProfile(prospectId: string, data: {
       carLoans: data.carLoans,
       studentLoans: data.studentLoans,
       creditCards: data.creditCards,
+      personalLoans: data.personalLoans,
       otherDebts: data.otherDebts,
+      taxesOwed: data.taxesOwed,
+      businessDebt: data.businessDebt,
       currentLifeInsurance: data.currentLifeInsurance,
     });
 
@@ -350,22 +364,38 @@ export async function updateFinancialProfile(prospectId: string, data: {
     await db.financialProfile.update({
       where: { prospectId },
       data: {
+        // Protection
+        currentLifeInsurance: data.currentLifeInsurance,
+        currentDisability: data.currentDisability,
+        spouseLifeInsurance: data.spouseLifeInsurance,
+        liabilityInsurance: data.liabilityInsurance,
+        hospitalDailyBenefit: data.hospitalDailyBenefit,
+        annualInsuranceCosts: data.annualInsuranceCosts,
+        hasWill: data.hasWill,
+        hasTrust: data.hasTrust,
+        // Assets
         savings: data.savings,
         investments: data.investments,
         retirement401k: data.retirement401k,
         homeMarketValue: data.homeMarketValue,
         homeEquity,
         otherAssets: data.otherAssets,
+        personalProperty: data.personalProperty,
+        businessEquity: data.businessEquity,
+        // Liabilities
         mortgage: data.mortgage,
         carLoans: data.carLoans,
         studentLoans: data.studentLoans,
         creditCards: data.creditCards,
+        personalLoans: data.personalLoans,
         otherDebts: data.otherDebts,
+        taxesOwed: data.taxesOwed,
+        businessDebt: data.businessDebt,
+        // Cash Flow
         annualIncome: data.annualIncome,
         spouseIncome: data.spouseIncome,
         monthlyExpenses: data.monthlyExpenses,
-        currentLifeInsurance: data.currentLifeInsurance,
-        currentDisability: data.currentDisability,
+        // Calculated
         netWorth,
         monthlyGap,
         protectionGap,

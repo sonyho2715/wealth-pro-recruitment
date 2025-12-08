@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { getSession } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { checkPlanLimit } from '@/lib/stripe';
 
 // Validation schemas
 const contactSchema = z.object({
@@ -43,6 +44,17 @@ export async function createContact(formData: FormData) {
       where: { id: session.agentId },
       select: { organizationId: true },
     });
+
+    // Check plan limit for adding contacts
+    if (agent?.organizationId) {
+      const limitCheck = await checkPlanLimit(agent.organizationId, 'addContact');
+      if (!limitCheck.allowed) {
+        return {
+          success: false,
+          error: limitCheck.reason || 'Contact limit reached. Please upgrade your plan.',
+        };
+      }
+    }
 
     // Parse and validate
     const rawData = {

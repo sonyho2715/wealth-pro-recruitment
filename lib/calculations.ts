@@ -80,18 +80,22 @@ export function calculateProtectionGap(profile: {
   personalLoans?: number;
   creditCards: number;
   otherDebts: number;
+  taxesOwed?: number;
+  businessDebt?: number;
   currentLifeInsurance: number;
 }): number {
   const yearsToRetirement = Math.max(0, profile.retirementAge - profile.age);
 
-  // D - Debt
+  // D - Debt (includes all liabilities that must be settled)
   const totalDebt =
     profile.mortgage +
     profile.carLoans +
     profile.studentLoans +
     (profile.personalLoans || 0) +
     profile.creditCards +
-    profile.otherDebts;
+    profile.otherDebts +
+    (profile.taxesOwed || 0) +
+    (profile.businessDebt || 0);
 
   // I - Income replacement (use config value or until retirement, whichever is less)
   const incomeYears = Math.min(DIME_ASSUMPTIONS.incomeReplacementYears, yearsToRetirement);
