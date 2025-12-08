@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { DollarSign, TrendingUp, Calendar, Info } from 'lucide-react';
+import { DollarSign, TrendingUp, Calendar, Info, Settings2 } from 'lucide-react';
 import { AGENT_ASSUMPTIONS } from '@/lib/config';
 
 interface IncomeSliderProps {
@@ -31,8 +31,8 @@ export interface IncomeProjection {
  * - Prominent disclaimer that follows the slider
  */
 
-// Use unified config for consistency
-const ASSUMPTIONS = {
+// Default assumptions from config
+const DEFAULT_ASSUMPTIONS = {
   averagePremium: AGENT_ASSUMPTIONS.averagePolicyPremium,
   commissionRate: AGENT_ASSUMPTIONS.firstYearCommissionRate,
   renewalRate: AGENT_ASSUMPTIONS.renewalCommissionRate,
@@ -40,28 +40,36 @@ const ASSUMPTIONS = {
   growthFactor: AGENT_ASSUMPTIONS.annualGrowthFactor,
 };
 
-function calculateProjection(salesPerMonth: number): IncomeProjection {
+interface Assumptions {
+  averagePremium: number;
+  commissionRate: number;
+  renewalRate: number;
+  retentionRate: number;
+  growthFactor: number;
+}
+
+function calculateProjection(salesPerMonth: number, assumptions: Assumptions): IncomeProjection {
   const annualPolicies = salesPerMonth * 12;
-  const avgCommissionPerPolicy = ASSUMPTIONS.averagePremium * ASSUMPTIONS.commissionRate;
+  const avgCommissionPerPolicy = assumptions.averagePremium * assumptions.commissionRate;
 
   // Year 1: Just first-year commissions
   const year1Income = Math.round(annualPolicies * avgCommissionPerPolicy);
 
   // Year 3: Improved productivity + renewals building up
-  const year3AnnualPolicies = Math.round(annualPolicies * Math.pow(ASSUMPTIONS.growthFactor, 2));
+  const year3AnnualPolicies = Math.round(annualPolicies * Math.pow(assumptions.growthFactor, 2));
   const year3Renewals = Math.round(
-    annualPolicies * 2 * ASSUMPTIONS.retentionRate *
-    ASSUMPTIONS.averagePremium * ASSUMPTIONS.renewalRate
+    annualPolicies * 2 * assumptions.retentionRate *
+    assumptions.averagePremium * assumptions.renewalRate
   );
   const year3Income = Math.round(
     year3AnnualPolicies * avgCommissionPerPolicy + year3Renewals
   );
 
   // Year 5: Full renewal base + continued growth
-  const year5AnnualPolicies = Math.round(annualPolicies * Math.pow(ASSUMPTIONS.growthFactor, 4));
+  const year5AnnualPolicies = Math.round(annualPolicies * Math.pow(assumptions.growthFactor, 4));
   const year5Renewals = Math.round(
-    annualPolicies * 4 * ASSUMPTIONS.retentionRate *
-    ASSUMPTIONS.averagePremium * ASSUMPTIONS.renewalRate
+    annualPolicies * 4 * assumptions.retentionRate *
+    assumptions.averagePremium * assumptions.renewalRate
   );
   const year5Income = Math.round(
     year5AnnualPolicies * avgCommissionPerPolicy + year5Renewals
@@ -74,14 +82,14 @@ function calculateProjection(salesPerMonth: number): IncomeProjection {
 
   for (let year = 1; year <= 10; year++) {
     // New policies this year with growth
-    const yearPolicies = Math.round(annualPolicies * Math.pow(ASSUMPTIONS.growthFactor, year - 1));
+    const yearPolicies = Math.round(annualPolicies * Math.pow(assumptions.growthFactor, year - 1));
     const firstYearCommission = yearPolicies * avgCommissionPerPolicy;
 
     // Renewals from existing book (with retention)
-    const renewalCommission = totalPoliciesInForce * ASSUMPTIONS.averagePremium * ASSUMPTIONS.renewalRate;
+    const renewalCommission = totalPoliciesInForce * assumptions.averagePremium * assumptions.renewalRate;
 
     // Update book of business
-    totalPoliciesInForce = Math.round(totalPoliciesInForce * ASSUMPTIONS.retentionRate + yearPolicies);
+    totalPoliciesInForce = Math.round(totalPoliciesInForce * assumptions.retentionRate + yearPolicies);
 
     lifetimeValue += firstYearCommission + renewalCommission;
   }
@@ -102,15 +110,28 @@ export default function IncomeSlider({
   initialSalesPerMonth = 2 // Conservative default
 }: IncomeSliderProps) {
   const [salesPerMonth, setSalesPerMonth] = useState(initialSalesPerMonth);
+  const [showSettings, setShowSettings] = useState(false);
+  const [assumptions, setAssumptions] = useState<Assumptions>(DEFAULT_ASSUMPTIONS);
   const [projection, setProjection] = useState<IncomeProjection>(() =>
-    calculateProjection(initialSalesPerMonth)
+    calculateProjection(initialSalesPerMonth, DEFAULT_ASSUMPTIONS)
   );
 
   useEffect(() => {
-    const newProjection = calculateProjection(salesPerMonth);
+    const newProjection = calculateProjection(salesPerMonth, assumptions);
     setProjection(newProjection);
     onProjectionChange(newProjection);
-  }, [salesPerMonth, onProjectionChange]);
+  }, [salesPerMonth, assumptions, onProjectionChange]);
+
+  const handlePremiumChange = (value: string) => {
+    const num = parseInt(value.replace(/[^0-9]/g, '')) || 0;
+    setAssumptions(prev => ({ ...prev, averagePremium: num }));
+  };
+
+  const handleCommissionChange = (value: string) => {
+    const num = parseFloat(value) || 0;
+    // Convert percentage to decimal (e.g., 55 -> 0.55)
+    setAssumptions(prev => ({ ...prev, commissionRate: Math.min(100, Math.max(0, num)) / 100 }));
+  };
 
   const getActivityLevel = () => {
     if (salesPerMonth <= 2) return { label: 'Part-Time Casual', color: 'text-blue-600' };
@@ -125,15 +146,78 @@ export default function IncomeSlider({
   return (
     <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 text-white">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center">
-          <TrendingUp className="w-5 h-5 text-emerald-400" />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center">
+            <TrendingUp className="w-5 h-5 text-emerald-400" />
+          </div>
+          <div>
+            <h3 className="font-bold text-lg">Income Scenario Builder</h3>
+            <p className="text-slate-400 text-sm">Drag the slider to explore hypothetical outcomes</p>
+          </div>
         </div>
-        <div>
-          <h3 className="font-bold text-lg">Income Scenario Builder</h3>
-          <p className="text-slate-400 text-sm">Drag the slider to explore hypothetical outcomes</p>
-        </div>
+        <button
+          onClick={() => setShowSettings(!showSettings)}
+          className={`p-2 rounded-lg transition-colors ${
+            showSettings ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/5 text-slate-400 hover:text-white'
+          }`}
+          title="Adjust assumptions"
+        >
+          <Settings2 className="w-5 h-5" />
+        </button>
       </div>
+
+      {/* Settings Panel */}
+      {showSettings && (
+        <div className="bg-white/5 rounded-xl p-4 mb-6 border border-emerald-500/20">
+          <div className="flex items-center gap-2 mb-4">
+            <Settings2 className="w-4 h-4 text-emerald-400" />
+            <span className="text-sm font-medium text-emerald-400">Customize Assumptions</span>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-slate-400 mb-1.5">Average Premium</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                <input
+                  type="text"
+                  value={assumptions.averagePremium.toLocaleString()}
+                  onChange={(e) => handlePremiumChange(e.target.value)}
+                  className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 pl-7 text-white text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+              <p className="text-xs text-slate-500 mt-1">Annual policy premium</p>
+            </div>
+            <div>
+              <label className="block text-xs text-slate-400 mb-1.5">Commission Rate</label>
+              <div className="relative">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={Math.round(assumptions.commissionRate * 100)}
+                  onChange={(e) => handleCommissionChange(e.target.value)}
+                  className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 pr-8 text-white text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">%</span>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">First-year commission</p>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-slate-700/50 flex items-center justify-between">
+            <span className="text-xs text-slate-500">
+              Commission per policy: <span className="text-emerald-400 font-medium">${Math.round(assumptions.averagePremium * assumptions.commissionRate).toLocaleString()}</span>
+            </span>
+            <button
+              onClick={() => setAssumptions(DEFAULT_ASSUMPTIONS)}
+              className="text-xs text-slate-400 hover:text-white transition-colors"
+            >
+              Reset to defaults
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Slider Section */}
       <div className="bg-white/5 rounded-xl p-5 mb-6">
@@ -192,8 +276,8 @@ export default function IncomeSlider({
           <div className="group relative">
             <Info className="w-4 h-4 text-slate-500 cursor-help" />
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-slate-700 rounded-lg text-xs text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-              Based on ${ASSUMPTIONS.averagePremium} avg premium, {ASSUMPTIONS.commissionRate * 100}% commission,
-              and {ASSUMPTIONS.retentionRate * 100}% client retention. Actual results vary.
+              Based on ${assumptions.averagePremium.toLocaleString()} avg premium, {Math.round(assumptions.commissionRate * 100)}% commission,
+              and {assumptions.retentionRate * 100}% client retention. Actual results vary.
             </div>
           </div>
         </div>
