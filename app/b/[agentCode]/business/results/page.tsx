@@ -4,7 +4,35 @@ import BusinessResultsDisplay from './BusinessResultsDisplay';
 
 interface PageProps {
   params: Promise<{ agentCode: string }>;
-  searchParams: Promise<{ id?: string }>;
+  searchParams: Promise<{ id?: string; demo?: string }>;
+}
+
+async function getAgentByCode(agentCode: string) {
+  const agent = await db.agent.findFirst({
+    where: {
+      referralCode: {
+        equals: agentCode,
+        mode: 'insensitive',
+      },
+    },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      phone: true,
+      referralCode: true,
+      organization: {
+        select: {
+          name: true,
+          logo: true,
+          primaryColor: true,
+        },
+      },
+    },
+  });
+
+  return agent;
 }
 
 async function getBusinessProspectData(prospectId: string) {
@@ -50,7 +78,14 @@ async function getBusinessProspectData(prospectId: string) {
 }
 
 export async function generateMetadata({ params, searchParams }: PageProps) {
-  const { id } = await searchParams;
+  const { id, demo } = await searchParams;
+
+  if (demo === 'true') {
+    return {
+      title: 'Business Financial Analysis (Demo) - Wealth Pro',
+      description: 'See sample business financial analysis and recommendations.',
+    };
+  }
 
   if (!id) {
     return { title: 'Results Not Found' };
@@ -70,7 +105,82 @@ export async function generateMetadata({ params, searchParams }: PageProps) {
 
 export default async function BusinessResultsPage({ params, searchParams }: PageProps) {
   const { agentCode } = await params;
-  const { id } = await searchParams;
+  const { id, demo } = await searchParams;
+
+  // Demo mode - show Zion Glass sample data
+  if (demo === 'true') {
+    const agent = await getAgentByCode(agentCode);
+
+    if (!agent) {
+      notFound();
+    }
+
+    // Demo data for Zion Glass Company
+    const demoFinancials = {
+      annualRevenue: 776000,
+      costOfGoodsSold: 420000,
+      grossProfit: 356000,
+      netIncome: -51900,
+      ownerSalary: 85000,
+      totalAssets: 450000,
+      totalLiabilities: 285000,
+      netWorth: 165000,
+      currentRatio: 1.32,
+      debtToEquityRatio: 1.73,
+      keyPersonGap: 500000,
+      buyoutFundingGap: 300000,
+      cashOnHand: 45000,
+      accountsReceivable: 65000,
+      inventory: 35000,
+      equipment: 180000,
+      vehicles: 45000,
+      realEstate: 0,
+      investments: 80000,
+      accountsPayable: 35000,
+      shortTermLoans: 25000,
+      creditCards: 15000,
+      lineOfCredit: 35000,
+      termLoans: 75000,
+      sbaLoans: 0,
+      equipmentLoans: 50000,
+      commercialMortgage: 50000,
+      keyPersonInsurance: 0,
+      generalLiability: 1000000,
+      propertyInsurance: 500000,
+      businessInterruption: 0,
+      buyerSellerAgreement: false,
+      successionPlan: false,
+    };
+
+    return (
+      <BusinessResultsDisplay
+        prospectId="demo"
+        businessProspect={{
+          firstName: 'Demo',
+          lastName: 'User',
+          email: 'demo@example.com',
+          businessName: 'Zion Glass Company (Demo)',
+          businessType: 'LLC',
+          industry: 'Glass & Glazing Contractors',
+          yearsInBusiness: 5,
+          employeeCount: 8,
+        }}
+        agent={{
+          firstName: agent.firstName,
+          lastName: agent.lastName,
+          email: agent.email,
+          phone: agent.phone,
+          referralCode: agent.referralCode || agentCode,
+          organizationName: agent.organization?.name,
+          logo: agent.organization?.logo,
+          primaryColor: agent.organization?.primaryColor || '#0f172a',
+        }}
+        financials={demoFinancials}
+        calibration={null}
+        isDemo
+      />
+    );
+  }
 
   if (!id) {
     redirect(`/b/${agentCode}/business`);

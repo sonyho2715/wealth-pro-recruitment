@@ -90,6 +90,7 @@ interface BusinessResultsDisplayProps {
     grossProfitPercentile: number;
     netProfitPercentile: number;
   } | null;
+  isDemo?: boolean;
 }
 
 function formatCurrency(amount: number): string {
@@ -139,6 +140,7 @@ export default function BusinessResultsDisplay({
   agent,
   financials,
   calibration,
+  isDemo = false,
 }: BusinessResultsDisplayProps) {
   const [showContactForm, setShowContactForm] = useState(false);
   const [contactSubmitted, setContactSubmitted] = useState(false);
@@ -633,7 +635,7 @@ export default function BusinessResultsDisplay({
               </div>
             </div>
             <Link
-              href={`/b/${agent.referralCode}/business/analysis?id=${prospectId}`}
+              href={`/b/${agent.referralCode}/business/analysis${isDemo ? '?demo=true' : `?id=${prospectId}`}`}
               className="inline-flex items-center gap-2 px-6 py-3 bg-white hover:bg-blue-50 text-blue-600 font-semibold rounded-xl transition shrink-0"
             >
               Open Analysis Dashboard
@@ -688,7 +690,7 @@ export default function BusinessResultsDisplay({
                 </div>
               </div>
               <Link
-                href={`/b/${agent.referralCode}/business/calibration?id=${prospectId}`}
+                href={`/b/${agent.referralCode}/business/calibration${isDemo ? '?demo=true' : `?id=${prospectId}`}`}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition shrink-0"
               >
                 View Full Report
@@ -714,7 +716,7 @@ export default function BusinessResultsDisplay({
                 </div>
               </div>
               <Link
-                href={`/b/${agent.referralCode}/business/calibration?id=${prospectId}`}
+                href={`/b/${agent.referralCode}/business/calibration${isDemo ? '?demo=true' : `?id=${prospectId}`}`}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-white hover:bg-emerald-50 text-emerald-600 font-semibold rounded-xl transition shrink-0"
               >
                 Start Calibration
