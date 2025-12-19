@@ -1456,6 +1456,7 @@ model BusinessFinancialProfile {
 
   // Relations
   yearlyData BusinessYearlyData[]
+  calibration BusinessCalibration?
 }
 
 // Multi-year tax data for business analysis (Schedule C data)
@@ -1503,4 +1504,195 @@ model BusinessYearlyData {
   @@unique([businessProfileId, taxYear])
   @@index([businessProfileId])
   @@index([taxYear])
+}
+
+// ============================================
+// INTELLIGENT CALIBRATION ENGINE (ICE)
+// ============================================
+
+// NAICS Industry Classification codes
+model IndustryClassification {
+  id              String   @id @default(cuid())
+
+  // NAICS code (2-6 digits for hierarchy)
+  naicsCode       String   @unique
+
+  // Industry names
+  title           String           // Full official title
+  shortTitle      String?          // Abbreviated name for UI
+
+  // Hierarchy
+  level           Int              // 2=Sector, 3=Subsector, 4=Industry Group, 5=Industry, 6=National
+  parentCode      String?          // Parent NAICS code (null for top-level sectors)
+
+  // Metadata
+  description     String?          @db.Text
+  isActive        Boolean          @default(true)
+
+  // Relations
+  benchmarks      IndustryBenchmark[]
+  calibrations    BusinessCalibration[]
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([level])
+  @@index([parentCode])
+}
+
+// Industry financial benchmarks (from RMA/IBISWorld-style data)
+model IndustryBenchmark {
+  id                    String   @id @default(cuid())
+
+  // Industry reference
+  industryId            String
+  industry              IndustryClassification @relation(fields: [industryId], references: [id], onDelete: Cascade)
+
+  // Revenue tier for segmentation
+  revenueTier           RevenueTier @default(TIER_500K_1M)
+
+  // Data year (benchmarks change annually)
+  dataYear              Int         @default(2024)
+
+  // ===== PROFITABILITY RATIOS =====
+  // All percentiles stored as decimals (e.g., 0.15 = 15%)
+  grossProfitMargin_p25    Decimal  @db.Decimal(6, 4) @default(0)  // 25th percentile
+  grossProfitMargin_p50    Decimal  @db.Decimal(6, 4) @default(0)  // Median
+  grossProfitMargin_p75    Decimal  @db.Decimal(6, 4) @default(0)  // 75th percentile
+
+  netProfitMargin_p25      Decimal  @db.Decimal(6, 4) @default(0)
+  netProfitMargin_p50      Decimal  @db.Decimal(6, 4) @default(0)
+  netProfitMargin_p75      Decimal  @db.Decimal(6, 4) @default(0)
+
+  operatingMargin_p25      Decimal  @db.Decimal(6, 4) @default(0)
+  operatingMargin_p50      Decimal  @db.Decimal(6, 4) @default(0)
+  operatingMargin_p75      Decimal  @db.Decimal(6, 4) @default(0)
+
+  // ===== EFFICIENCY RATIOS =====
+  cogsRatio_p25            Decimal  @db.Decimal(6, 4) @default(0)  // COGS / Revenue
+  cogsRatio_p50            Decimal  @db.Decimal(6, 4) @default(0)
+  cogsRatio_p75            Decimal  @db.Decimal(6, 4) @default(0)
+
+  laborCostRatio_p25       Decimal  @db.Decimal(6, 4) @default(0)  // Wages / Revenue
+  laborCostRatio_p50       Decimal  @db.Decimal(6, 4) @default(0)
+  laborCostRatio_p75       Decimal  @db.Decimal(6, 4) @default(0)
+
+  rentRatio_p25            Decimal  @db.Decimal(6, 4) @default(0)  // Rent / Revenue
+  rentRatio_p50            Decimal  @db.Decimal(6, 4) @default(0)
+  rentRatio_p75            Decimal  @db.Decimal(6, 4) @default(0)
+
+  // ===== LIQUIDITY RATIOS =====
+  currentRatio_p25         Decimal  @db.Decimal(6, 2) @default(0)
+  currentRatio_p50         Decimal  @db.Decimal(6, 2) @default(0)
+  currentRatio_p75         Decimal  @db.Decimal(6, 2) @default(0)
+
+  quickRatio_p25           Decimal  @db.Decimal(6, 2) @default(0)
+  quickRatio_p50           Decimal  @db.Decimal(6, 2) @default(0)
+  quickRatio_p75           Decimal  @db.Decimal(6, 2) @default(0)
+
+  // ===== LEVERAGE RATIOS =====
+  debtToEquity_p25         Decimal  @db.Decimal(6, 2) @default(0)
+  debtToEquity_p50         Decimal  @db.Decimal(6, 2) @default(0)
+  debtToEquity_p75         Decimal  @db.Decimal(6, 2) @default(0)
+
+  // ===== GROWTH METRICS =====
+  revenueGrowth_p25        Decimal  @db.Decimal(6, 4) @default(0)  // YoY growth
+  revenueGrowth_p50        Decimal  @db.Decimal(6, 4) @default(0)
+  revenueGrowth_p75        Decimal  @db.Decimal(6, 4) @default(0)
+
+  // ===== PENSION/RETIREMENT BENCHMARKS =====
+  pensionContributionRate_p25  Decimal  @db.Decimal(6, 4) @default(0)  // Pension / Revenue
+  pensionContributionRate_p50  Decimal  @db.Decimal(6, 4) @default(0)
+  pensionContributionRate_p75  Decimal  @db.Decimal(6, 4) @default(0)
+
+  // Sample size (credibility factor)
+  sampleSize               Int      @default(0)
+
+  // Metadata
+  source                   String?  // "RMA", "IBISWorld", "Sample", etc.
+  notes                    String?  @db.Text
+
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  @@unique([industryId, revenueTier, dataYear])
+  @@index([industryId])
+  @@index([revenueTier])
+  @@index([dataYear])
+}
+
+// Revenue tier segmentation (aligned with RMA breakpoints)
+enum RevenueTier {
+  TIER_0_250K        // $0 - $250K
+  TIER_250K_500K     // $250K - $500K
+  TIER_500K_1M       // $500K - $1M
+  TIER_1M_3M         // $1M - $3M
+  TIER_3M_5M         // $3M - $5M
+  TIER_5M_10M        // $5M - $10M
+  TIER_10M_25M       // $10M - $25M
+  TIER_25M_PLUS      // $25M+
+}
+
+// Business calibration results (stored per business profile)
+model BusinessCalibration {
+  id                    String   @id @default(cuid())
+
+  // Link to business profile
+  businessProfileId     String   @unique
+  businessProfile       BusinessFinancialProfile @relation(fields: [businessProfileId], references: [id], onDelete: Cascade)
+
+  // Selected industry classification
+  industryId            String
+  industry              IndustryClassification @relation(fields: [industryId], references: [id])
+
+  // Determined revenue tier
+  revenueTier           RevenueTier
+
+  // ===== PERCENTILE SCORES (0-100) =====
+  // Where does this business rank vs. peers?
+  grossProfitPercentile     Int      @default(50)
+  netProfitPercentile       Int      @default(50)
+  cogsPercentile            Int      @default(50)  // Lower is better
+  laborCostPercentile       Int      @default(50)  // Lower is better
+  currentRatioPercentile    Int      @default(50)
+  debtToEquityPercentile    Int      @default(50)  // Lower is better
+  pensionPercentile         Int      @default(50)
+
+  // ===== COMPOSITE HEALTH SCORE =====
+  healthScore               Int      @default(50)  // 0-100 weighted score
+  healthTrend               HealthTrend @default(STABLE)
+
+  // ===== OPPORTUNITY ANALYSIS =====
+  // Calculated improvement potential in dollars
+  revenueOpportunity        Decimal  @db.Decimal(14, 2) @default(0)  // If they reach 75th percentile
+  cogsOpportunity           Decimal  @db.Decimal(14, 2) @default(0)
+  laborOpportunity          Decimal  @db.Decimal(14, 2) @default(0)
+  pensionOpportunity        Decimal  @db.Decimal(14, 2) @default(0)  // Tax savings potential
+  totalOpportunity          Decimal  @db.Decimal(14, 2) @default(0)
+
+  // ===== PROJECTION INPUTS (user-adjustable) =====
+  projectedGrowthRate       Decimal  @db.Decimal(6, 4) @default(0.05)  // 5% default
+  projectedCogsImprovement  Decimal  @db.Decimal(6, 4) @default(0)
+  projectedPensionIncrease  Decimal  @db.Decimal(12, 2) @default(0)
+
+  // ===== 5-YEAR PROJECTIONS (JSON for flexibility) =====
+  withoutScenario           Json?    // 5-year projection without changes
+  withScenario              Json?    // 5-year projection with improvements
+
+  // ===== INSIGHTS & RECOMMENDATIONS =====
+  insights                  Json?    // Array of insight objects
+
+  // Metadata
+  calibratedAt              DateTime @default(now())
+  lastRecalibrated          DateTime @default(now())
+
+  @@index([industryId])
+  @@index([healthScore])
+}
+
+// Health trend indicator
+enum HealthTrend {
+  IMPROVING
+  STABLE
+  DECLINING
 }
