@@ -16,6 +16,7 @@ import {
   Check,
   Plus,
   Trash2,
+  Sparkles,
 } from 'lucide-react';
 
 interface BusinessBalanceSheetFormProps {
@@ -153,6 +154,74 @@ const initialFormData: FormData = {
   successionPlan: false,
 };
 
+// Sample business data for demo purposes
+const sampleFormData: FormData = {
+  // Contact Info
+  firstName: 'Robert',
+  lastName: 'Chen',
+  email: 'robert.chen@pacificauto.com',
+  phone: '(808) 555-8888',
+
+  // Business Info
+  businessName: 'Pacific Auto Repair',
+  businessType: 'LLC',
+  industry: 'Automotive',
+  yearsInBusiness: '12',
+  employeeCount: '8',
+
+  // Revenue & Profitability
+  annualRevenue: '1250000',
+  costOfGoodsSold: '425000',
+  grossProfit: '825000',
+  netIncome: '185000',
+  ownerSalary: '120000',
+  ownerDistributions: '50000',
+
+  // Current Assets
+  cashOnHand: '85000',
+  accountsReceivable: '45000',
+  inventory: '125000',
+  prepaidExpenses: '8000',
+
+  // Fixed Assets
+  equipment: '275000',
+  vehicles: '85000',
+  realEstate: '0',
+  leaseholdImprovements: '65000',
+
+  // Intangible Assets
+  intellectualProperty: '0',
+  goodwill: '50000',
+  investments: '35000',
+  otherAssets: '15000',
+
+  // Current Liabilities
+  accountsPayable: '28000',
+  accruedExpenses: '12000',
+  shortTermLoans: '0',
+  creditCards: '8500',
+  lineOfCredit: '25000',
+  currentPortionLTD: '18000',
+
+  // Long-Term Liabilities
+  termLoans: '95000',
+  sbaLoans: '0',
+  equipmentLoans: '65000',
+  commercialMortgage: '0',
+  otherLongTermDebt: '0',
+
+  // Insurance
+  keyPersonInsurance: '0',
+  generalLiability: '1000000',
+  professionalLiability: '500000',
+  propertyInsurance: '750000',
+  workersComp: '250000',
+  businessInterruption: '0',
+  cyberLiability: '0',
+  buyerSellerAgreement: false,
+  successionPlan: false,
+};
+
 const createEmptyYearData = (year: number): YearlyData => ({
   taxYear: year,
   netReceipts: '',
@@ -230,6 +299,11 @@ export default function BusinessBalanceSheetForm({
 
   const updateField = (field: keyof FormData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const fillSampleData = () => {
+    setFormData(sampleFormData);
+    setExpandedSections({ intangibleAssets: true, additionalCurrentLiabilities: true, additionalCoverage: true });
   };
 
   const formatCurrency = (value: string) => {
@@ -795,18 +869,30 @@ export default function BusinessBalanceSheetForm({
 
       {/* Navigation */}
       <div className="flex justify-between mt-10 pt-8 border-t border-slate-200">
-        <button
-          onClick={prevStep}
-          disabled={currentStep === 0}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition ${
-            currentStep === 0
-              ? 'text-slate-300 cursor-not-allowed'
-              : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          <ChevronLeft className="w-5 h-5" />
-          Back
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={prevStep}
+            disabled={currentStep === 0}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition ${
+              currentStep === 0
+                ? 'text-slate-300 cursor-not-allowed'
+                : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <ChevronLeft className="w-5 h-5" />
+            Back
+          </button>
+
+          {currentStep === 0 && (
+            <button
+              onClick={fillSampleData}
+              className="flex items-center gap-2 px-4 py-2.5 text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition text-sm font-medium"
+            >
+              <Sparkles className="w-4 h-4" />
+              Fill Sample Data
+            </button>
+          )}
+        </div>
 
         {currentStep < steps.length - 1 ? (
           <button
