@@ -47,11 +47,30 @@ export default function BusinessAnalysisDashboard({
   yearlyData,
   currentYearData,
 }: BusinessAnalysisDashboardProps) {
-  // Use sample data if no real data provided
+  // Determine if we're in demo mode (no real data provided at all)
+  const isDemo = !yearlyData && !currentYearData;
+
+  // Use sample data only if in demo mode, otherwise use real data or generate from current year
   const historicalData = useMemo(() => {
     if (yearlyData && yearlyData.length > 0) return yearlyData;
+    if (isDemo) return getZionGlassSampleData();
+    // For real businesses without historical data, create single entry from current year
+    if (currentYearData) {
+      const currentYear = new Date().getFullYear();
+      return [
+        {
+          taxYear: currentYear,
+          netReceipts: currentYearData.revenue,
+          costOfGoodsSold: currentYearData.cogs,
+          grossProfit: currentYearData.revenue - currentYearData.cogs,
+          totalDeductions: currentYearData.totalDeductions,
+          netIncome: currentYearData.netIncome,
+          pensionContributions: currentYearData.currentPension,
+        },
+      ];
+    }
     return getZionGlassSampleData();
-  }, [yearlyData]);
+  }, [yearlyData, currentYearData, isDemo]);
 
   // Get the most recent year's data for scenario calculations
   const latestYear = historicalData[historicalData.length - 1];
