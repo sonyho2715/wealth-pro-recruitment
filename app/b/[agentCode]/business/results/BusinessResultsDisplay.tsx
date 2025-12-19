@@ -20,6 +20,8 @@ import {
   BarChart3,
   FileText,
   Scale,
+  Calculator,
+  ArrowRight,
 } from 'lucide-react';
 
 interface BusinessResultsDisplayProps {
@@ -597,6 +599,33 @@ export default function BusinessResultsDisplay({
                 Succession Plan: {financials.successionPlan ? 'Documented' : 'Not Documented'}
               </span>
             </div>
+          </div>
+        </div>
+
+        {/* What-If Analysis CTA */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center">
+                <Calculator className="w-7 h-7 text-white" />
+              </div>
+              <div className="text-left">
+                <h3 className="text-xl font-semibold text-white mb-1">
+                  What-If Scenario Analysis
+                </h3>
+                <p className="text-blue-100 text-sm max-w-md">
+                  Model different scenarios with interactive sliders. See how price adjustments,
+                  cost reductions, and retirement contributions could improve your bottom line.
+                </p>
+              </div>
+            </div>
+            <Link
+              href={`/b/${agent.referralCode}/business/analysis?demo=true`}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white hover:bg-blue-50 text-blue-600 font-semibold rounded-xl transition shrink-0"
+            >
+              Try Analysis Dashboard
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
 
