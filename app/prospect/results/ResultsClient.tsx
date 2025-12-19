@@ -792,6 +792,140 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
                     );
                   })}
                 </div>
+
+                {/* Life Insurance Product Comparison */}
+                <div className="mt-8">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-blue-600" />
+                    Life Insurance Product Comparison
+                  </h3>
+                  <p className="text-sm text-slate-600 mb-4">
+                    Understanding the differences between life insurance products helps you choose the right coverage for your needs.
+                  </p>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm border-collapse">
+                      <thead>
+                        <tr className="bg-slate-100">
+                          <th className="p-3 text-left font-semibold text-slate-700 border-b border-slate-200">Feature</th>
+                          <th className="p-3 text-center font-semibold text-slate-700 border-b border-slate-200">
+                            <div className="flex flex-col items-center">
+                              <Shield className="w-5 h-5 text-red-500 mb-1" />
+                              Term Life
+                            </div>
+                          </th>
+                          <th className="p-3 text-center font-semibold text-slate-700 border-b border-slate-200">
+                            <div className="flex flex-col items-center">
+                              <Heart className="w-5 h-5 text-purple-500 mb-1" />
+                              Whole Life
+                            </div>
+                          </th>
+                          <th className="p-3 text-center font-semibold text-slate-700 border-b border-slate-200">
+                            <div className="flex flex-col items-center">
+                              <TrendingUp className="w-5 h-5 text-blue-500 mb-1" />
+                              IUL
+                            </div>
+                          </th>
+                          <th className="p-3 text-center font-semibold text-slate-700 border-b border-slate-200">
+                            <div className="flex flex-col items-center">
+                              <Sparkles className="w-5 h-5 text-amber-500 mb-1" />
+                              Living Benefits
+                            </div>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="hover:bg-slate-50">
+                          <td className="p-3 border-b border-slate-100 font-medium text-slate-700">Coverage Duration</td>
+                          <td className="p-3 border-b border-slate-100 text-center text-slate-600">10-30 years</td>
+                          <td className="p-3 border-b border-slate-100 text-center text-slate-600">Lifetime</td>
+                          <td className="p-3 border-b border-slate-100 text-center text-slate-600">Lifetime</td>
+                          <td className="p-3 border-b border-slate-100 text-center text-slate-600">Rider (add-on)</td>
+                        </tr>
+                        <tr className="hover:bg-slate-50">
+                          <td className="p-3 border-b border-slate-100 font-medium text-slate-700">Cash Value</td>
+                          <td className="p-3 border-b border-slate-100 text-center">
+                            <span className="text-red-500">None</span>
+                          </td>
+                          <td className="p-3 border-b border-slate-100 text-center">
+                            <span className="text-green-600">Guaranteed Growth</span>
+                          </td>
+                          <td className="p-3 border-b border-slate-100 text-center">
+                            <span className="text-blue-600">Index-Linked Growth</span>
+                          </td>
+                          <td className="p-3 border-b border-slate-100 text-center text-slate-400">N/A</td>
+                        </tr>
+                        <tr className="hover:bg-slate-50">
+                          <td className="p-3 border-b border-slate-100 font-medium text-slate-700">Premium Cost</td>
+                          <td className="p-3 border-b border-slate-100 text-center">
+                            <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Lowest</span>
+                          </td>
+                          <td className="p-3 border-b border-slate-100 text-center">
+                            <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">Highest</span>
+                          </td>
+                          <td className="p-3 border-b border-slate-100 text-center">
+                            <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">Flexible</span>
+                          </td>
+                          <td className="p-3 border-b border-slate-100 text-center">
+                            <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">+15% add-on</span>
+                          </td>
+                        </tr>
+                        <tr className="hover:bg-slate-50">
+                          <td className="p-3 border-b border-slate-100 font-medium text-slate-700">Tax Advantages</td>
+                          <td className="p-3 border-b border-slate-100 text-center text-slate-600">Death benefit only</td>
+                          <td className="p-3 border-b border-slate-100 text-center text-slate-600">Tax-deferred growth</td>
+                          <td className="p-3 border-b border-slate-100 text-center text-slate-600">Tax-free loans</td>
+                          <td className="p-3 border-b border-slate-100 text-center text-slate-600">Tax-free access</td>
+                        </tr>
+                        <tr className="hover:bg-slate-50">
+                          <td className="p-3 border-b border-slate-100 font-medium text-slate-700">Downside Protection</td>
+                          <td className="p-3 border-b border-slate-100 text-center text-slate-400">N/A</td>
+                          <td className="p-3 border-b border-slate-100 text-center">
+                            <span className="text-green-600">Guaranteed</span>
+                          </td>
+                          <td className="p-3 border-b border-slate-100 text-center">
+                            <span className="text-green-600">0% Floor</span>
+                          </td>
+                          <td className="p-3 border-b border-slate-100 text-center text-slate-400">N/A</td>
+                        </tr>
+                        <tr className="hover:bg-slate-50">
+                          <td className="p-3 border-b border-slate-100 font-medium text-slate-700">Access While Living</td>
+                          <td className="p-3 border-b border-slate-100 text-center">
+                            <span className="text-red-500">No</span>
+                          </td>
+                          <td className="p-3 border-b border-slate-100 text-center">
+                            <span className="text-green-600">Loans/Withdrawals</span>
+                          </td>
+                          <td className="p-3 border-b border-slate-100 text-center">
+                            <span className="text-green-600">Loans/Withdrawals</span>
+                          </td>
+                          <td className="p-3 border-b border-slate-100 text-center">
+                            <span className="text-green-600">Critical/Chronic/Terminal</span>
+                          </td>
+                        </tr>
+                        <tr className="hover:bg-slate-50">
+                          <td className="p-3 font-medium text-slate-700">Best For</td>
+                          <td className="p-3 text-center text-slate-600 text-xs">Temporary needs, budget-conscious</td>
+                          <td className="p-3 text-center text-slate-600 text-xs">Guaranteed protection, estate planning</td>
+                          <td className="p-3 text-center text-slate-600 text-xs">Wealth building, retirement income</td>
+                          <td className="p-3 text-center text-slate-600 text-xs">Health crisis protection</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                    <div className="flex items-start gap-3">
+                      <Sparkles className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <div className="font-semibold text-blue-800">Pro Tip: Layer Your Coverage</div>
+                        <div className="text-blue-700 text-sm">
+                          Many families combine Term Life for maximum protection during high-need years with IUL or Whole Life for permanent coverage and wealth building. Living Benefits can be added to any policy for health crisis protection.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
