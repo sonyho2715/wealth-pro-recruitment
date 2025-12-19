@@ -72,6 +72,7 @@ export default async function BusinessResultsPage({ params, searchParams }: Page
 
   return (
     <BusinessResultsDisplay
+      prospectId={id}
       businessProspect={{
         firstName: prospect.firstName,
         lastName: prospect.lastName,
@@ -94,6 +95,7 @@ export default async function BusinessResultsPage({ params, searchParams }: Page
       }}
       financials={{
         annualRevenue: Number(fp.annualRevenue),
+        costOfGoodsSold: Number(fp.costOfGoodsSold || 0),
         grossProfit: Number(fp.grossProfit),
         netIncome: Number(fp.netIncome),
         ownerSalary: Number(fp.ownerSalary),
