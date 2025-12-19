@@ -5,6 +5,8 @@
  * for creating isolated database instances for each agent.
  */
 
+import crypto from 'crypto';
+
 const RAILWAY_API_BASE = 'https://backboard.railway.app/graphql/v2';
 
 interface RailwayProject {
@@ -44,9 +46,11 @@ interface RailwayDatabaseCredentials {
  */
 export class RailwayClient {
   private token: string;
+  private teamId?: string;
 
-  constructor(token: string) {
+  constructor(token: string, teamId?: string) {
     this.token = token;
+    this.teamId = teamId;
   }
 
   private async graphql<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
@@ -116,10 +120,17 @@ export class RailwayClient {
    * Create a new project
    */
   async createProject(name: string, description?: string): Promise<{ projectCreate: RailwayProject }> {
+    const input: Record<string, unknown> = { name, description };
+
+    // Add workspaceId for Pro Workspace accounts
+    if (this.teamId) {
+      input.workspaceId = this.teamId;
+    }
+
     return this.graphql(
       `
-      mutation CreateProject($name: String!, $description: String) {
-        projectCreate(input: { name: $name, description: $description }) {
+      mutation CreateProject($input: ProjectCreateInput!) {
+        projectCreate(input: $input) {
           id
           name
           description
@@ -135,7 +146,7 @@ export class RailwayClient {
         }
       }
     `,
-      { name, description }
+      { input }
     );
   }
 
@@ -182,74 +193,149 @@ export class RailwayClient {
   }
 
   /**
-   * Create a PostgreSQL database service in a project
+   * Create a PostgreSQL database service in a project using Docker image
    */
   async createPostgresService(
     projectId: string,
     environmentId: string
   ): Promise<{ serviceCreate: RailwayService }> {
-    // First, create the service with the official PostgreSQL template
-    const result = await this.graphql<{ templateDeploy: { projectId: string; workflowId: string } }>(
+    // Generate secure password
+    const password = crypto.randomBytes(16).toString('hex');
+
+    // Step 1: Create service
+    const serviceResult = await this.graphql<{ serviceCreate: RailwayService }>(
       `
-      mutation DeployPostgres($projectId: String!, $environmentId: String!) {
-        templateDeploy(
-          input: {
-            projectId: $projectId
-            environmentId: $environmentId
-            services: [
-              {
-                hasDomain: false
-                isPrivate: true
-                name: "postgres"
-                owner: "railwayapp-templates"
-                template: "postgres"
-              }
-            ]
-          }
-        ) {
-          projectId
-          workflowId
+      mutation CreateService($input: ServiceCreateInput!) {
+        serviceCreate(input: $input) {
+          id
+          name
         }
       }
     `,
-      { projectId, environmentId }
+      { input: { projectId, name: 'PostgreSQL' } }
     );
 
-    // Wait for the deployment to complete
-    await this.waitForWorkflow(result.templateDeploy.workflowId);
+    const service = serviceResult.serviceCreate;
 
-    // Get the service ID
-    const services = await this.getProjectServices(projectId);
-    const postgresService = services.project.services.edges.find(
-      (s: { node: RailwayService }) => s.node.name.toLowerCase().includes('postgres')
+    // Step 2: Connect Docker image
+    await this.graphql(
+      `
+      mutation ServiceConnect($id: String!, $input: ServiceConnectInput!) {
+        serviceConnect(id: $id, input: $input) {
+          id
+        }
+      }
+    `,
+      { id: service.id, input: { image: 'postgres:16' } }
     );
 
-    if (!postgresService) {
-      throw new Error('PostgreSQL service not found after creation');
-    }
+    // Step 3: Set environment variables
+    await this.graphql(
+      `
+      mutation SetVariables($projectId: String!, $environmentId: String!, $serviceId: String!, $variables: EnvironmentVariables!) {
+        variableCollectionUpsert(
+          input: {
+            projectId: $projectId
+            environmentId: $environmentId
+            serviceId: $serviceId
+            variables: $variables
+          }
+        )
+      }
+    `,
+      {
+        projectId,
+        environmentId,
+        serviceId: service.id,
+        variables: {
+          POSTGRES_USER: 'postgres',
+          POSTGRES_PASSWORD: password,
+          POSTGRES_DB: 'railway',
+        },
+      }
+    );
 
-    return { serviceCreate: postgresService.node };
+    // Step 4: Trigger deployment
+    await this.graphql(
+      `
+      mutation Deploy($serviceId: String!, $environmentId: String!) {
+        serviceInstanceRedeploy(serviceId: $serviceId, environmentId: $environmentId)
+      }
+    `,
+      { serviceId: service.id, environmentId }
+    );
+
+    // Step 5: Create TCP proxy for external access
+    const proxyResult = await this.graphql<{
+      tcpProxyCreate: { id: string; domain: string; proxyPort: number };
+    }>(
+      `
+      mutation CreateTCPProxy($input: TCPProxyCreateInput!) {
+        tcpProxyCreate(input: $input) {
+          id
+          domain
+          proxyPort
+        }
+      }
+    `,
+      {
+        input: {
+          serviceId: service.id,
+          environmentId,
+          applicationPort: 5432,
+        },
+      }
+    );
+
+    // Store TCP proxy info in service for later retrieval
+    const tcpProxy = proxyResult.tcpProxyCreate;
+    console.log(`  TCP Proxy: ${tcpProxy.domain}:${tcpProxy.proxyPort}`);
+
+    // Wait for database to be ready
+    await this.waitForDeployment(service.id, environmentId);
+
+    return { serviceCreate: service };
   }
 
   /**
-   * Wait for a workflow to complete
+   * Wait for deployment to be ready
    */
-  private async waitForWorkflow(
-    workflowId: string,
-    timeoutMs = 120000,
-    pollIntervalMs = 3000
+  private async waitForDeployment(
+    serviceId: string,
+    environmentId: string,
+    timeoutMs = 60000,
+    pollIntervalMs = 5000
   ): Promise<void> {
     const startTime = Date.now();
 
     while (Date.now() - startTime < timeoutMs) {
-      // For now, just wait a reasonable time for the database to provision
-      // Railway's workflow API is limited, so we'll poll for the database URL
-      await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+      try {
+        const result = await this.graphql<{
+          deployments: { edges: Array<{ node: { status: string } }> };
+        }>(
+          `
+          query GetDeployments($serviceId: String!) {
+            deployments(first: 1, input: { serviceId: $serviceId }) {
+              edges {
+                node {
+                  status
+                }
+              }
+            }
+          }
+        `,
+          { serviceId }
+        );
 
-      // After initial wait, check if we can proceed
-      if (Date.now() - startTime > 15000) {
-        return;
+        const deployment = result.deployments.edges[0]?.node;
+        if (deployment?.status === 'SUCCESS') {
+          return;
+        }
+      } catch {
+        // Continue polling
       }
+
+      await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
     }
   }
 
@@ -305,7 +391,7 @@ export class RailwayClient {
   }
 
   /**
-   * Get the DATABASE_URL from a PostgreSQL service
+   * Get the DATABASE_URL from a PostgreSQL service (internal)
    */
   async getDatabaseUrl(
     projectId: string,
@@ -318,12 +404,18 @@ export class RailwayClient {
       try {
         const variables = await this.getServiceVariables(projectId, environmentId, serviceId);
 
-        // Railway provides DATABASE_URL directly
+        // For Docker-based postgres, construct from POSTGRES_* variables with internal domain
+        if (variables.POSTGRES_USER && variables.POSTGRES_PASSWORD && variables.POSTGRES_DB) {
+          const host = variables.RAILWAY_PRIVATE_DOMAIN || 'localhost';
+          return `postgresql://${variables.POSTGRES_USER}:${variables.POSTGRES_PASSWORD}@${host}:5432/${variables.POSTGRES_DB}`;
+        }
+
+        // Legacy: Railway provides DATABASE_URL directly
         if (variables.DATABASE_URL) {
           return variables.DATABASE_URL;
         }
 
-        // Or construct from individual components
+        // Legacy: Construct from PG* components
         if (variables.PGHOST && variables.PGUSER && variables.PGPASSWORD && variables.PGDATABASE) {
           const port = variables.PGPORT || '5432';
           return `postgresql://${variables.PGUSER}:${variables.PGPASSWORD}@${variables.PGHOST}:${port}/${variables.PGDATABASE}?sslmode=require`;
@@ -341,7 +433,7 @@ export class RailwayClient {
   }
 
   /**
-   * Get the public DATABASE_URL (with external host)
+   * Get the public DATABASE_URL (with external host via TCP proxy)
    */
   async getPublicDatabaseUrl(
     projectId: string,
@@ -354,7 +446,18 @@ export class RailwayClient {
       try {
         const variables = await this.getServiceVariables(projectId, environmentId, serviceId);
 
-        // Railway provides DATABASE_PUBLIC_URL for external access
+        // For Docker-based postgres, construct from POSTGRES_* and RAILWAY_TCP_PROXY_* variables
+        if (
+          variables.POSTGRES_USER &&
+          variables.POSTGRES_PASSWORD &&
+          variables.POSTGRES_DB &&
+          variables.RAILWAY_TCP_PROXY_DOMAIN &&
+          variables.RAILWAY_TCP_PROXY_PORT
+        ) {
+          return `postgresql://${variables.POSTGRES_USER}:${variables.POSTGRES_PASSWORD}@${variables.RAILWAY_TCP_PROXY_DOMAIN}:${variables.RAILWAY_TCP_PROXY_PORT}/${variables.POSTGRES_DB}?sslmode=disable`;
+        }
+
+        // Legacy: Railway provides DATABASE_PUBLIC_URL for external access
         if (variables.DATABASE_PUBLIC_URL) {
           return variables.DATABASE_PUBLIC_URL;
         }
@@ -451,12 +554,13 @@ export class RailwayClient {
  */
 export function createRailwayClient(): RailwayClient {
   const token = process.env.RAILWAY_API_TOKEN;
+  const teamId = process.env.RAILWAY_TEAM_ID;
 
   if (!token) {
     throw new Error('RAILWAY_API_TOKEN environment variable is required');
   }
 
-  return new RailwayClient(token);
+  return new RailwayClient(token, teamId);
 }
 
 /**
