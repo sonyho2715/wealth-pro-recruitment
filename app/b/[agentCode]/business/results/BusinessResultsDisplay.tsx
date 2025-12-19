@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 
 interface BusinessResultsDisplayProps {
+  prospectId: string;
   businessProspect: {
     firstName: string;
     lastName: string;
@@ -47,6 +48,7 @@ interface BusinessResultsDisplayProps {
   };
   financials: {
     annualRevenue: number;
+    costOfGoodsSold: number;
     grossProfit: number;
     netIncome: number;
     ownerSalary: number;
@@ -123,6 +125,7 @@ function getRatioHealth(ratio: number, type: 'current' | 'debt') {
 }
 
 export default function BusinessResultsDisplay({
+  prospectId,
   businessProspect,
   agent,
   financials,
@@ -620,10 +623,10 @@ export default function BusinessResultsDisplay({
               </div>
             </div>
             <Link
-              href={`/b/${agent.referralCode}/business/analysis?demo=true`}
+              href={`/b/${agent.referralCode}/business/analysis?id=${prospectId}`}
               className="inline-flex items-center gap-2 px-6 py-3 bg-white hover:bg-blue-50 text-blue-600 font-semibold rounded-xl transition shrink-0"
             >
-              Try Analysis Dashboard
+              Open Analysis Dashboard
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
