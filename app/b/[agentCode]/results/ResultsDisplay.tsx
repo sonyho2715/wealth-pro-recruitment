@@ -19,6 +19,12 @@ import {
   PiggyBank,
   Landmark,
   BarChart3,
+  Target,
+  Lightbulb,
+  ArrowRight,
+  Sparkles,
+  Heart,
+  Umbrella,
 } from 'lucide-react';
 
 interface ResultsDisplayProps {
@@ -79,6 +85,118 @@ function ProgressBar({ value, max, color }: { value: number; max: number; color:
         className={`h-full rounded-full transition-all duration-500 ${color}`}
         style={{ width: `${percentage}%` }}
       />
+    </div>
+  );
+}
+
+// Circular gauge for health score
+function CircularGauge({ score, size = 140 }: { score: number; size?: number }) {
+  const strokeWidth = 12;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const offset = circumference - (score / 100) * circumference;
+
+  const getColor = (s: number) => {
+    if (s >= 80) return '#10b981'; // emerald-500
+    if (s >= 60) return '#3b82f6'; // blue-500
+    if (s >= 40) return '#f59e0b'; // amber-500
+    return '#ef4444'; // red-500
+  };
+
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="#f1f5f9"
+          strokeWidth={strokeWidth}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={getColor(score)}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          className="transition-all duration-1000 ease-out"
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-3xl font-bold text-slate-900">{score}</span>
+        <span className="text-xs text-slate-500">out of 100</span>
+      </div>
+    </div>
+  );
+}
+
+// Insight card component
+function InsightCard({
+  icon: Icon,
+  title,
+  description,
+  type = 'info'
+}: {
+  icon: React.ElementType;
+  title: string;
+  description: string;
+  type?: 'success' | 'warning' | 'info';
+}) {
+  const colors = {
+    success: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+    warning: 'bg-amber-50 border-amber-200 text-amber-700',
+    info: 'bg-blue-50 border-blue-200 text-blue-700',
+  };
+  const iconColors = {
+    success: 'bg-emerald-100 text-emerald-600',
+    warning: 'bg-amber-100 text-amber-600',
+    info: 'bg-blue-100 text-blue-600',
+  };
+
+  return (
+    <div className={`rounded-xl border p-4 ${colors[type]}`}>
+      <div className="flex items-start gap-3">
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${iconColors[type]}`}>
+          <Icon className="w-5 h-5" />
+        </div>
+        <div>
+          <h4 className="font-semibold text-sm mb-1">{title}</h4>
+          <p className="text-sm opacity-90">{description}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Score factor indicator
+function ScoreFactor({ label, met, description }: { label: string; met: boolean; description: string }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
+        met ? 'bg-emerald-100' : 'bg-slate-100'
+      }`}>
+        {met ? (
+          <CheckCircle className="w-4 h-4 text-emerald-600" />
+        ) : (
+          <div className="w-2 h-2 rounded-full bg-slate-400" />
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between">
+          <span className={`text-sm font-medium ${met ? 'text-slate-900' : 'text-slate-500'}`}>
+            {label}
+          </span>
+          <span className={`text-xs ${met ? 'text-emerald-600' : 'text-slate-400'}`}>
+            {met ? '✓' : '—'}
+          </span>
+        </div>
+        <p className="text-xs text-slate-400 truncate">{description}</p>
+      </div>
     </div>
   );
 }
@@ -154,23 +272,105 @@ export default function ResultsDisplay({ prospect, agent, financials }: ResultsD
           <p className="text-slate-600">Based on the information you provided</p>
         </div>
 
-        {/* Health Score Card */}
+        {/* Health Score Card - Enhanced */}
         <div className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900 mb-1">Financial Health Score</h2>
-              <p className="text-sm text-slate-500">A snapshot of your overall financial wellness</p>
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            {/* Circular Gauge */}
+            <div className="flex flex-col items-center">
+              <CircularGauge score={healthScore} size={160} />
+              <div className={`mt-3 px-4 py-1.5 rounded-full text-sm font-semibold ${health.bg} ${health.color}`}>
+                {health.label}
+              </div>
             </div>
-            <div className="text-right">
-              <div className="text-4xl font-bold text-slate-900">{healthScore}</div>
-              <div className={`text-sm font-medium ${health.color}`}>{health.label}</div>
+
+            {/* Score Factors */}
+            <div className="flex-1 w-full">
+              <h2 className="text-lg font-semibold text-slate-900 mb-1">Financial Health Score</h2>
+              <p className="text-sm text-slate-500 mb-4">Based on your overall financial wellness</p>
+
+              <div className="space-y-3">
+                <ScoreFactor
+                  label="Net Worth"
+                  met={isNetWorthPositive}
+                  description={isNetWorthPositive ? "Positive net worth" : "Work on reducing debt"}
+                />
+                <ScoreFactor
+                  label="Cash Flow"
+                  met={hasSurplus}
+                  description={hasSurplus ? "Monthly surplus" : "Expenses exceed income"}
+                />
+                <ScoreFactor
+                  label="Protection"
+                  met={!hasProtectionGap}
+                  description={!hasProtectionGap ? "Coverage meets recommendation" : "Coverage gap exists"}
+                />
+                <ScoreFactor
+                  label="Emergency Fund"
+                  met={financials.savings >= financials.monthlyExpenses * 3}
+                  description={financials.savings >= financials.monthlyExpenses * 3 ? "3+ months saved" : "Build emergency reserves"}
+                />
+              </div>
             </div>
           </div>
-          <ProgressBar
-            value={healthScore}
-            max={100}
-            color={healthScore >= 60 ? 'bg-emerald-500' : 'bg-amber-500'}
-          />
+        </div>
+
+        {/* Key Insights Section */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-amber-500" />
+            Key Insights
+          </h3>
+          <div className="grid md:grid-cols-2 gap-4">
+            {isNetWorthPositive ? (
+              <InsightCard
+                icon={TrendingUp}
+                title="Positive Net Worth"
+                description={`You have ${formatCurrency(financials.netWorth)} more in assets than debts. Keep building on this foundation.`}
+                type="success"
+              />
+            ) : (
+              <InsightCard
+                icon={Target}
+                title="Focus on Net Worth"
+                description="Prioritize paying down high-interest debt while building savings to turn this positive."
+                type="warning"
+              />
+            )}
+
+            {hasProtectionGap ? (
+              <InsightCard
+                icon={Umbrella}
+                title="Protection Gap Identified"
+                description={`Consider adding ${formatCurrency(financials.protectionGap)} in life insurance to fully protect your family.`}
+                type="warning"
+              />
+            ) : (
+              <InsightCard
+                icon={Shield}
+                title="Well Protected"
+                description="Your current life insurance coverage meets the recommended amount. Great job!"
+                type="success"
+              />
+            )}
+
+            {financials.savings < financials.monthlyExpenses * 3 && (
+              <InsightCard
+                icon={Lightbulb}
+                title="Build Emergency Fund"
+                description={`Aim to save ${formatCurrency(financials.monthlyExpenses * 3)} (3 months expenses) for emergencies.`}
+                type="info"
+              />
+            )}
+
+            {financials.creditCards > 0 && (
+              <InsightCard
+                icon={CreditCard}
+                title="Credit Card Debt"
+                description={`Paying off ${formatCurrency(financials.creditCards)} in credit cards could save significant interest.`}
+                type="warning"
+              />
+            )}
+          </div>
         </div>
 
         {/* Main Stats Grid */}
