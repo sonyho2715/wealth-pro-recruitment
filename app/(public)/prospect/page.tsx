@@ -15,7 +15,8 @@ import {
   CheckCircle2,
   BarChart3,
   Building2,
-  Users
+  Users,
+  Sparkles
 } from 'lucide-react';
 import { createProspect, saveFinancialProfile } from './actions';
 
@@ -98,6 +99,68 @@ export default function ProspectIntakePage() {
   });
 
   const currentStepIndex = steps.findIndex(s => s.id === currentStep);
+
+  // Fill form with sample data for testing/demo purposes
+  const fillSampleData = () => {
+    setFormData({
+      // Personal - Sample Family
+      email: 'michael.chen@example.com',
+      firstName: 'Michael',
+      lastName: 'Chen',
+      phone: '(808) 555-0147',
+      age: 42,
+      spouseAge: 39,
+      dependents: 2,
+      retirementAge: 62,
+      occupation: 'Software Engineering Manager',
+      spouseOccupation: 'Registered Nurse',
+      stateOfResidence: 'HI',
+
+      // Income - Dual Income Household
+      annualIncome: 145000,
+      spouseIncome: 85000,
+      otherIncome: 12000, // Rental income
+      monthlyExpenses: 8500,
+      housingCost: 3200,
+      debtPayments: 1800,
+      employer401kMatch: 6,
+      monthlySavingsContribution: 1500,
+
+      // Assets - Mid-Career Accumulation
+      savings: 28000,
+      emergencyFund: 35000,
+      investments: 85000,
+      retirement401k: 320000,
+      rothIra: 45000,
+      pensionValue: 0,
+      hsaFsa: 12000,
+      homeMarketValue: 875000,
+      investmentProperty: 125000, // Rental condo equity
+      businessEquity: 0,
+      otherAssets: 35000, // Vehicles, etc.
+      personalProperty: 25000,
+
+      // Liabilities
+      mortgage: 485000,
+      carLoans: 28000,
+      studentLoans: 15000, // Remaining balance
+      personalLoans: 0,
+      creditCards: 4500,
+      otherDebts: 0,
+      taxesOwed: 0,
+      businessDebt: 0,
+
+      // Protection - Partial Coverage
+      currentLifeInsurance: 250000, // Group life only
+      currentDisability: 3500, // Employer provided
+      liabilityInsurance: 0,
+      hospitalDailyBenefit: 0,
+      spouseLifeInsurance: 100000,
+      annualInsuranceCosts: 4800,
+      hasWill: false,
+      hasTrust: false,
+    });
+  };
 
   const handleChange = (field: string, value: string | number | boolean | undefined) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -1152,7 +1215,17 @@ export default function ProspectIntakePage() {
         <div className="max-w-3xl mx-auto">
           {/* Header */}
           <div className="text-center mb-6 md:mb-8">
-            <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 mb-2">Financial Review</h1>
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <h1 className="text-2xl md:text-3xl font-semibold text-slate-900">Financial Review</h1>
+              <button
+                onClick={fillSampleData}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-full transition-colors"
+                title="Fill with sample data"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                Sample Data
+              </button>
+            </div>
             <p className="text-slate-600 text-sm md:text-base">Complete this assessment to see your full financial picture</p>
           </div>
 
