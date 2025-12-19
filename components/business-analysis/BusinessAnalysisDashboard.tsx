@@ -25,6 +25,7 @@ interface BusinessAnalysisDashboardProps {
   organizationName?: string;
   organizationLogo?: string | null;
   primaryColor?: string;
+  prospectId?: string;
   yearlyData?: YearlyFinancials[];
   currentYearData?: {
     revenue: number;
@@ -44,6 +45,7 @@ export default function BusinessAnalysisDashboard({
   organizationName = 'Wealth Pro',
   organizationLogo,
   primaryColor = '#0f172a',
+  prospectId,
   yearlyData,
   currentYearData,
 }: BusinessAnalysisDashboardProps) {
@@ -131,7 +133,7 @@ export default function BusinessAnalysisDashboard({
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
-              href={`/b/${agentCode}/business/results`}
+              href={prospectId ? `/b/${agentCode}/business/results?id=${prospectId}` : `/b/${agentCode}/business/results?demo=true`}
               className="p-2 hover:bg-slate-100 rounded-lg transition"
             >
               <ArrowLeft className="w-5 h-5 text-slate-600" />

@@ -169,6 +169,7 @@ export default async function BusinessAnalysisPage({ params, searchParams }: Pag
       organizationName={prospect.agent.organization?.name}
       organizationLogo={prospect.agent.organization?.logo}
       primaryColor={prospect.agent.organization?.primaryColor || '#0f172a'}
+      prospectId={id}
       yearlyData={yearlyData.length > 0 ? yearlyData : undefined}
       currentYearData={currentYearData}
     />
