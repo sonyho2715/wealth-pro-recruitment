@@ -353,8 +353,11 @@ async function main(): Promise<void> {
   }
 }
 
-// Run if executed directly
-main().catch((error) => {
-  console.error('Fatal error:', error);
-  process.exit(1);
-});
+// Run if executed directly (not imported)
+const isMainModule = process.argv[1]?.includes('provision');
+if (isMainModule) {
+  main().catch((error) => {
+    console.error('Fatal error:', error);
+    process.exit(1);
+  });
+}
