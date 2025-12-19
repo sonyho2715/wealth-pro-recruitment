@@ -3,8 +3,8 @@ import './globals.css';
 import ToastProvider from '@/components/ToastProvider';
 
 export const metadata: Metadata = {
-  title: 'Wealth Pro | Financial Planning & Career Opportunity',
-  description: 'Discover your complete financial picture, get personalized insurance recommendations, and explore a rewarding career as a financial advisor.',
+  title: 'Wealth Pro | Private Wealth Management & Advisory Careers',
+  description: 'Institutional-grade financial planning for families. Discover your complete financial picture or explore a career as a licensed financial advisor.',
 };
 
 export default function RootLayout({
@@ -16,11 +16,11 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased">
+      <body className="antialiased font-sans">
         <ToastProvider />
         {children}
       </body>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff, ArrowRight, Loader2, Users } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Loader2, Users, BarChart3 } from 'lucide-react';
 import { acceptInvite } from './actions';
 
 interface InviteAcceptFormProps {
@@ -66,7 +66,7 @@ export default function InviteAcceptForm({ token, invite }: InviteAcceptFormProp
       } else {
         setError(result.error || 'Failed to create account');
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred');
     } finally {
       setLoading(false);
@@ -74,12 +74,15 @@ export default function InviteAcceptForm({ token, invite }: InviteAcceptFormProp
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 flex flex-col">
       {/* Header */}
-      <header className="border-b border-slate-700">
+      <header className="border-b border-slate-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold text-white">
-            Wealth<span className="text-blue-500">Pro</span>
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-semibold text-slate-900 tracking-tight">Wealth Pro</span>
           </Link>
         </div>
       </header>
@@ -88,32 +91,32 @@ export default function InviteAcceptForm({ token, invite }: InviteAcceptFormProp
       <main className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           {/* Invite Banner */}
-          <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 mb-6 text-center">
-            <div className="flex items-center justify-center gap-2 text-blue-400 mb-2">
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6 text-center">
+            <div className="flex items-center justify-center gap-2 text-slate-700 mb-2">
               <Users className="w-5 h-5" />
               <span className="font-medium">Team Invite</span>
             </div>
-            <p className="text-white">
+            <p className="text-slate-900">
               You&apos;ve been invited to join <strong>{invite.organizationName}</strong>
             </p>
-            <p className="text-slate-400 text-sm mt-1">
+            <p className="text-slate-500 text-sm mt-1">
               Invited by {invite.invitedByName}
             </p>
           </div>
 
           {/* Form Card */}
-          <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
+          <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
             <div className="text-center mb-6">
-              <h1 className="text-2xl font-bold text-white mb-2">
+              <h1 className="text-2xl font-semibold text-slate-900 mb-2">
                 Create Your Account
               </h1>
-              <p className="text-slate-400">
+              <p className="text-slate-600">
                 Complete your profile to join the team
               </p>
             </div>
 
             {error && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg mb-6 text-sm">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
                 {error}
               </div>
             )}
@@ -121,67 +124,67 @@ export default function InviteAcceptForm({ token, invite }: InviteAcceptFormProp
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Email (read-only) */}
               <div>
-                <label className="block text-sm text-slate-400 mb-1.5">Email</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
                 <input
                   type="email"
                   value={invite.email}
                   disabled
-                  className="w-full px-4 py-2.5 bg-slate-900/30 border border-slate-700 rounded-lg text-slate-400 cursor-not-allowed"
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-500 cursor-not-allowed"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-slate-400 mb-1.5">First Name</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">First Name</label>
                   <input
                     type="text"
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-900/10 focus:outline-none transition"
                     placeholder="John"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-400 mb-1.5">Last Name</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Last Name</label>
                   <input
                     type="text"
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-900/10 focus:outline-none transition"
                     placeholder="Smith"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm text-slate-400 mb-1.5">Phone (optional)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Phone (optional)</label>
                 <input
                   type="tel"
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+                  className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-900/10 focus:outline-none transition"
                   placeholder="(555) 123-4567"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-slate-400 mb-1.5">Password</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none pr-10"
+                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-900/10 focus:outline-none transition pr-10"
                     placeholder="At least 8 characters"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -189,13 +192,13 @@ export default function InviteAcceptForm({ token, invite }: InviteAcceptFormProp
               </div>
 
               <div>
-                <label className="block text-sm text-slate-400 mb-1.5">Confirm Password</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Confirm Password</label>
                 <input
                   type="password"
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+                  className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-900/10 focus:outline-none transition"
                   placeholder="Confirm your password"
                 />
               </div>
@@ -203,7 +206,7 @@ export default function InviteAcceptForm({ token, invite }: InviteAcceptFormProp
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+                className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white py-3 rounded-lg font-medium hover:bg-slate-800 transition disabled:opacity-50 disabled:cursor-not-allowed mt-6"
               >
                 {loading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -218,7 +221,7 @@ export default function InviteAcceptForm({ token, invite }: InviteAcceptFormProp
 
             <p className="text-center text-slate-500 text-sm mt-6">
               By joining, you agree to the{' '}
-              <Link href="/terms" className="text-blue-400 hover:underline">
+              <Link href="/terms" className="text-slate-700 hover:underline">
                 Terms of Service
               </Link>
             </p>
