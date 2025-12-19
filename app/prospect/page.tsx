@@ -13,7 +13,9 @@ import {
   ChevronLeft,
   Loader2,
   CheckCircle2,
-  BarChart3
+  BarChart3,
+  Building2,
+  Users
 } from 'lucide-react';
 import { createProspect, saveFinancialProfile } from './actions';
 
@@ -1152,6 +1154,25 @@ export default function ProspectIntakePage() {
           <div className="text-center mb-6 md:mb-8">
             <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 mb-2">Financial Review</h1>
             <p className="text-slate-600 text-sm md:text-base">Complete this assessment to see your full financial picture</p>
+          </div>
+
+          {/* Personal / Business Toggle */}
+          <div className="flex justify-center mb-6">
+            <div className="inline-flex bg-slate-100 rounded-xl p-1">
+              <button
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 text-white font-medium text-sm transition-all"
+              >
+                <Users className="w-4 h-4" />
+                Personal
+              </button>
+              <Link
+                href="/b/demo/business"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 font-medium text-sm transition-all"
+              >
+                <Building2 className="w-4 h-4" />
+                Business
+              </Link>
+            </div>
           </div>
 
           {/* Progress Steps */}

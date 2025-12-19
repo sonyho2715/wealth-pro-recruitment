@@ -37,6 +37,7 @@ interface FormData {
 
   // Income
   annualRevenue: string;
+  costOfGoodsSold: string;
   grossProfit: string;
   netIncome: string;
   ownerSalary: string;
@@ -87,6 +88,7 @@ const initialFormData: FormData = {
   yearsInBusiness: '',
   employeeCount: '1',
   annualRevenue: '',
+  costOfGoodsSold: '',
   grossProfit: '',
   netIncome: '',
   ownerSalary: '',
@@ -421,6 +423,7 @@ export default function BusinessBalanceSheetForm({
               <p className="text-sm text-slate-500">Annual financial performance</p>
             </div>
             {renderInput('Annual Revenue', 'annualRevenue', 'currency', '500,000', true)}
+            {renderInput('Cost of Goods Sold (COGS)', 'costOfGoodsSold', 'currency', '300,000')}
             {renderInput('Gross Profit', 'grossProfit', 'currency', '200,000')}
             {renderInput('Net Income (after expenses)', 'netIncome', 'currency', '100,000')}
 
