@@ -6,7 +6,7 @@ import {
   PiggyBank, Target, AlertTriangle, CheckCircle, Building2,
   Briefcase, Phone, Mail, Home, CreditCard, GraduationCap, Car
 } from 'lucide-react';
-import { logSlideView, endPresentationSession } from '@/app/agent/dashboard/presentations/actions';
+import { logSlideView, endPresentationSession } from '@/app/(admin)/agent/dashboard/presentations/actions';
 
 interface PresentationData {
   prospect: {
