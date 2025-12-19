@@ -15,6 +15,7 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  Sparkles,
 } from 'lucide-react';
 
 interface BalanceSheetFormProps {
@@ -158,6 +159,74 @@ const initialFormData: FormData = {
   filingStatus: '',
 };
 
+// Sample data for demo purposes
+const sampleFormData: FormData = {
+  // Step 1: About You
+  firstName: 'Michael',
+  lastName: 'Johnson',
+  email: 'michael.johnson@example.com',
+  phone: '(808) 555-1234',
+  age: '42',
+  spouseAge: '40',
+  dependents: '2',
+  stateOfResidence: 'HI',
+  occupation: 'Marketing Director',
+  spouseOccupation: 'Nurse',
+
+  // Step 2: Income & Expenses
+  annualIncome: '125000',
+  spouseIncome: '85000',
+  otherIncome: '5000',
+  housingCost: '3200',
+  utilities: '350',
+  food: '800',
+  transportation: '600',
+  insurance: '400',
+  childcare: '1500',
+  entertainment: '300',
+  otherExpenses: '500',
+
+  // Step 3: Assets - Savings & Investments
+  savings: '25000',
+  emergencyFund: '15000',
+  retirement401k: '185000',
+  rothIra: '45000',
+  pensionValue: '0',
+  hsaFsa: '8500',
+  investments: '35000',
+  businessEquity: '0',
+  otherAssets: '10000',
+
+  // Step 4: Assets - Property
+  homeMarketValue: '850000',
+  homeEquity: '250000',
+  investmentProperty: '0',
+  personalProperty: '45000',
+
+  // Step 5: Debts & Liabilities
+  mortgage: '600000',
+  carLoans: '28000',
+  studentLoans: '15000',
+  creditCards: '4500',
+  personalLoans: '0',
+  businessDebt: '0',
+  taxesOwed: '0',
+  otherDebts: '0',
+
+  // Step 6: Protection & Planning
+  currentLifeInsurance: '250000',
+  spouseLifeInsurance: '100000',
+  currentDisability: '0',
+  hospitalDailyBenefit: '0',
+  liabilityInsurance: '0',
+  hasWill: false,
+  hasTrust: false,
+  retirementAge: '62',
+  expectedSocialSecurity: '2800',
+  employer401kMatch: '4',
+  filingStatus: 'MARRIED_FILING_JOINTLY',
+};
+
 const steps = [
   { id: 'personal', title: 'About You', icon: User },
   { id: 'income', title: 'Income', icon: DollarSign },
@@ -199,6 +268,12 @@ export default function BalanceSheetForm({
 
   const updateField = (field: keyof FormData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const fillSampleData = () => {
+    setFormData(sampleFormData);
+    setShowDetailedExpenses(true);
+    setShowRetirementDetails(true);
   };
 
   const formatCurrency = (value: string) => {
@@ -624,18 +699,30 @@ export default function BalanceSheetForm({
 
       {/* Navigation */}
       <div className="flex justify-between mt-10 pt-8 border-t border-slate-200">
-        <button
-          onClick={prevStep}
-          disabled={currentStep === 0}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition ${
-            currentStep === 0
-              ? 'text-slate-300 cursor-not-allowed'
-              : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          <ChevronLeft className="w-5 h-5" />
-          Back
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={prevStep}
+            disabled={currentStep === 0}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition ${
+              currentStep === 0
+                ? 'text-slate-300 cursor-not-allowed'
+                : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <ChevronLeft className="w-5 h-5" />
+            Back
+          </button>
+
+          {currentStep === 0 && (
+            <button
+              onClick={fillSampleData}
+              className="flex items-center gap-2 px-4 py-2.5 text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition text-sm font-medium"
+            >
+              <Sparkles className="w-4 h-4" />
+              Fill Sample Data
+            </button>
+          )}
+        </div>
 
         {currentStep < steps.length - 1 ? (
           <button
