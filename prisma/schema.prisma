@@ -703,8 +703,10 @@ enum InsuranceType {
   TERM_LIFE
   WHOLE_LIFE
   UNIVERSAL_LIFE
+  IUL
   DISABILITY
   LONG_TERM_CARE
+  LIVING_BENEFITS
 }
 
 // Agent career projection

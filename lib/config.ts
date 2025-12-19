@@ -32,6 +32,10 @@ export const PREMIUM_ESTIMATES = {
   wholeLife: {
     premiumPer1K: 10,              // $10/month per $1K coverage
   },
+  iul: {
+    premiumPer1K: 8,               // $8/month per $1K coverage (more flexible)
+    minPremium: 200,               // Minimum monthly premium for IUL
+  },
   disability: {
     premiumRate: 0.025,            // 2.5% of monthly benefit
   },
@@ -39,6 +43,9 @@ export const PREMIUM_ESTIMATES = {
     basePremium: 125,              // Base monthly at age 45
     ageMultiplierRate: 12,         // $12 more per year over 45
     baseAge: 45,
+  },
+  livingBenefits: {
+    premiumAddOn: 0.15,            // 15% add-on to base policy premium
   },
 };
 

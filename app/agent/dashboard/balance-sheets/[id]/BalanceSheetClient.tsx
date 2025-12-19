@@ -221,8 +221,10 @@ export default function BalanceSheetClient({
     TERM_LIFE: 'Term Life Insurance',
     WHOLE_LIFE: 'Whole Life Insurance',
     UNIVERSAL_LIFE: 'Universal Life Insurance',
+    IUL: 'Indexed Universal Life (IUL)',
     DISABILITY: 'Disability Insurance',
     LONG_TERM_CARE: 'Long-Term Care Insurance',
+    LIVING_BENEFITS: 'Living Benefits Rider',
   };
 
   return (
