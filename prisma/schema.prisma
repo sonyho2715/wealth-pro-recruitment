@@ -832,6 +832,10 @@ model Agent {
   matchupRequestsReceived   MatchupRequest[] @relation("MatchupTrainer")
   teamInvitesSent           TeamInvite[]     @relation("InvitedBy")
 
+  // Business Balance Sheet relations
+  businessProspects         BusinessProspect[] @relation("BusinessProspects")
+  referredBusinessProspects BusinessProspect[] @relation("ReferredBusinessProspects")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1323,4 +1327,129 @@ enum InviteStatus {
   ACCEPTED
   EXPIRED
   CANCELLED
+}
+
+// ============================================
+// BUSINESS BALANCE SHEET SYSTEM
+// ============================================
+
+model BusinessProspect {
+  id        String   @id @default(cuid())
+  email     String   @unique
+
+  // Contact Person
+  firstName String
+  lastName  String
+  phone     String?
+
+  // Business Info
+  businessName    String
+  businessType    BusinessType @default(LLC)
+  industry        String?
+  yearsInBusiness Int          @default(1)
+  employeeCount   Int          @default(1)
+
+  // Status
+  status    ProspectStatus @default(LEAD)
+
+  // Agent ownership
+  agentId   String?
+  agent     Agent?   @relation("BusinessProspects", fields: [agentId], references: [id], onDelete: SetNull)
+
+  // Referral tracking
+  referredByAgentId String?
+  referredByAgent   Agent?   @relation("ReferredBusinessProspects", fields: [referredByAgentId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  financialProfile BusinessFinancialProfile?
+
+  @@index([agentId])
+  @@index([referredByAgentId])
+}
+
+enum BusinessType {
+  SOLE_PROPRIETORSHIP
+  LLC
+  PARTNERSHIP
+  S_CORP
+  C_CORP
+  NONPROFIT
+  OTHER
+}
+
+// Business Financial Profile
+model BusinessFinancialProfile {
+  id                String   @id @default(cuid())
+  businessProspectId String  @unique
+  businessProspect   BusinessProspect @relation(fields: [businessProspectId], references: [id], onDelete: Cascade)
+
+  // ===== BUSINESS INCOME =====
+  annualRevenue       Decimal @db.Decimal(14, 2) @default(0)
+  grossProfit         Decimal @db.Decimal(14, 2) @default(0)
+  netIncome           Decimal @db.Decimal(14, 2) @default(0)
+  ownerSalary         Decimal @db.Decimal(12, 2) @default(0)
+  ownerDistributions  Decimal @db.Decimal(12, 2) @default(0)
+
+  // ===== BUSINESS ASSETS =====
+  // Current Assets
+  cashOnHand          Decimal @db.Decimal(14, 2) @default(0)
+  accountsReceivable  Decimal @db.Decimal(14, 2) @default(0)
+  inventory           Decimal @db.Decimal(14, 2) @default(0)
+  prepaidExpenses     Decimal @db.Decimal(12, 2) @default(0)
+
+  // Fixed Assets
+  equipment           Decimal @db.Decimal(14, 2) @default(0)
+  vehicles            Decimal @db.Decimal(14, 2) @default(0)
+  realEstate          Decimal @db.Decimal(14, 2) @default(0)
+  leaseholdImprovements Decimal @db.Decimal(14, 2) @default(0)
+
+  // Other Assets
+  intellectualProperty Decimal @db.Decimal(14, 2) @default(0)
+  goodwill            Decimal @db.Decimal(14, 2) @default(0)
+  investments         Decimal @db.Decimal(14, 2) @default(0)
+  otherAssets         Decimal @db.Decimal(14, 2) @default(0)
+
+  // ===== BUSINESS LIABILITIES =====
+  // Current Liabilities
+  accountsPayable     Decimal @db.Decimal(14, 2) @default(0)
+  accruedExpenses     Decimal @db.Decimal(12, 2) @default(0)
+  shortTermLoans      Decimal @db.Decimal(14, 2) @default(0)
+  creditCards         Decimal @db.Decimal(12, 2) @default(0)
+  lineOfCredit        Decimal @db.Decimal(14, 2) @default(0)
+  currentPortionLTD   Decimal @db.Decimal(14, 2) @default(0) // Current portion of long-term debt
+
+  // Long-Term Liabilities
+  termLoans           Decimal @db.Decimal(14, 2) @default(0)
+  sbaLoans            Decimal @db.Decimal(14, 2) @default(0)
+  equipmentLoans      Decimal @db.Decimal(14, 2) @default(0)
+  commercialMortgage  Decimal @db.Decimal(14, 2) @default(0)
+  otherLongTermDebt   Decimal @db.Decimal(14, 2) @default(0)
+
+  // ===== BUSINESS INSURANCE =====
+  keyPersonInsurance      Decimal @db.Decimal(12, 2) @default(0)
+  generalLiability        Decimal @db.Decimal(12, 2) @default(0)
+  professionalLiability   Decimal @db.Decimal(12, 2) @default(0) // E&O
+  propertyInsurance       Decimal @db.Decimal(12, 2) @default(0)
+  workersComp             Decimal @db.Decimal(12, 2) @default(0)
+  businessInterruption    Decimal @db.Decimal(12, 2) @default(0)
+  cyberLiability          Decimal @db.Decimal(12, 2) @default(0)
+  buyerSellerAgreement    Boolean @default(false)
+  successionPlan          Boolean @default(false)
+
+  // ===== CALCULATED FIELDS =====
+  totalAssets         Decimal @db.Decimal(14, 2) @default(0)
+  totalLiabilities    Decimal @db.Decimal(14, 2) @default(0)
+  netWorth            Decimal @db.Decimal(14, 2) @default(0)
+  currentRatio        Decimal @db.Decimal(6, 2) @default(0)
+  debtToEquityRatio   Decimal @db.Decimal(6, 2) @default(0)
+
+  // ===== PROTECTION GAPS =====
+  keyPersonGap        Decimal @db.Decimal(14, 2) @default(0)
+  buyoutFundingGap    Decimal @db.Decimal(14, 2) @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { db } from '@/lib/db';
 import { BarChart3, Shield, Clock, Lock, Building2 } from 'lucide-react';
-import BalanceSheetForm from './BalanceSheetForm';
+import BusinessBalanceSheetForm from './BusinessBalanceSheetForm';
 
 interface PageProps {
   params: Promise<{ agentCode: string }>;
@@ -45,12 +45,12 @@ export async function generateMetadata({ params }: PageProps) {
   }
 
   return {
-    title: `Financial Review | ${agent.firstName} ${agent.lastName} - Wealth Pro`,
-    description: `Get your complimentary financial review from ${agent.firstName}. See your complete financial picture in minutes.`,
+    title: `Business Financial Review | ${agent.firstName} ${agent.lastName} - Wealth Pro`,
+    description: `Get your complimentary business financial review from ${agent.firstName}. See your complete business picture in minutes.`,
   };
 }
 
-export default async function BalanceSheetPage({ params }: PageProps) {
+export default async function BusinessBalanceSheetPage({ params }: PageProps) {
   const { agentCode } = await params;
   const agent = await getAgent(agentCode);
 
@@ -83,11 +83,10 @@ export default async function BalanceSheetPage({ params }: PageProps) {
           </Link>
           <div className="flex items-center gap-4">
             <Link
-              href={`/b/${agentCode}/business`}
-              className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 transition hidden sm:flex"
+              href={`/b/${agentCode}`}
+              className="text-sm text-slate-500 hover:text-slate-700 transition hidden sm:block"
             >
-              <Building2 className="w-4 h-4" />
-              Business Review
+              Personal Review
             </Link>
             <div className="text-sm text-slate-500">
               Your Advisor:{' '}
@@ -103,24 +102,25 @@ export default async function BalanceSheetPage({ params }: PageProps) {
       <main className="max-w-4xl mx-auto px-4 py-12 md:py-16">
         {/* Hero Section */}
         <div className="text-center mb-12">
-          <span className="inline-flex items-center gap-2 bg-slate-100 text-slate-700 px-4 py-2 rounded-full mb-6">
+          <span className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full mb-6">
+            <Building2 className="w-4 h-4" />
             <span className="text-xs font-medium uppercase tracking-wider">
-              Complimentary Financial Review
+              Business Financial Review
             </span>
           </span>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-medium text-slate-900 mb-4 tracking-tight font-serif">
             See Your Complete{' '}
-            <span className="text-gradient-premium">Financial Picture</span>
+            <span className="text-gradient-premium">Business Picture</span>
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Answer a few simple questions and receive your personalized balance sheet
-            with actionable insights. Takes less than 5 minutes.
+            Get a comprehensive analysis of your business finances, identify protection gaps,
+            and discover opportunities to strengthen your business. Takes less than 10 minutes.
           </p>
         </div>
 
         {/* Form Card */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 md:p-10 shadow-sm">
-          <BalanceSheetForm
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 md:p-10 shadow-sm">
+          <BusinessBalanceSheetForm
             agentId={agent.id}
             agentCode={agent.referralCode || agentCode}
             agentName={`${agent.firstName} ${agent.lastName}`}
@@ -146,7 +146,7 @@ export default async function BalanceSheetPage({ params }: PageProps) {
             <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center mb-3">
               <Clock className="w-5 h-5 text-slate-600" />
             </div>
-            <p className="text-sm text-slate-600">Takes 5 Minutes</p>
+            <p className="text-sm text-slate-600">Takes 10 Minutes</p>
           </div>
         </div>
       </main>
@@ -155,7 +155,7 @@ export default async function BalanceSheetPage({ params }: PageProps) {
       <footer className="border-t border-slate-200 mt-12 py-8 bg-white">
         <div className="max-w-4xl mx-auto px-4 text-center text-sm text-slate-500">
           <p className="mb-2">
-            This is a financial awareness tool, not financial advice.
+            This is a business financial awareness tool, not financial advice.
             Consult a licensed professional for personalized recommendations.
           </p>
           <p className="text-slate-400">
