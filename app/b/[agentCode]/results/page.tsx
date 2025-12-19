@@ -49,8 +49,8 @@ export async function generateMetadata({ params, searchParams }: PageProps) {
   }
 
   return {
-    title: `Your Financial Snapshot | ${prospect.firstName}`,
-    description: 'See your personalized Living Balance Sheet results.',
+    title: `Your Financial Snapshot | ${prospect.firstName} - Wealth Pro`,
+    description: 'See your personalized financial analysis and recommendations.',
   };
 }
 
@@ -120,7 +120,7 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
         referralCode: prospect.agent.referralCode || agentCode,
         organizationName: prospect.agent.organization?.name,
         logo: prospect.agent.organization?.logo,
-        primaryColor: prospect.agent.organization?.primaryColor || '#3B82F6',
+        primaryColor: prospect.agent.organization?.primaryColor || '#0f172a',
       }}
       financials={{
         totalAssets,

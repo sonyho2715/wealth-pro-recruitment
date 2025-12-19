@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Shield, Mail, Lock, Loader2, AlertCircle } from 'lucide-react';
+import { BarChart3, Mail, Lock, Loader2, AlertCircle } from 'lucide-react';
 
 export default function AgentLoginPage() {
   const router = useRouter();
@@ -21,7 +21,7 @@ export default function AgentLoginPage() {
       const res = await fetch('/api/agent/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
@@ -41,22 +41,20 @@ export default function AgentLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-              <Shield className="w-7 h-7 text-white" />
+            <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center">
+              <BarChart3 className="w-7 h-7 text-white" />
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Wealth Pro
-            </span>
+            <span className="text-2xl font-semibold text-slate-900 tracking-tight">Wealth Pro</span>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Agent Login</h1>
-          <p className="text-gray-600">Access your prospect dashboard</p>
+          <h1 className="text-2xl font-semibold text-slate-900 mb-2">Agent Login</h1>
+          <p className="text-slate-600">Access your prospect dashboard</p>
         </div>
 
-        <div className="card-gradient">
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-2">
@@ -66,16 +64,14 @@ export default function AgentLoginPage() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   type="email"
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className="input-field pl-12"
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-900/10 focus:outline-none transition"
                   placeholder="agent@example.com"
                   required
                 />
@@ -83,16 +79,14 @@ export default function AgentLoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   type="password"
                   value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  className="input-field pl-12"
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-900/10 focus:outline-none transition"
                   placeholder="Enter your password"
                   required
                 />
@@ -102,7 +96,7 @@ export default function AgentLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full flex items-center justify-center gap-2"
+              className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white py-3 rounded-lg font-medium hover:bg-slate-800 transition disabled:opacity-50"
             >
               {loading ? (
                 <>
@@ -115,10 +109,10 @@ export default function AgentLoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-gray-200 text-center">
-            <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
-              <Link href="/career" className="text-blue-600 hover:text-blue-700 font-medium">
+          <div className="mt-6 pt-6 border-t border-slate-200 text-center">
+            <p className="text-sm text-slate-600">
+              Don&apos;t have an account?{' '}
+              <Link href="/career" className="text-slate-900 hover:underline font-medium">
                 Learn about becoming an agent
               </Link>
             </p>
@@ -126,8 +120,8 @@ export default function AgentLoginPage() {
         </div>
 
         <div className="mt-6 text-center">
-          <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">
-            ← Back to Home
+          <Link href="/" className="text-sm text-slate-500 hover:text-slate-700">
+            &larr; Back to Home
           </Link>
         </div>
       </div>

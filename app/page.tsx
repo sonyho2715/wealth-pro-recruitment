@@ -1,551 +1,475 @@
-import Image from 'next/image';
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
-  Shield,
-  TrendingUp,
-  Users,
-  Calculator,
   ArrowRight,
-  CheckCircle2,
-  DollarSign,
-  PieChart,
+  TrendingUp,
+  Shield,
+  Users,
+  ChevronRight,
+  BarChart3,
   Briefcase,
+  CheckCircle2,
   Star,
-  Quote,
-  AlertTriangle,
-  Eye,
-  Heart,
-  Target,
-  Lightbulb,
-  Award,
-  Clock,
-  Lock,
-  Sparkles,
-  Brain,
-  MapPin,
-  Compass
 } from 'lucide-react';
 import ComplianceDisclaimer from '@/components/ComplianceDisclaimer';
 
 export default function HomePage() {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-                <Shield className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                Wealth Pro
-              </span>
+    <div className="min-h-screen bg-white">
+      {/* Premium Navigation */}
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled
+            ? 'bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm py-4'
+            : 'bg-transparent py-6'
+        }`}
+      >
+        <div className="max-w-6xl mx-auto px-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-white" />
             </div>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/prospect" className="text-gray-600 hover:text-blue-600 transition-colors">
-                Financial Review
-              </Link>
-              <Link href="/career" className="text-gray-600 hover:text-blue-600 transition-colors">
-                Career Opportunity
-              </Link>
-              <Link href="/agent/login" className="btn-primary text-sm py-2">
-                Agent Login
-              </Link>
-            </nav>
+            <span className="text-xl font-semibold text-slate-900 tracking-tight">
+              Wealth Pro
+            </span>
+          </Link>
+          <div className="hidden md:flex items-center gap-8">
+            <Link
+              href="/prospect"
+              className="text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors"
+            >
+              Financial Review
+            </Link>
+            <Link
+              href="/career"
+              className="text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors"
+            >
+              Advisory Careers
+            </Link>
+            <Link
+              href="/agent/login"
+              className="text-slate-900 text-sm font-medium px-5 py-2.5 border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-slate-400 transition-all"
+            >
+              Advisor Login
+            </Link>
           </div>
         </div>
-      </header>
+      </nav>
 
-      {/* Hero Section with Image */}
-      <section className="relative py-16 md:py-24 px-4 overflow-hidden">
-        {/* Background Image */}
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="https://images.unsplash.com/photo-1560472355-536de3962603?q=80&w=2070"
-            alt="Family financial planning"
-            fill
-            className="object-cover opacity-10"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/90 via-white/70 to-indigo-50/90" />
-        </div>
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 px-4 overflow-hidden">
+        {/* Subtle gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-blue-50/30" />
 
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left Content */}
             <div>
-              <div className="inline-flex items-center gap-2 bg-blue-100/80 text-blue-700 px-4 py-2 rounded-full mb-6 backdrop-blur-sm">
-                <CheckCircle2 className="w-4 h-4" />
-                <span className="text-sm font-medium">Free Financial Assessment</span>
+              <div className="inline-flex items-center gap-2 bg-slate-100 text-slate-700 px-4 py-2 rounded-full mb-8">
+                <span className="text-xs font-medium uppercase tracking-wider">
+                  Private Wealth Management
+                </span>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 leading-[1.1] tracking-tight">
-                What You Can't See
-                <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mt-2">
-                  Could Cost Your Family Everything
+              <h1 className="heading-display text-slate-900 mb-6">
+                Financial Clarity{' '}
+                <span className="text-gradient-premium">
+                  You Can Trust
                 </span>
               </h1>
 
-              <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
-                Most families think they're covered. <span className="font-semibold text-gray-800">In 10 minutes</span>, discover your gaps before life does.
+              <p className="text-lg md:text-xl text-slate-600 mb-10 leading-relaxed max-w-lg">
+                Institutional-grade planning for families. See your complete financial picture,
+                identify protection gaps, and build lasting wealth.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/prospect" className="btn-primary inline-flex items-center gap-2">
-                  Start Your Financial Review
-                  <ArrowRight className="w-5 h-5" />
+                <Link
+                  href="/prospect"
+                  className="inline-flex items-center justify-center gap-2 bg-slate-900 text-white font-medium px-8 py-4 rounded-lg hover:bg-slate-800 transition-all group"
+                >
+                  Start Your Review
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
-                <Link href="/career" className="btn-secondary inline-flex items-center gap-2">
-                  Explore Career Opportunity
+                <Link
+                  href="/career"
+                  className="inline-flex items-center justify-center gap-2 bg-transparent text-slate-900 font-medium px-8 py-4 rounded-lg border border-slate-300 hover:border-slate-400 hover:bg-slate-50 transition-all"
+                >
+                  Explore Advisory Careers
                 </Link>
-              </div>
-
-              {/* Trust Indicators */}
-              <div className="flex items-center gap-6 mt-10 pt-10 border-t border-gray-200">
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-gray-900">10K+</p>
-                  <p className="text-sm text-gray-500">Families Helped</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-gray-900">$2.5B+</p>
-                  <p className="text-sm text-gray-500">Protection Placed</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-gray-900">4.9/5</p>
-                  <p className="text-sm text-gray-500">Client Rating</p>
-                </div>
               </div>
             </div>
 
-            {/* Hero Image */}
-            <div className="relative hidden lg:block">
-              <div className="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl">
-                <Image
-                  src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=1770"
-                  alt="Financial advisor meeting with family"
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              </div>
-              {/* Floating Card */}
-              <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-xl shadow-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                    <CheckCircle2 className="w-6 h-6 text-green-600" />
+            {/* Right - Animated UI Card */}
+            <div className="hidden lg:block relative">
+              <div className="relative animate-float">
+                {/* Main Dashboard Card */}
+                <div className="bg-white rounded-2xl shadow-premium border border-slate-200 p-6 max-w-md ml-auto">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="font-semibold text-slate-900">Your Balance Sheet</h3>
+                    <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">
+                      Live
+                    </span>
                   </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">Protection Gap Found</p>
-                    <p className="text-sm text-gray-500">$250,000 coverage needed</p>
+
+                  {/* Net Worth Display */}
+                  <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-5 mb-4">
+                    <p className="text-slate-400 text-sm mb-1">Net Worth</p>
+                    <p className="text-3xl font-bold text-white">$487,250</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <TrendingUp className="w-4 h-4 text-emerald-400" />
+                      <span className="text-emerald-400 text-sm">+12.4% this year</span>
+                    </div>
+                  </div>
+
+                  {/* Quick Stats */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-slate-50 rounded-lg p-3">
+                      <p className="text-slate-500 text-xs mb-1">Total Assets</p>
+                      <p className="font-semibold text-slate-900">$702,500</p>
+                    </div>
+                    <div className="bg-slate-50 rounded-lg p-3">
+                      <p className="text-slate-500 text-xs mb-1">Liabilities</p>
+                      <p className="font-semibold text-slate-900">$215,250</p>
+                    </div>
+                  </div>
+
+                  {/* Protection Status */}
+                  <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-3">
+                    <Shield className="w-5 h-5 text-amber-600" />
+                    <div>
+                      <p className="text-sm font-medium text-amber-900">Protection Gap Found</p>
+                      <p className="text-xs text-amber-700">$350,000 additional coverage recommended</p>
+                    </div>
                   </div>
                 </div>
+
+                {/* Floating accent elements */}
+                <div className="absolute -top-4 -left-4 w-20 h-20 bg-blue-100 rounded-full blur-2xl opacity-60" />
+                <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-slate-100 rounded-full blur-3xl opacity-60" />
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Credibility Stats Band */}
+      <section className="border-y border-slate-200 bg-slate-50/50 py-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+            {[
+              { value: '$2.5B+', label: 'Assets Under Guidance' },
+              { value: '10,000+', label: 'Families Served' },
+              { value: '15+', label: 'Years of Excellence' },
+              { value: '4.9/5', label: 'Client Satisfaction' },
+            ].map((stat, index) => (
+              <div key={index} className="text-center">
+                <p className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">
+                  {stat.value}
+                </p>
+                <p className="text-sm text-slate-500">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Two Paths Section */}
+      <section className="py-20 md:py-28 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <span className="inline-flex items-center gap-2 bg-slate-100 text-slate-700 px-4 py-2 rounded-full mb-6">
+              <span className="text-xs font-medium uppercase tracking-wider">
+                Two Paths Forward
+              </span>
+            </span>
+            <h2 className="heading-display text-slate-900 text-3xl md:text-4xl lg:text-5xl mb-4">
+              Choose Your Journey
+            </h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              Whether you seek financial clarity for your family or a rewarding career helping others,
+              your path starts here.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Private Client Path */}
+            <div className="group relative bg-white rounded-2xl border border-slate-200 p-8 md:p-10 hover:border-slate-300 hover:shadow-lg transition-all duration-300">
+              <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
+                <Shield className="w-7 h-7 text-blue-600" />
+              </div>
+              <h3 className="text-2xl font-semibold text-slate-900 mb-3 font-serif">
+                Private Client
+              </h3>
+              <p className="text-slate-600 mb-6">
+                Get a complete view of your financial life. Understand where you stand,
+                identify gaps in your protection, and receive personalized recommendations.
+              </p>
+
+              <ul className="space-y-3 mb-8">
+                {[
+                  'Complete net worth analysis',
+                  'Protection gap identification',
+                  'Personalized recommendations',
+                  'No cost, no obligation',
+                ].map((item, index) => (
+                  <li key={index} className="flex items-center gap-3 text-slate-700">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                href="/prospect"
+                className="inline-flex items-center gap-2 text-slate-900 font-medium group-hover:gap-3 transition-all"
+              >
+                Start Your Financial Review
+                <ChevronRight className="w-5 h-5" />
+              </Link>
+            </div>
+
+            {/* Advisor Partnership Path */}
+            <div className="group relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-8 md:p-10 hover:shadow-xl transition-all duration-300">
+              <div className="w-14 h-14 bg-white/10 rounded-xl flex items-center justify-center mb-6">
+                <Briefcase className="w-7 h-7 text-white" />
+              </div>
+              <h3 className="text-2xl font-semibold text-white mb-3 font-serif">
+                Advisor Partnership
+              </h3>
+              <p className="text-slate-300 mb-6">
+                Build a meaningful career helping families achieve financial security.
+                Unlimited income potential with full training and mentorship.
+              </p>
+
+              <ul className="space-y-3 mb-8">
+                {[
+                  'No income ceiling',
+                  'Comprehensive training program',
+                  'Proven business model',
+                  'Make a real difference',
+                ].map((item, index) => (
+                  <li key={index} className="flex items-center gap-3 text-slate-200">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                href="/career"
+                className="inline-flex items-center gap-2 text-white font-medium group-hover:gap-3 transition-all"
+              >
+                Explore Advisory Careers
+                <ChevronRight className="w-5 h-5" />
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="py-16 md:py-20 px-4 bg-white/60 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">How It Works</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto text-base md:text-lg">
-              Our comprehensive process helps you understand your finances and discover opportunities
+      <section className="py-20 md:py-28 px-4 bg-slate-50">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <span className="inline-flex items-center gap-2 bg-white text-slate-700 px-4 py-2 rounded-full mb-6 border border-slate-200">
+              <span className="text-xs font-medium uppercase tracking-wider">
+                Simple Process
+              </span>
+            </span>
+            <h2 className="heading-display text-slate-900 text-3xl md:text-4xl lg:text-5xl mb-4">
+              Four Steps to Clarity
+            </h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              In less than 15 minutes, gain the financial clarity that most families never achieve.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-4 gap-6 md:gap-8">
             {[
               {
-                step: '1',
-                icon: Calculator,
-                title: 'Financial Intake',
-                description: 'Share your income, expenses, assets, and goals in our simple questionnaire'
+                step: '01',
+                title: 'Share Your Picture',
+                description: 'Answer simple questions about your income, assets, and goals.',
               },
               {
-                step: '2',
-                icon: PieChart,
-                title: 'Personal Balance Sheet',
-                description: 'See your complete financial picture with protection gaps identified'
+                step: '02',
+                title: 'Get Your Analysis',
+                description: 'See your complete balance sheet with identified gaps.',
               },
               {
-                step: '3',
-                icon: Shield,
-                title: 'Insurance Recommendations',
-                description: 'Get personalized recommendations to protect your family'
+                step: '03',
+                title: 'Receive Recommendations',
+                description: 'Get personalized guidance based on your unique situation.',
               },
               {
-                step: '4',
-                icon: Briefcase,
-                title: 'Career Opportunity',
-                description: 'Discover how agent income could transform your financial future'
-              }
+                step: '04',
+                title: 'Take Action',
+                description: 'Work with an advisor to implement your protection plan.',
+              },
             ].map((item, index) => (
               <div key={index} className="relative">
-                <div className="card-gradient text-center h-full">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <item.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="absolute -top-3 -left-3 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                <div className="bg-white rounded-xl border border-slate-200 p-6 h-full">
+                  <span className="text-4xl font-bold text-slate-200 mb-4 block font-serif">
                     {item.step}
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
-                  <p className="text-gray-600 text-sm">{item.description}</p>
+                  </span>
+                  <h3 className="text-lg font-semibold text-slate-900 mb-2">{item.title}</h3>
+                  <p className="text-slate-600 text-sm">{item.description}</p>
                 </div>
+                {index < 3 && (
+                  <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2">
+                    <ChevronRight className="w-6 h-6 text-slate-300" />
+                  </div>
+                )}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* The Hidden Truth Section - Problem Agitation */}
-      <section className="py-20 px-4 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500 via-transparent to-transparent" />
-        </div>
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-red-500/20 text-red-300 px-4 py-2 rounded-full mb-6">
-              <AlertTriangle className="w-4 h-4" />
-              <span className="text-sm font-medium">The Uncomfortable Truth</span>
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              What Most Don't Realize<br />
-              <span className="text-blue-400">Until It's Too Late</span>
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
-            {[
-              {
-                icon: Eye,
-                stat: '78%',
-                title: 'Are Underinsured',
-                description: 'Most families have gaps they don\'t know about.',
-                color: 'from-red-500 to-orange-500',
-              },
-              {
-                icon: Clock,
-                stat: '64%',
-                title: 'Will Outlive Savings',
-                description: 'Retirement funds run out before they do.',
-                color: 'from-amber-500 to-yellow-500',
-              },
-              {
-                icon: Brain,
-                stat: '91%',
-                title: 'Lack Clarity',
-                description: 'Making decisions with incomplete info.',
-                color: 'from-purple-500 to-pink-500',
-              },
-            ].map((item, index) => (
-              <div key={index} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all duration-300">
-                <div className={`w-14 h-14 bg-gradient-to-br ${item.color} rounded-xl flex items-center justify-center mb-4`}>
-                  <item.icon className="w-7 h-7 text-white" />
-                </div>
-                <div className="text-4xl font-bold text-white mb-2">{item.stat}</div>
-                <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
-                <p className="text-gray-400">{item.description}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-8">
-            <div className="max-w-2xl mx-auto text-center">
-              <Lightbulb className="w-10 h-10 text-yellow-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-white mb-3">
-                The Difference?
-              </h3>
-              <p className="text-gray-300">
-                Thriving families <span className="text-blue-400 font-medium">see what others miss</span>. Clarity turns worry into confidence.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Why Wealth Pro - The Solution */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full mb-6">
-                <Sparkles className="w-4 h-4" />
-                <span className="text-sm font-medium">Why Wealth Pro</span>
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Complete Financial Clarity<br />
-                <span className="text-blue-600">In 10 Minutes</span>
-              </h2>
-              <p className="text-gray-600 mb-6">
-                See where you stand, find what's missing, and get your path to security.
-              </p>
-
-              <div className="space-y-3">
-                {[
-                  {
-                    icon: Target,
-                    title: 'Exact Numbers',
-                    description: 'Your real situation, clearly displayed.',
-                  },
-                  {
-                    icon: Shield,
-                    title: 'Gap Detection',
-                    description: 'Find protection gaps before life does.',
-                  },
-                  {
-                    icon: Compass,
-                    title: 'Clear Steps',
-                    description: 'Specific actions for your situation.',
-                  },
-                ].map((item, index) => (
-                  <div key={index} className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <item.icon className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900">{item.title}</h4>
-                      <p className="text-gray-600 text-sm">{item.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
+      {/* Reality Check Section */}
+      <section className="py-20 md:py-28 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Image */}
             <div className="relative">
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-3xl p-8 md:p-12">
-                <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-semibold text-gray-900">Your Personal Balance Sheet</h4>
-                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Live Preview</span>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Total Assets</span>
-                      <span className="font-semibold text-gray-900">$487,500</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Total Liabilities</span>
-                      <span className="font-semibold text-gray-900">$215,000</span>
-                    </div>
-                    <div className="border-t pt-3 flex justify-between items-center">
-                      <span className="font-medium text-gray-900">Net Worth</span>
-                      <span className="font-bold text-green-600 text-lg">$272,500</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-2xl shadow-xl p-6">
-                  <h4 className="font-semibold text-gray-900 mb-4">Protection Gap Analysis</h4>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-600">Life Insurance Coverage</span>
-                        <span className="text-red-600 font-medium">Gap: $350,000</span>
-                      </div>
-                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div className="h-full w-2/5 bg-gradient-to-r from-red-500 to-orange-500 rounded-full" />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-600">Emergency Fund</span>
-                        <span className="text-amber-600 font-medium">2.3 months</span>
-                      </div>
-                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div className="h-full w-1/3 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full" />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-600">Retirement Trajectory</span>
-                        <span className="text-blue-600 font-medium">On Track</span>
-                      </div>
-                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div className="h-full w-4/5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div className="relative aspect-[4/3] rounded-2xl overflow-hidden">
+                <Image
+                  src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=1770"
+                  alt="Family planning their financial future"
+                  fill
+                  className="object-cover"
+                />
               </div>
-
-              {/* Floating badge */}
-              <div className="absolute -bottom-4 -left-4 bg-white shadow-lg rounded-xl p-4 border border-gray-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Takes only 10 minutes</p>
-                    <p className="text-xs text-gray-500">No financial jargon required</p>
-                  </div>
+              {/* Floating stat card */}
+              <div className="absolute -bottom-6 -right-6 bg-white rounded-xl shadow-premium border border-slate-200 p-5 max-w-[200px]">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2 h-2 bg-red-500 rounded-full" />
+                  <span className="text-xs font-medium text-slate-600 uppercase tracking-wide">
+                    Reality Check
+                  </span>
                 </div>
+                <p className="text-2xl font-bold text-slate-900 mb-1">78%</p>
+                <p className="text-sm text-slate-600">of families are underinsured</p>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Features Grid */}
-      <section className="py-16 md:py-20 px-4 bg-gradient-to-b from-gray-50 to-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-10 md:mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Two Paths Forward</h2>
-            <p className="text-gray-600 text-base md:text-lg">Secure your family or build a career. Both start here.</p>
-          </div>
+            {/* Content */}
+            <div>
+              <span className="inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-full mb-6">
+                <span className="text-xs font-medium uppercase tracking-wider">
+                  The Uncomfortable Truth
+                </span>
+              </span>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Financial Review Card */}
-            <div className="card-gradient hover:shadow-xl transition-shadow duration-300">
-              <div className="flex items-start gap-4 mb-6">
-                <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <PieChart className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-1">Personal Financial Review</h3>
-                  <p className="text-gray-600">Finally see the complete picture</p>
-                </div>
+              <h2 className="heading-display text-slate-900 text-3xl md:text-4xl mb-6">
+                What You Don&apos;t Know{' '}
+                <span className="text-slate-500">Could Cost Everything</span>
+              </h2>
+
+              <p className="text-lg text-slate-600 mb-8 leading-relaxed">
+                Most families believe they&apos;re protected. The reality? Gaps in coverage,
+                missed opportunities, and blind spots that only become visible when it&apos;s too late.
+              </p>
+
+              <div className="space-y-4 mb-8">
+                {[
+                  { stat: '64%', text: 'of Americans will outlive their retirement savings' },
+                  { stat: '40%', text: 'have less than $400 for emergencies' },
+                  { stat: '91%', text: 'lack a comprehensive financial plan' },
+                ].map((item, index) => (
+                  <div key={index} className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg">
+                    <span className="text-2xl font-bold text-slate-900 min-w-[60px]">
+                      {item.stat}
+                    </span>
+                    <p className="text-slate-600">{item.text}</p>
+                  </div>
+                ))}
               </div>
 
-              <ul className="space-y-3 mb-6">
-                {[
-                  'Complete net worth calculation',
-                  'Cash flow analysis',
-                  'Protection gap identification',
-                  'Personalized insurance recommendations',
-                  'Retirement projection'
-                ].map((item, index) => (
-                  <li key={index} className="flex items-center gap-3 text-gray-700">
-                    <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-
-              <Link href="/prospect" className="btn-success w-full text-center block">
-                Start Free Review
-              </Link>
-            </div>
-
-            {/* Career Opportunity Card */}
-            <div className="card-gradient hover:shadow-xl transition-shadow duration-300">
-              <div className="flex items-start gap-4 mb-6">
-                <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <TrendingUp className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-1">Career Opportunity</h3>
-                  <p className="text-gray-600">What if helping others could transform your own future?</p>
-                </div>
-              </div>
-
-              <ul className="space-y-3 mb-6">
-                {[
-                  'See real income potential',
-                  'Compare your path with vs. without',
-                  'Retire years earlier',
-                  'Full training & mentorship'
-                ].map((item, index) => (
-                  <li key={index} className="flex items-center gap-3 text-gray-700">
-                    <CheckCircle2 className="w-5 h-5 text-purple-500 flex-shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-
-              <Link href="/career" className="btn-primary w-full text-center block">
-                Explore the Opportunity
+              <Link
+                href="/prospect"
+                className="inline-flex items-center gap-2 bg-slate-900 text-white font-medium px-8 py-4 rounded-lg hover:bg-slate-800 transition-all group"
+              >
+                See Where You Stand
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-20 px-4 bg-gradient-to-r from-blue-600 to-indigo-700">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 text-center text-white">
-            {[
-              { value: '$127K', label: 'Average Agent Income (Year 3)' },
-              { value: '93%', label: 'Client Satisfaction Rate' },
-              { value: '250+', label: 'Training Hours Provided' },
-              { value: '5 Years', label: 'Average Earlier Retirement' }
-            ].map((stat, index) => (
-              <div key={index}>
-                <div className="text-4xl font-bold mb-2">{stat.value}</div>
-                <div className="text-blue-100">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-16 md:py-20 px-4 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-10 md:mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-              Real Results
+      {/* Testimonials */}
+      <section className="py-20 md:py-28 px-4 bg-gradient-to-br from-slate-900 to-slate-800">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <span className="inline-flex items-center gap-2 bg-white/10 text-white/90 px-4 py-2 rounded-full mb-6">
+              <span className="text-xs font-medium uppercase tracking-wider">
+                Client Stories
+              </span>
+            </span>
+            <h2 className="heading-display text-white text-3xl md:text-4xl lg:text-5xl mb-4">
+              Transforming Financial Futures
             </h2>
-            <p className="text-gray-600 text-base md:text-lg">
-              10 minutes changed everything for them.
-            </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                name: 'Sarah & Michael',
+                quote: "We thought we were prepared. The review revealed a $500K protection gap we never knew existed. Now our family is truly secure.",
+                name: 'Sarah & Michael Chen',
                 role: 'Young Family',
-                image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200',
-                quote: 'We thought we were fine. The review revealed a $500K gap we had no idea existed. Now I sleep knowing my kids are protected.',
                 highlight: '$500K gap found',
-                rating: 5,
               },
               {
-                name: 'James T.',
-                role: 'Former Manager',
-                image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200',
-                quote: 'Working 60 hours and barely getting by. Three years later, I make 3x more and set my own schedule.',
-                highlight: '3x income',
-                rating: 5,
+                quote: "After 20 years in corporate, I was burnt out. Now I make more money, set my own schedule, and actually help people.",
+                name: 'James Thompson',
+                role: 'Former IT Manager',
+                highlight: '3x income increase',
               },
               {
-                name: 'Lisa C.',
-                role: 'Nurse',
-                image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200',
-                quote: 'Finally saw my complete picture. Now on track to retire at 58 instead of 65.',
-                highlight: '7 yrs earlier',
-                rating: 5,
+                quote: "Finally saw my complete financial picture. On track to retire 7 years earlier than I thought possible.",
+                name: 'Lisa Rodriguez',
+                role: 'Registered Nurse',
+                highlight: '7 years earlier retirement',
               },
             ].map((testimonial, index) => (
-              <div key={index} className="card-gradient hover:shadow-xl transition-shadow duration-300 relative">
+              <div
+                key={index}
+                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all"
+              >
                 {/* Highlight badge */}
-                <div className="absolute -top-3 right-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-medium px-3 py-1 rounded-full">
+                <div className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 px-3 py-1 rounded-full text-xs font-medium mb-4">
+                  <CheckCircle2 className="w-3 h-3" />
                   {testimonial.highlight}
                 </div>
 
-                <div className="flex items-center gap-1 mb-4 pt-2">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                <div className="flex gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
                   ))}
                 </div>
-                <Quote className="w-8 h-8 text-blue-200 mb-4" />
-                <p className="text-gray-700 mb-6 leading-relaxed">&ldquo;{testimonial.quote}&rdquo;</p>
-                <div className="flex items-center gap-4">
-                  <div className="relative w-12 h-12 rounded-full overflow-hidden">
-                    <Image
-                      src={testimonial.image}
-                      alt={testimonial.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">{testimonial.name}</p>
-                    <p className="text-sm text-gray-500">{testimonial.role}</p>
-                  </div>
+
+                <p className="text-white/90 mb-6 leading-relaxed">
+                  &ldquo;{testimonial.quote}&rdquo;
+                </p>
+
+                <div>
+                  <p className="font-semibold text-white">{testimonial.name}</p>
+                  <p className="text-sm text-white/60">{testimonial.role}</p>
                 </div>
               </div>
             ))}
@@ -553,202 +477,70 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Our Mission Section */}
-      <section className="py-16 md:py-20 px-4 bg-gradient-to-br from-slate-50 to-blue-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
-            <div className="relative">
-              <div className="relative h-[400px] rounded-2xl overflow-hidden shadow-xl">
-                <Image
-                  src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1770"
-                  alt="Our professional team"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              {/* Floating Stats */}
-              <div className="absolute -bottom-6 -right-6 bg-white p-6 rounded-xl shadow-lg">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-blue-600">500+</p>
-                    <p className="text-xs text-gray-500">Families Served Monthly</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-green-600">98%</p>
-                    <p className="text-xs text-gray-500">Would Recommend Us</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full mb-4">
-                <Award className="w-4 h-4" />
-                <span className="text-sm font-medium">Our Mission</span>
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Everyone Deserves<br />
-                <span className="text-blue-600">Financial Clarity</span>
-              </h2>
-              <p className="text-gray-600 mb-6">
-                We built this for <span className="font-medium">you</span>, not financial advisors. No jargon. No pressure. Just honest answers.
-              </p>
-
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                {[
-                  { icon: Lock, label: 'Bank-Level Security' },
-                  { icon: Users, label: 'Expert Support' },
-                  { icon: Heart, label: 'Family-First Values' },
-                ].map((item, index) => (
-                  <div key={index} className="text-center">
-                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-                      <item.icon className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <p className="text-sm text-gray-600">{item.label}</p>
-                  </div>
-                ))}
-              </div>
-
-              <Link href="/prospect" className="btn-primary inline-flex items-center gap-2">
-                Start Your Free Review
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Career Opportunity Section */}
-      <section className="py-16 md:py-20 px-4 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
-            <div className="order-2 lg:order-1">
-              <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full mb-4">
-                <Briefcase className="w-4 h-4" />
-                <span className="text-sm font-medium">Career Opportunity</span>
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Income With<br />
-                <span className="text-purple-600">No Ceiling</span>
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Build residual income. Set your own schedule. Help families while securing your own future.
-              </p>
-
-              <ul className="space-y-3 mb-6">
-                {[
-                  'Full training (no experience needed)',
-                  '$200K+ mentors',
-                  'Residual income that grows',
-                  'Be your own boss',
-                ].map((item, index) => (
-                  <li key={index} className="flex items-center gap-3 text-gray-700">
-                    <CheckCircle2 className="w-5 h-5 text-purple-500 flex-shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/career" className="btn-primary bg-gradient-to-r from-purple-600 to-indigo-600 inline-flex items-center gap-2">
-                See If This Is Right for You
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-            </div>
-
-            <div className="order-1 lg:order-2 relative">
-              <div className="relative h-[400px] rounded-2xl overflow-hidden shadow-xl">
-                <Image
-                  src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=1770"
-                  alt="Financial advisor helping client"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              {/* Income Projection Card */}
-              <div className="absolute -bottom-6 -left-6 bg-white p-6 rounded-xl shadow-lg max-w-xs">
-                <p className="text-sm text-gray-500 mb-2">Average Agent Income</p>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Year 1</span>
-                    <span className="font-semibold text-gray-900">$52,000</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Year 3</span>
-                    <span className="font-semibold text-gray-900">$127,000</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Year 5</span>
-                    <span className="font-bold text-purple-600">$215,000+</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4 relative overflow-hidden bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-500/20 via-transparent to-transparent" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-purple-500/20 via-transparent to-transparent" />
-        </div>
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 bg-white/10 text-white/90 px-4 py-2 rounded-full mb-6 backdrop-blur-sm">
-            <Clock className="w-4 h-4" />
-            <span className="text-sm font-medium">Takes Less Than 10 Minutes</span>
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            A Year From Now, You'll Wish<br />
-            <span className="text-blue-300">You Started Today</span>
+      {/* Final CTA */}
+      <section className="py-20 md:py-28 px-4 bg-white">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="heading-display text-slate-900 text-3xl md:text-4xl lg:text-5xl mb-6">
+            Your Financial Future{' '}
+            <span className="text-slate-500">Starts Today</span>
           </h2>
-          <p className="text-lg text-blue-100 mb-8 max-w-xl mx-auto">
-            You're already here. Take 10 minutes to see what you're missing.
+          <p className="text-lg text-slate-600 mb-10 max-w-2xl mx-auto">
+            In 15 minutes, gain clarity that most families never achieve.
+            No cost. No obligation. Just answers.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <Link href="/prospect" className="bg-white text-blue-900 font-semibold text-lg px-10 py-5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 inline-flex items-center gap-3">
-              Start Your Free Financial Review
-              <ArrowRight className="w-5 h-5" />
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/prospect"
+              className="inline-flex items-center justify-center gap-2 bg-slate-900 text-white font-medium px-10 py-5 rounded-lg hover:bg-slate-800 transition-all group text-lg"
+            >
+              Start Your Free Review
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link href="/career" className="bg-white/10 backdrop-blur-sm text-white border border-white/30 font-semibold text-lg px-8 py-5 rounded-xl hover:bg-white/20 transition-all duration-300 inline-flex items-center gap-2">
-              Explore Career Opportunity
+            <Link
+              href="/career"
+              className="inline-flex items-center justify-center gap-2 bg-transparent text-slate-900 font-medium px-10 py-5 rounded-lg border border-slate-300 hover:border-slate-400 hover:bg-slate-50 transition-all text-lg"
+            >
+              Explore Advisory Careers
             </Link>
           </div>
-          <p className="text-blue-300/70 text-sm">
-            No credit card required. No pressure. Just clarity.
+
+          <p className="text-sm text-slate-500 mt-8">
+            Trusted by 10,000+ families across Hawaii
           </p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16 px-4">
-        <div className="max-w-7xl mx-auto">
+      <footer className="bg-slate-900 text-white py-16 px-4">
+        <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-4 gap-12 mb-12">
             {/* Brand */}
             <div className="md:col-span-2">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
-                  <Shield className="w-6 h-6 text-white" />
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+                  <BarChart3 className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xl font-bold">Wealth Pro</span>
+                <span className="text-xl font-semibold tracking-tight">Wealth Pro</span>
               </div>
-              <p className="text-gray-400 mb-6 max-w-md">
-                Helping families achieve financial security through comprehensive financial planning
-                and protection solutions.
+              <p className="text-slate-400 mb-6 max-w-md">
+                Institutional-grade financial planning and protection for families.
+                Building wealth and security across generations.
               </p>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
-                  {[1,2,3,4,5].map((i) => (
+                  {[1, 2, 3, 4, 5].map((i) => (
                     <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
                   ))}
                 </div>
-                <span className="text-gray-400 text-sm">4.9/5 from 500+ reviews</span>
+                <span className="text-slate-400 text-sm">4.9/5 from 500+ reviews</span>
               </div>
             </div>
 
             {/* Quick Links */}
             <div>
               <h4 className="font-semibold mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-gray-400">
+              <ul className="space-y-3 text-slate-400">
                 <li>
                   <Link href="/prospect" className="hover:text-white transition-colors">
                     Financial Review
@@ -756,12 +548,12 @@ export default function HomePage() {
                 </li>
                 <li>
                   <Link href="/career" className="hover:text-white transition-colors">
-                    Career Opportunity
+                    Advisory Careers
                   </Link>
                 </li>
                 <li>
                   <Link href="/agent/login" className="hover:text-white transition-colors">
-                    Agent Portal
+                    Advisor Portal
                   </Link>
                 </li>
               </ul>
@@ -770,25 +562,29 @@ export default function HomePage() {
             {/* Contact */}
             <div>
               <h4 className="font-semibold mb-4">Contact</h4>
-              <ul className="space-y-2 text-gray-400">
+              <ul className="space-y-3 text-slate-400">
                 <li>support@wealthpro.com</li>
                 <li>(808) 555-0123</li>
-                <li>Monday - Friday, 9am - 5pm HST</li>
+                <li>Monday - Friday</li>
+                <li>9:00 AM - 5:00 PM HST</li>
               </ul>
             </div>
           </div>
 
           {/* Compliance Disclosures */}
-          <div className="border-t border-gray-800 pt-8 mb-8">
-            <ComplianceDisclaimer variant="full" className="bg-gray-800/50 text-gray-300 [&_h4]:text-gray-200 [&_strong]:text-gray-200" />
+          <div className="border-t border-slate-800 pt-8 mb-8">
+            <ComplianceDisclaimer
+              variant="full"
+              className="bg-slate-800/50 text-slate-300 [&_h4]:text-slate-200 [&_strong]:text-slate-200"
+            />
           </div>
 
-          <div className="border-t border-gray-800 pt-8">
+          <div className="border-t border-slate-800 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <p className="text-gray-500 text-sm">
-                © {new Date().getFullYear()} Wealth Pro. All rights reserved.
+              <p className="text-slate-500 text-sm">
+                &copy; {new Date().getFullYear()} Wealth Pro. All rights reserved.
               </p>
-              <p className="text-gray-500 text-sm text-center">
+              <p className="text-slate-500 text-sm text-center">
                 For informational purposes only. Not financial advice.
               </p>
             </div>

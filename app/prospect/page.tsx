@@ -12,7 +12,8 @@ import {
   ChevronRight,
   ChevronLeft,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  BarChart3
 } from 'lucide-react';
 import { createProspect, saveFinancialProfile } from './actions';
 
@@ -236,7 +237,7 @@ export default function ProspectIntakePage() {
           <div className="space-y-6">
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">First Name *</label>
                 <input
                   type="text"
                   value={formData.firstName}
@@ -246,7 +247,7 @@ export default function ProspectIntakePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Last Name *</label>
                 <input
                   type="text"
                   value={formData.lastName}
@@ -258,7 +259,7 @@ export default function ProspectIntakePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Email *</label>
               <input
                 type="email"
                 value={formData.email}
@@ -269,7 +270,7 @@ export default function ProspectIntakePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Phone (Optional)</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Phone (Optional)</label>
               <input
                 type="tel"
                 value={formData.phone}
@@ -281,7 +282,7 @@ export default function ProspectIntakePage() {
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Your Age</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Your Age</label>
                 <input
                   type="number"
                   value={formData.age}
@@ -292,7 +293,7 @@ export default function ProspectIntakePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Number of Dependents</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Number of Dependents</label>
                 <input
                   type="number"
                   value={formData.dependents}
@@ -305,7 +306,7 @@ export default function ProspectIntakePage() {
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Spouse Age (if applicable)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Spouse Age (if applicable)</label>
                 <input
                   type="number"
                   value={formData.spouseAge || ''}
@@ -317,7 +318,7 @@ export default function ProspectIntakePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Target Retirement Age</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Target Retirement Age</label>
                 <input
                   type="number"
                   value={formData.retirementAge}
@@ -331,7 +332,7 @@ export default function ProspectIntakePage() {
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Your Occupation</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Your Occupation</label>
                 <input
                   type="text"
                   value={formData.occupation}
@@ -341,7 +342,7 @@ export default function ProspectIntakePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">State of Residence</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">State of Residence</label>
                 <select
                   value={formData.stateOfResidence}
                   onChange={e => handleChange('stateOfResidence', e.target.value)}
@@ -404,7 +405,7 @@ export default function ProspectIntakePage() {
 
             {formData.spouseAge && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Spouse Occupation</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Spouse Occupation</label>
                 <input
                   type="text"
                   value={formData.spouseOccupation}
@@ -421,9 +422,9 @@ export default function ProspectIntakePage() {
         return (
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Your Annual Income</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Your Annual Income</label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                 <input
                   type="number"
                   value={formData.annualIncome}
@@ -434,9 +435,9 @@ export default function ProspectIntakePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Spouse Annual Income (if applicable)</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Spouse Annual Income (if applicable)</label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                 <input
                   type="number"
                   value={formData.spouseIncome || ''}
@@ -448,9 +449,9 @@ export default function ProspectIntakePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Other Income (rental, investments, etc.)</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Other Income (rental, investments, etc.)</label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                 <input
                   type="number"
                   value={formData.otherIncome || ''}
@@ -464,9 +465,9 @@ export default function ProspectIntakePage() {
             <hr className="my-6" />
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Total Monthly Expenses</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Total Monthly Expenses</label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                 <input
                   type="number"
                   value={formData.monthlyExpenses}
@@ -478,9 +479,9 @@ export default function ProspectIntakePage() {
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Monthly Housing Cost</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Monthly Housing Cost</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                   <input
                     type="number"
                     value={formData.housingCost}
@@ -490,9 +491,9 @@ export default function ProspectIntakePage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Monthly Debt Payments</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Monthly Debt Payments</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                   <input
                     type="number"
                     value={formData.debtPayments}
@@ -505,12 +506,12 @@ export default function ProspectIntakePage() {
 
             <hr className="my-6" />
 
-            <h4 className="font-medium text-gray-800 mb-4">Savings & Contributions</h4>
+            <h4 className="font-medium text-slate-800 mb-4">Savings & Contributions</h4>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Monthly Savings Contribution</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Monthly Savings Contribution</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                   <input
                     type="number"
                     value={formData.monthlySavingsContribution}
@@ -519,10 +520,10 @@ export default function ProspectIntakePage() {
                     placeholder="0"
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">How much you save each month</p>
+                <p className="text-xs text-slate-500 mt-1">How much you save each month</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Employer 401(k) Match %</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Employer 401(k) Match %</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -533,9 +534,9 @@ export default function ProspectIntakePage() {
                     min="0"
                     max="100"
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">%</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">e.g., 3% = employer matches 3% of salary</p>
+                <p className="text-xs text-slate-500 mt-1">e.g., 3% = employer matches 3% of salary</p>
               </div>
             </div>
           </div>
@@ -551,13 +552,13 @@ export default function ProspectIntakePage() {
             </div>
 
             {/* Cash & Liquid Assets */}
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
-              <h4 className="font-medium text-gray-900">Cash & Liquid Assets</h4>
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
+              <h4 className="font-medium text-slate-900">Cash & Liquid Assets</h4>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Checking/Savings</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Checking/Savings</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                     <input
                       type="number"
                       value={formData.savings}
@@ -567,9 +568,9 @@ export default function ProspectIntakePage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Emergency Fund</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Emergency Fund</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                     <input
                       type="number"
                       value={formData.emergencyFund}
@@ -578,19 +579,19 @@ export default function ProspectIntakePage() {
                       placeholder="0"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Separate from regular savings</p>
+                  <p className="text-xs text-slate-500 mt-1">Separate from regular savings</p>
                 </div>
               </div>
             </div>
 
             {/* Investment Accounts */}
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
-              <h4 className="font-medium text-gray-900">Investment Accounts</h4>
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
+              <h4 className="font-medium text-slate-900">Investment Accounts</h4>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Taxable Investments</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Taxable Investments</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                     <input
                       type="number"
                       value={formData.investments}
@@ -598,12 +599,12 @@ export default function ProspectIntakePage() {
                       className="input-field pl-8"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Stocks, bonds, mutual funds</p>
+                  <p className="text-xs text-slate-500 mt-1">Stocks, bonds, mutual funds</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">HSA / FSA Balance</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">HSA / FSA Balance</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                     <input
                       type="number"
                       value={formData.hsaFsa}
@@ -617,13 +618,13 @@ export default function ProspectIntakePage() {
             </div>
 
             {/* Retirement Accounts */}
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
-              <h4 className="font-medium text-gray-900">Retirement Accounts</h4>
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
+              <h4 className="font-medium text-slate-900">Retirement Accounts</h4>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">401(k) / 403(b) / TSP</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">401(k) / 403(b) / TSP</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                     <input
                       type="number"
                       value={formData.retirement401k}
@@ -633,9 +634,9 @@ export default function ProspectIntakePage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Roth IRA</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Roth IRA</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                     <input
                       type="number"
                       value={formData.rothIra}
@@ -647,9 +648,9 @@ export default function ProspectIntakePage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Pension Value (if applicable)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Pension Value (if applicable)</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                   <input
                     type="number"
                     value={formData.pensionValue}
@@ -658,18 +659,18 @@ export default function ProspectIntakePage() {
                     placeholder="0"
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Estimated lump sum value or 0 if monthly pension</p>
+                <p className="text-xs text-slate-500 mt-1">Estimated lump sum value or 0 if monthly pension</p>
               </div>
             </div>
 
             {/* Real Estate Section */}
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
-              <h4 className="font-medium text-gray-900">Real Estate</h4>
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
+              <h4 className="font-medium text-slate-900">Real Estate</h4>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Primary Home Value</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Primary Home Value</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                     <input
                       type="number"
                       value={formData.homeMarketValue}
@@ -677,12 +678,12 @@ export default function ProspectIntakePage() {
                       className="input-field pl-8"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Current estimated market value</p>
+                  <p className="text-xs text-slate-500 mt-1">Current estimated market value</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Mortgage Balance</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Mortgage Balance</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                     <input
                       type="number"
                       value={formData.mortgage}
@@ -690,7 +691,7 @@ export default function ProspectIntakePage() {
                       className="input-field pl-8"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Remaining balance owed</p>
+                  <p className="text-xs text-slate-500 mt-1">Remaining balance owed</p>
                 </div>
               </div>
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
@@ -702,9 +703,9 @@ export default function ProspectIntakePage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Investment Property (Net Equity)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Investment Property (Net Equity)</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                   <input
                     type="number"
                     value={formData.investmentProperty}
@@ -713,18 +714,18 @@ export default function ProspectIntakePage() {
                     placeholder="0"
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Rental properties: market value minus mortgages</p>
+                <p className="text-xs text-slate-500 mt-1">Rental properties: market value minus mortgages</p>
               </div>
             </div>
 
             {/* Business & Other Assets */}
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
-              <h4 className="font-medium text-gray-900">Business & Other Assets</h4>
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
+              <h4 className="font-medium text-slate-900">Business & Other Assets</h4>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Equity</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Business Equity</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                     <input
                       type="number"
                       value={formData.businessEquity}
@@ -733,12 +734,12 @@ export default function ProspectIntakePage() {
                       placeholder="0"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Ownership stake in any businesses</p>
+                  <p className="text-xs text-slate-500 mt-1">Ownership stake in any businesses</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Personal Property</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Personal Property</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                     <input
                       type="number"
                       value={formData.personalProperty}
@@ -747,13 +748,13 @@ export default function ProspectIntakePage() {
                       placeholder="0"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Vehicles, jewelry, collectibles</p>
+                  <p className="text-xs text-slate-500 mt-1">Vehicles, jewelry, collectibles</p>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Other Assets</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Other Assets</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                   <input
                     type="number"
                     value={formData.otherAssets}
@@ -762,7 +763,7 @@ export default function ProspectIntakePage() {
                     placeholder="0"
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Any other assets not listed above</p>
+                <p className="text-xs text-slate-500 mt-1">Any other assets not listed above</p>
               </div>
             </div>
 
@@ -802,10 +803,10 @@ export default function ProspectIntakePage() {
             </div>
 
             {/* Show mortgage from previous step */}
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-gray-600">Mortgage Balance (from previous step)</span>
-                <span className="text-lg font-semibold text-gray-800">
+                <span className="text-lg font-semibold text-slate-800">
                   ${formData.mortgage.toLocaleString()}
                 </span>
               </div>
@@ -813,9 +814,9 @@ export default function ProspectIntakePage() {
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Car Loans</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Car Loans</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                   <input
                     type="number"
                     value={formData.carLoans}
@@ -825,9 +826,9 @@ export default function ProspectIntakePage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Student Loans</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Student Loans</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                   <input
                     type="number"
                     value={formData.studentLoans}
@@ -840,9 +841,9 @@ export default function ProspectIntakePage() {
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Credit Card Debt</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Credit Card Debt</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                   <input
                     type="number"
                     value={formData.creditCards}
@@ -852,9 +853,9 @@ export default function ProspectIntakePage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Personal Loans</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Personal Loans</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                   <input
                     type="number"
                     value={formData.personalLoans}
@@ -867,9 +868,9 @@ export default function ProspectIntakePage() {
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Taxes Owed</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Taxes Owed</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                   <input
                     type="number"
                     value={formData.taxesOwed}
@@ -878,12 +879,12 @@ export default function ProspectIntakePage() {
                     placeholder="0"
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Back taxes, tax liens</p>
+                <p className="text-xs text-slate-500 mt-1">Back taxes, tax liens</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Business Debt</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Business Debt</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                   <input
                     type="number"
                     value={formData.businessDebt}
@@ -892,14 +893,14 @@ export default function ProspectIntakePage() {
                     placeholder="0"
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Business-related debt obligations</p>
+                <p className="text-xs text-slate-500 mt-1">Business-related debt obligations</p>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Other Debts</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Other Debts</label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                 <input
                   type="number"
                   value={formData.otherDebts}
@@ -908,7 +909,7 @@ export default function ProspectIntakePage() {
                   placeholder="0"
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">Medical bills, etc.</p>
+              <p className="text-xs text-slate-500 mt-1">Medical bills, etc.</p>
             </div>
 
             <div className="bg-red-50 border border-red-200 rounded-xl p-4">
@@ -974,13 +975,13 @@ export default function ProspectIntakePage() {
             </div>
 
             {/* Life Insurance */}
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
-              <h4 className="font-medium text-gray-900">Life Insurance</h4>
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
+              <h4 className="font-medium text-slate-900">Life Insurance</h4>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Your Life Insurance</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Your Life Insurance</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                     <input
                       type="number"
                       value={formData.currentLifeInsurance}
@@ -988,12 +989,12 @@ export default function ProspectIntakePage() {
                       className="input-field pl-8"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">All policies (term, whole life, group)</p>
+                  <p className="text-xs text-slate-500 mt-1">All policies (term, whole life, group)</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Spouse Life Insurance</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Spouse Life Insurance</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                     <input
                       type="number"
                       value={formData.spouseLifeInsurance}
@@ -1002,19 +1003,19 @@ export default function ProspectIntakePage() {
                       placeholder="0"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Leave blank if not applicable</p>
+                  <p className="text-xs text-slate-500 mt-1">Leave blank if not applicable</p>
                 </div>
               </div>
             </div>
 
             {/* Other Insurance */}
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
-              <h4 className="font-medium text-gray-900">Other Insurance Coverage</h4>
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
+              <h4 className="font-medium text-slate-900">Other Insurance Coverage</h4>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Monthly Disability Benefit</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Monthly Disability Benefit</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                     <input
                       type="number"
                       value={formData.currentDisability}
@@ -1022,12 +1023,12 @@ export default function ProspectIntakePage() {
                       className="input-field pl-8"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Monthly benefit if disabled</p>
+                  <p className="text-xs text-slate-500 mt-1">Monthly benefit if disabled</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Hospital Daily Benefit</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Hospital Daily Benefit</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                     <input
                       type="number"
                       value={formData.hospitalDailyBenefit}
@@ -1036,14 +1037,14 @@ export default function ProspectIntakePage() {
                       placeholder="0"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Daily indemnity benefit</p>
+                  <p className="text-xs text-slate-500 mt-1">Daily indemnity benefit</p>
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Liability/Umbrella Coverage</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Liability/Umbrella Coverage</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                     <input
                       type="number"
                       value={formData.liabilityInsurance}
@@ -1052,12 +1053,12 @@ export default function ProspectIntakePage() {
                       placeholder="0"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Personal liability protection</p>
+                  <p className="text-xs text-slate-500 mt-1">Personal liability protection</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Annual Insurance Costs</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Annual Insurance Costs</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                     <input
                       type="number"
                       value={formData.annualInsuranceCosts}
@@ -1066,45 +1067,45 @@ export default function ProspectIntakePage() {
                       placeholder="0"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Total annual premiums paid</p>
+                  <p className="text-xs text-slate-500 mt-1">Total annual premiums paid</p>
                 </div>
               </div>
             </div>
 
             {/* Estate Planning */}
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
-              <h4 className="font-medium text-gray-900">Estate Planning</h4>
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
+              <h4 className="font-medium text-slate-900">Estate Planning</h4>
               <div className="grid md:grid-cols-2 gap-4">
-                <label className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                <label className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
                   <input
                     type="checkbox"
                     checked={formData.hasWill}
                     onChange={e => handleChange('hasWill', e.target.checked)}
-                    className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                   />
                   <div>
-                    <span className="font-medium text-gray-900">I have a Will</span>
-                    <p className="text-xs text-gray-500">Legal document for asset distribution</p>
+                    <span className="font-medium text-slate-900">I have a Will</span>
+                    <p className="text-xs text-slate-500">Legal document for asset distribution</p>
                   </div>
                 </label>
-                <label className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                <label className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
                   <input
                     type="checkbox"
                     checked={formData.hasTrust}
                     onChange={e => handleChange('hasTrust', e.target.checked)}
-                    className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                   />
                   <div>
-                    <span className="font-medium text-gray-900">I have a Trust</span>
-                    <p className="text-xs text-gray-500">Living trust or family trust</p>
+                    <span className="font-medium text-slate-900">I have a Trust</span>
+                    <p className="text-xs text-slate-500">Living trust or family trust</p>
                   </div>
                 </label>
               </div>
             </div>
 
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 mt-8">
-              <h3 className="font-semibold text-gray-900 mb-3">What Happens Next?</h3>
-              <ul className="space-y-2 text-sm text-gray-700">
+              <h3 className="font-semibold text-slate-900 mb-3">What Happens Next?</h3>
+              <ul className="space-y-2 text-sm text-slate-700">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                   View your complete Personal Balance Sheet
@@ -1129,119 +1130,121 @@ export default function ProspectIntakePage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
       {/* Top Navigation Bar */}
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-gray-900 hover:text-blue-600 transition-colors">
-            <Shield className="w-6 h-6" />
-            <span className="font-bold text-lg">Wealth Pro</span>
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-semibold text-slate-900 tracking-tight">Wealth Pro</span>
           </Link>
-          <Link href="/career" className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+          <Link href="/career" className="text-slate-700 hover:text-slate-900 font-medium text-sm">
             Learn About Career Opportunity
           </Link>
         </div>
       </nav>
 
       <div className="py-6 md:py-10 px-4">
-      <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Financial Review</h1>
-          <p className="text-gray-600 text-sm md:text-base">Complete this assessment to see your full financial picture</p>
-        </div>
+        <div className="max-w-3xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 mb-2">Financial Review</h1>
+            <p className="text-slate-600 text-sm md:text-base">Complete this assessment to see your full financial picture</p>
+          </div>
 
-        {/* Progress Steps */}
-        <div className="flex items-center justify-between mb-6 md:mb-8 overflow-x-auto pb-2 scrollbar-hide">
-          {steps.map((step, index) => (
-            <div key={step.id} className="flex items-center">
-              <div
-                className={`flex items-center gap-2 px-4 py-2 rounded-full ${
-                  index <= currentStepIndex
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-500'
-                }`}
-              >
-                {index < currentStepIndex ? (
-                  <CheckCircle2 className="w-5 h-5" />
-                ) : (
-                  step.icon
+          {/* Progress Steps */}
+          <div className="flex items-center justify-between mb-6 md:mb-8 overflow-x-auto pb-2 scrollbar-hide">
+            {steps.map((step, index) => (
+              <div key={step.id} className="flex items-center">
+                <div
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full ${
+                    index <= currentStepIndex
+                      ? 'bg-slate-900 text-white'
+                      : 'bg-slate-100 text-slate-500'
+                  }`}
+                >
+                  {index < currentStepIndex ? (
+                    <CheckCircle2 className="w-5 h-5" />
+                  ) : (
+                    step.icon
+                  )}
+                  <span className="hidden sm:inline text-sm font-medium">{step.label}</span>
+                </div>
+                {index < steps.length - 1 && (
+                  <div className={`w-8 h-0.5 mx-2 ${index < currentStepIndex ? 'bg-slate-900' : 'bg-slate-200'}`} />
                 )}
-                <span className="hidden sm:inline text-sm font-medium">{step.label}</span>
               </div>
-              {index < steps.length - 1 && (
-                <div className={`w-8 h-0.5 mx-2 ${index < currentStepIndex ? 'bg-blue-600' : 'bg-gray-200'}`} />
+            ))}
+          </div>
+
+          {/* Form Card */}
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 md:p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="text-slate-700">{steps[currentStepIndex].icon}</div>
+              <h2 className="text-xl font-semibold text-slate-900">{steps[currentStepIndex].label}</h2>
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6">
+                {error}
+              </div>
+            )}
+
+            {renderStepContent()}
+
+            {/* Navigation */}
+            <div className="flex justify-between mt-8 pt-6 border-t border-slate-200">
+              <button
+                onClick={handleBack}
+                disabled={currentStepIndex === 0 || loading}
+                className="flex items-center gap-2 px-5 py-2.5 border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition disabled:opacity-50"
+              >
+                <ChevronLeft className="w-5 h-5" />
+                Back
+              </button>
+
+              {currentStep === 'protection' ? (
+                <button
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition disabled:opacity-50"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      See My Results
+                      <ChevronRight className="w-5 h-5" />
+                    </>
+                  )}
+                </button>
+              ) : (
+                <button
+                  onClick={handleNext}
+                  disabled={loading}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition disabled:opacity-50"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      Continue
+                      <ChevronRight className="w-5 h-5" />
+                    </>
+                  )}
+                </button>
               )}
             </div>
-          ))}
-        </div>
-
-        {/* Form Card */}
-        <div className="card-gradient">
-          <div className="flex items-center gap-3 mb-6">
-            {steps[currentStepIndex].icon}
-            <h2 className="text-xl font-semibold text-gray-900">{steps[currentStepIndex].label}</h2>
-          </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6">
-              {error}
-            </div>
-          )}
-
-          {renderStepContent()}
-
-          {/* Navigation */}
-          <div className="flex justify-between mt-8 pt-6 border-t">
-            <button
-              onClick={handleBack}
-              disabled={currentStepIndex === 0 || loading}
-              className="btn-secondary flex items-center gap-2 disabled:opacity-50"
-            >
-              <ChevronLeft className="w-5 h-5" />
-              Back
-            </button>
-
-            {currentStep === 'protection' ? (
-              <button
-                onClick={handleSubmit}
-                disabled={loading}
-                className="btn-primary flex items-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    See My Results
-                    <ChevronRight className="w-5 h-5" />
-                  </>
-                )}
-              </button>
-            ) : (
-              <button
-                onClick={handleNext}
-                disabled={loading}
-                className="btn-primary flex items-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    Continue
-                    <ChevronRight className="w-5 h-5" />
-                  </>
-                )}
-              </button>
-            )}
           </div>
         </div>
-      </div>
       </div>
     </div>
   );

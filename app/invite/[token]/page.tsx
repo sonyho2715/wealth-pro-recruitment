@@ -36,17 +36,17 @@ export default async function InviteAcceptPage({ params }: PageProps) {
   // Check if already accepted
   if (invite.status === 'ACCEPTED') {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-        <div className="bg-slate-800 border border-slate-700 rounded-2xl p-8 max-w-md text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 flex items-center justify-center p-4">
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 max-w-md text-center shadow-sm">
+          <h1 className="text-2xl font-semibold text-slate-900 mb-4">
             Invite Already Used
           </h1>
-          <p className="text-slate-400 mb-6">
+          <p className="text-slate-600 mb-6">
             This invite has already been accepted. If you&apos;re the one who accepted it, please log in.
           </p>
           <a
             href="/agent/login"
-            className="inline-block bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition"
+            className="inline-block bg-slate-900 text-white px-6 py-3 rounded-lg font-medium hover:bg-slate-800 transition"
           >
             Go to Login
           </a>
@@ -58,12 +58,12 @@ export default async function InviteAcceptPage({ params }: PageProps) {
   // Check if expired
   if (invite.status === 'EXPIRED' || new Date() > invite.expiresAt) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-        <div className="bg-slate-800 border border-slate-700 rounded-2xl p-8 max-w-md text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 flex items-center justify-center p-4">
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 max-w-md text-center shadow-sm">
+          <h1 className="text-2xl font-semibold text-slate-900 mb-4">
             Invite Expired
           </h1>
-          <p className="text-slate-400 mb-6">
+          <p className="text-slate-600 mb-6">
             This invite link has expired. Please contact {invite.invitedBy.firstName} to request a new invite.
           </p>
         </div>
@@ -74,12 +74,12 @@ export default async function InviteAcceptPage({ params }: PageProps) {
   // Check if cancelled
   if (invite.status === 'CANCELLED') {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-        <div className="bg-slate-800 border border-slate-700 rounded-2xl p-8 max-w-md text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 flex items-center justify-center p-4">
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 max-w-md text-center shadow-sm">
+          <h1 className="text-2xl font-semibold text-slate-900 mb-4">
             Invite Cancelled
           </h1>
-          <p className="text-slate-400 mb-6">
+          <p className="text-slate-600 mb-6">
             This invite has been cancelled. Please contact the person who invited you for more information.
           </p>
         </div>

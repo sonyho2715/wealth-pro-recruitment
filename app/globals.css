@@ -6,15 +6,26 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-serif: 'Playfair Display', ui-serif, Georgia, serif;
   }
 
   body {
-    @apply bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen;
+    @apply bg-white min-h-screen text-slate-900;
+    font-family: var(--font-sans);
+  }
+
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+
+  .font-sans {
+    font-family: var(--font-sans);
   }
 }
 
 @layer components {
-  /* Cards */
+  /* Premium Cards */
   .card-gradient {
     @apply bg-white/80 backdrop-blur-sm rounded-2xl shadow-soft p-6 border border-white/50;
   }
@@ -27,7 +38,11 @@
     @apply hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300;
   }
 
-  /* Buttons */
+  .card-premium {
+    @apply bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300;
+  }
+
+  /* Premium Buttons */
   .btn-primary {
     @apply bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed;
   }
@@ -38,6 +53,14 @@
 
   .btn-success {
     @apply bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  .btn-premium {
+    @apply bg-slate-900 text-white font-medium px-8 py-4 rounded-lg hover:bg-slate-800 transition-all duration-300;
+  }
+
+  .btn-premium-outline {
+    @apply bg-transparent text-slate-900 font-medium px-8 py-4 rounded-lg border border-slate-300 hover:border-slate-900 hover:bg-slate-50 transition-all duration-300;
   }
 
   .btn-ghost {
@@ -55,6 +78,10 @@
   /* Form Elements */
   .input-field {
     @apply w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all duration-200 bg-white placeholder:text-gray-400;
+  }
+
+  .input-premium {
+    @apply w-full px-4 py-3.5 rounded-lg border border-slate-200 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 focus:outline-none transition-all duration-200 bg-white placeholder:text-slate-400;
   }
 
   .input-label {
@@ -84,6 +111,17 @@
 
   .page-subtitle {
     @apply text-lg text-gray-600 mt-2;
+  }
+
+  /* Premium Typography */
+  .heading-serif {
+    font-family: var(--font-serif);
+    @apply font-medium tracking-tight;
+  }
+
+  .heading-display {
+    font-family: var(--font-serif);
+    @apply text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight leading-[1.1];
   }
 
   /* Stats & Metrics */
@@ -137,6 +175,10 @@
     @apply bg-gray-100 text-gray-700;
   }
 
+  .badge-premium {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 uppercase tracking-wider;
+  }
+
   /* Icon containers */
   .icon-box {
     @apply flex items-center justify-center rounded-xl;
@@ -162,6 +204,24 @@
   .divider-light {
     @apply border-t border-gray-100 my-4;
   }
+
+  /* Premium Navigation */
+  .nav-premium {
+    @apply fixed top-0 left-0 right-0 z-50 transition-all duration-300;
+  }
+
+  .nav-premium.scrolled {
+    @apply bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm;
+  }
+
+  /* Premium Section Styles */
+  .section-premium {
+    @apply py-20 md:py-28 px-4;
+  }
+
+  .container-premium {
+    @apply max-w-6xl mx-auto;
+  }
 }
 
 @layer utilities {
@@ -180,6 +240,11 @@
     100% { background-position: 0% 50%; }
   }
 
+  /* Premium text gradient */
+  .text-gradient-premium {
+    @apply bg-gradient-to-r from-slate-900 via-blue-900 to-slate-800 bg-clip-text text-transparent;
+  }
+
   /* Hide scrollbar for horizontal scroll containers */
   .scrollbar-hide {
     -ms-overflow-style: none;
@@ -187,5 +252,24 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Premium shadows */
+  .shadow-soft {
+    box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
+  }
+
+  .shadow-premium {
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Subtle animation for cards */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
   }
 }

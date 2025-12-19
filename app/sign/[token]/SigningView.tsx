@@ -33,12 +33,12 @@ interface SigningViewProps {
 }
 
 const requirementLabels: Record<string, { color: string; label: string }> = {
-  PROSPECT_INTAKE: { color: 'bg-blue-100 text-blue-700', label: 'Intake' },
-  BEFORE_PRESENTATION: { color: 'bg-purple-100 text-purple-700', label: 'Pre-Presentation' },
-  BEFORE_APPLICATION: { color: 'bg-green-100 text-green-700', label: 'Pre-Application' },
-  AGENT_ONBOARDING: { color: 'bg-orange-100 text-orange-700', label: 'Onboarding' },
-  ANNUAL_COMPLIANCE: { color: 'bg-cyan-100 text-cyan-700', label: 'Annual Compliance' },
-  DEFAULT: { color: 'bg-gray-100 text-gray-700', label: 'Document' },
+  PROSPECT_INTAKE: { color: 'bg-blue-50 text-blue-700 border-blue-200', label: 'Intake' },
+  BEFORE_PRESENTATION: { color: 'bg-purple-50 text-purple-700 border-purple-200', label: 'Pre-Presentation' },
+  BEFORE_APPLICATION: { color: 'bg-emerald-50 text-emerald-700 border-emerald-200', label: 'Pre-Application' },
+  AGENT_ONBOARDING: { color: 'bg-orange-50 text-orange-700 border-orange-200', label: 'Onboarding' },
+  ANNUAL_COMPLIANCE: { color: 'bg-cyan-50 text-cyan-700 border-cyan-200', label: 'Annual Compliance' },
+  DEFAULT: { color: 'bg-slate-50 text-slate-700 border-slate-200', label: 'Document' },
 };
 
 export default function SigningView({
@@ -75,7 +75,7 @@ export default function SigningView({
     ctx.scale(2, 2);
 
     // Set drawing style
-    ctx.strokeStyle = '#1e3a8a';
+    ctx.strokeStyle = '#0f172a';
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -212,28 +212,28 @@ export default function SigningView({
 
   if (disclosures.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl p-8 max-w-md text-center shadow-lg">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-green-600" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 flex items-center justify-center p-4">
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 max-w-md text-center shadow-sm">
+          <div className="w-16 h-16 bg-emerald-50 border border-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-8 h-8 text-emerald-600" />
           </div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">All Documents Signed</h1>
-          <p className="text-gray-600 mb-4">
+          <h1 className="text-xl font-semibold text-slate-900 mb-2">All Documents Signed</h1>
+          <p className="text-slate-600 mb-4">
             You have already signed all required documents. Thank you!
           </p>
           {alreadySignedCount > 0 && (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-slate-500">
               {alreadySignedCount} document(s) were previously signed
             </p>
           )}
           {agent && (
-            <div className="mt-6 pt-6 border-t border-gray-100">
-              <p className="text-sm text-gray-500 mb-2">Questions? Contact:</p>
-              <p className="font-medium text-gray-900">
+            <div className="mt-6 pt-6 border-t border-slate-200">
+              <p className="text-sm text-slate-500 mb-2">Questions? Contact:</p>
+              <p className="font-medium text-slate-900">
                 {agent.firstName} {agent.lastName}
               </p>
               {agent.phone && (
-                <a href={`tel:${agent.phone}`} className="flex items-center justify-center gap-1 text-blue-600 mt-1">
+                <a href={`tel:${agent.phone}`} className="flex items-center justify-center gap-1 text-slate-700 mt-1 hover:text-slate-900">
                   <Phone className="w-4 h-4" />
                   {agent.phone}
                 </a>
@@ -247,29 +247,29 @@ export default function SigningView({
 
   if (allSigned) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl p-8 max-w-md text-center shadow-lg">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-10 h-10 text-green-600" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 flex items-center justify-center p-4">
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 max-w-md text-center shadow-sm">
+          <div className="w-20 h-20 bg-emerald-50 border border-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-10 h-10 text-emerald-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Thank You!</h1>
-          <p className="text-gray-600 mb-6">
+          <h1 className="text-2xl font-semibold text-slate-900 mb-2">Thank You!</h1>
+          <p className="text-slate-600 mb-6">
             You have successfully signed all {disclosures.length} document(s).
           </p>
           {agent && (
-            <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-sm text-gray-500 mb-2">Your Financial Professional</p>
-              <p className="font-semibold text-gray-900">
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <p className="text-sm text-slate-500 mb-2">Your Financial Professional</p>
+              <p className="font-semibold text-slate-900">
                 {agent.firstName} {agent.lastName}
               </p>
               <div className="flex items-center justify-center gap-4 mt-2 text-sm">
                 {agent.phone && (
-                  <a href={`tel:${agent.phone}`} className="flex items-center gap-1 text-blue-600">
+                  <a href={`tel:${agent.phone}`} className="flex items-center gap-1 text-slate-700 hover:text-slate-900">
                     <Phone className="w-4 h-4" />
                     Call
                   </a>
                 )}
-                <a href={`mailto:${agent.email}`} className="flex items-center gap-1 text-blue-600">
+                <a href={`mailto:${agent.email}`} className="flex items-center gap-1 text-slate-700 hover:text-slate-900">
                   <Mail className="w-4 h-4" />
                   Email
                 </a>
@@ -285,18 +285,18 @@ export default function SigningView({
   const type = requirementLabels[requirementType] || requirementLabels.DEFAULT;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 flex flex-col">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-10">
+      <div className="bg-white border-b border-slate-200 px-4 py-3 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="font-semibold text-gray-900">Document Signing</h1>
-            <p className="text-sm text-gray-500">
+            <h1 className="font-semibold text-slate-900">Document Signing</h1>
+            <p className="text-sm text-slate-500">
               {prospect.firstName} {prospect.lastName}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-slate-500">
               {signedDisclosures.length + 1} of {disclosures.length}
             </span>
             <div className="flex gap-1">
@@ -305,10 +305,10 @@ export default function SigningView({
                   key={d.id}
                   className={`w-2 h-2 rounded-full ${
                     signedDisclosures.includes(d.id)
-                      ? 'bg-green-500'
+                      ? 'bg-emerald-500'
                       : i === currentIndex
-                      ? 'bg-blue-500'
-                      : 'bg-gray-200'
+                      ? 'bg-slate-900'
+                      : 'bg-slate-200'
                   }`}
                 />
               ))}
@@ -321,21 +321,21 @@ export default function SigningView({
       <div className="flex-1 p-4">
         <div className="max-w-2xl mx-auto">
           {/* Document Header */}
-          <div className="bg-white rounded-t-2xl p-4 border-b border-gray-100">
+          <div className="bg-white rounded-t-2xl p-4 border-b border-slate-100">
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <h2 className="font-bold text-lg text-gray-900">{currentDisclosure.title}</h2>
+                  <h2 className="font-semibold text-lg text-slate-900">{currentDisclosure.title}</h2>
                   {currentDisclosure.requiresSignature && (
                     <span className="text-xs text-red-600">*Signature Required</span>
                   )}
                 </div>
-                <span className={`px-2 py-0.5 rounded-full text-xs ${type.color}`}>
+                <span className={`px-2 py-0.5 rounded-full text-xs border ${type.color}`}>
                   {type.label}
                 </span>
               </div>
               {isCurrentSigned && (
-                <div className="flex items-center gap-1 text-green-600">
+                <div className="flex items-center gap-1 text-emerald-600">
                   <CheckCircle className="w-5 h-5" />
                   <span className="font-medium">Signed</span>
                 </div>
@@ -346,17 +346,17 @@ export default function SigningView({
           {/* Document Content */}
           <div
             ref={contentRef}
-            className="bg-white p-4 overflow-y-auto max-h-[50vh] border-b border-gray-100"
+            className="bg-white p-4 overflow-y-auto max-h-[50vh] border-b border-slate-100"
           >
-            <pre className="whitespace-pre-wrap font-sans text-gray-700 text-sm leading-relaxed">
+            <pre className="whitespace-pre-wrap font-sans text-slate-700 text-sm leading-relaxed">
               {currentDisclosure.content}
             </pre>
           </div>
 
           {/* Actions */}
-          <div className="bg-white rounded-b-2xl p-4 shadow-lg">
+          <div className="bg-white rounded-b-2xl p-4 shadow-sm border border-t-0 border-slate-200">
             {!hasRead && !isCurrentSigned ? (
-              <div className="flex items-center gap-2 text-yellow-600 bg-yellow-50 p-3 rounded-lg mb-4">
+              <div className="flex items-center gap-2 text-amber-700 bg-amber-50 border border-amber-200 p-3 rounded-lg mb-4">
                 <AlertTriangle className="w-5 h-5 flex-shrink-0" />
                 <p className="text-sm">Please scroll down to read the entire document</p>
               </div>
@@ -371,8 +371,8 @@ export default function SigningView({
                 disabled={currentIndex === 0}
                 className={`p-3 rounded-lg border ${
                   currentIndex === 0
-                    ? 'border-gray-100 text-gray-300 cursor-not-allowed'
-                    : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                    ? 'border-slate-100 text-slate-300 cursor-not-allowed'
+                    : 'border-slate-200 text-slate-700 hover:bg-slate-50'
                 }`}
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -394,7 +394,7 @@ export default function SigningView({
                     }
                   }}
                   disabled={currentIndex === disclosures.length - 1}
-                  className="flex-1 btn-secondary flex items-center justify-center gap-2"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition"
                 >
                   Next Document
                   <ChevronRight className="w-5 h-5" />
@@ -405,8 +405,8 @@ export default function SigningView({
                   disabled={!hasRead}
                   className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition-all ${
                     hasRead
-                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg hover:shadow-xl'
-                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      ? 'bg-slate-900 text-white hover:bg-slate-800'
+                      : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                   }`}
                 >
                   <PenTool className="w-5 h-5" />
@@ -422,8 +422,8 @@ export default function SigningView({
                 disabled={currentIndex === disclosures.length - 1}
                 className={`p-3 rounded-lg border ${
                   currentIndex === disclosures.length - 1
-                    ? 'border-gray-100 text-gray-300 cursor-not-allowed'
-                    : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                    ? 'border-slate-100 text-slate-300 cursor-not-allowed'
+                    : 'border-slate-200 text-slate-700 hover:bg-slate-50'
                 }`}
               >
                 <ChevronRight className="w-5 h-5" />
@@ -434,16 +434,16 @@ export default function SigningView({
       </div>
 
       {/* Progress Summary */}
-      <div className="bg-white border-t border-gray-100 px-4 py-3">
+      <div className="bg-white border-t border-slate-200 px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center justify-between text-sm">
           <div className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-green-500" />
-            <span className="text-gray-600">
+            <CheckCircle className="w-4 h-4 text-emerald-500" />
+            <span className="text-slate-600">
               {signedDisclosures.length} of {disclosures.length} signed
             </span>
           </div>
           {agent && (
-            <span className="text-gray-500">
+            <span className="text-slate-500">
               Agent: {agent.firstName} {agent.lastName}
             </span>
           )}
@@ -454,13 +454,13 @@ export default function SigningView({
       {showSignaturePad && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50">
           <div className="bg-white w-full sm:max-w-lg sm:rounded-2xl sm:m-4 rounded-t-2xl overflow-hidden">
-            <div className="p-4 border-b border-gray-100">
-              <h3 className="font-bold text-lg text-gray-900">Sign Document</h3>
-              <p className="text-sm text-gray-500">Draw your signature below</p>
+            <div className="p-4 border-b border-slate-200">
+              <h3 className="font-semibold text-lg text-slate-900">Sign Document</h3>
+              <p className="text-sm text-slate-500">Draw your signature below</p>
             </div>
 
             <div className="p-4">
-              <div className="border-2 border-gray-200 rounded-xl bg-white mb-4 relative">
+              <div className="border-2 border-slate-200 rounded-xl bg-white mb-4 relative">
                 <canvas
                   ref={canvasRef}
                   className="w-full h-40 touch-none cursor-crosshair"
@@ -472,16 +472,16 @@ export default function SigningView({
                   onTouchMove={draw}
                   onTouchEnd={stopDrawing}
                 />
-                <div className="absolute bottom-2 left-2 right-2 border-t border-gray-300 border-dashed" />
+                <div className="absolute bottom-2 left-2 right-2 border-t border-slate-300 border-dashed" />
                 <button
                   onClick={clearSignature}
-                  className="absolute top-2 right-2 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="absolute top-2 right-2 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg"
                 >
                   <Eraser className="w-5 h-5" />
                 </button>
               </div>
 
-              <p className="text-xs text-gray-500 text-center mb-4">
+              <p className="text-xs text-slate-500 text-center mb-4">
                 By signing, I acknowledge that I have read and agree to the terms of this document.
               </p>
 
@@ -491,14 +491,14 @@ export default function SigningView({
                     setShowSignaturePad(false);
                     clearSignature();
                   }}
-                  className="flex-1 btn-secondary"
+                  className="flex-1 px-4 py-3 border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSign}
                   disabled={isPending}
-                  className="flex-1 btn-primary"
+                  className="flex-1 px-4 py-3 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition disabled:opacity-50"
                 >
                   {isPending ? 'Signing...' : 'Submit Signature'}
                 </button>

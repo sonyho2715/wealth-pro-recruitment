@@ -2,7 +2,16 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, ChevronRight, ChevronLeft, User, DollarSign, PiggyBank, CreditCard } from 'lucide-react';
+import {
+  Loader2,
+  ChevronRight,
+  ChevronLeft,
+  User,
+  DollarSign,
+  PiggyBank,
+  CreditCard,
+  Check,
+} from 'lucide-react';
 
 interface BalanceSheetFormProps {
   agentId: string;
@@ -12,36 +21,25 @@ interface BalanceSheetFormProps {
 }
 
 interface FormData {
-  // Personal Info
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
   age: string;
   dependents: string;
-
-  // Income
   annualIncome: string;
   spouseIncome: string;
-
-  // Monthly Expenses
   monthlyExpenses: string;
   housingCost: string;
-
-  // Assets
   savings: string;
   retirement: string;
   homeValue: string;
   otherAssets: string;
-
-  // Debts
   mortgage: string;
   carLoans: string;
   studentLoans: string;
   creditCards: string;
   otherDebts: string;
-
-  // Insurance
   currentLifeInsurance: string;
 }
 
@@ -88,7 +86,7 @@ export default function BalanceSheetForm({
   const [error, setError] = useState('');
 
   const updateField = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const formatCurrency = (value: string) => {
@@ -108,7 +106,7 @@ export default function BalanceSheetForm({
 
   const validateStep = () => {
     switch (currentStep) {
-      case 0: // Personal
+      case 0:
         if (!formData.firstName || !formData.lastName || !formData.email || !formData.age) {
           setError('Please fill in all required fields');
           return false;
@@ -118,7 +116,7 @@ export default function BalanceSheetForm({
           return false;
         }
         break;
-      case 1: // Income
+      case 1:
         if (!formData.annualIncome) {
           setError('Please enter your annual income');
           return false;
@@ -131,12 +129,12 @@ export default function BalanceSheetForm({
 
   const nextStep = () => {
     if (validateStep()) {
-      setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
+      setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
     }
   };
 
   const prevStep = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 0));
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
   };
 
   const handleSubmit = async () => {
@@ -162,7 +160,6 @@ export default function BalanceSheetForm({
         throw new Error(result.error || 'Failed to submit');
       }
 
-      // Redirect to results page with prospect ID
       router.push(`/${agentCode}/results?id=${result.data.prospectId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
@@ -178,18 +175,18 @@ export default function BalanceSheetForm({
     required = false
   ) => (
     <div>
-      <label className="block text-sm font-medium text-slate-300 mb-1.5">
-        {label} {required && <span className="text-red-400">*</span>}
+      <label className="block text-sm font-medium text-slate-700 mb-2">
+        {label} {required && <span className="text-red-500">*</span>}
       </label>
       {type === 'currency' ? (
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">$</span>
           <input
             type="text"
             value={formatCurrency(formData[field])}
             onChange={(e) => handleCurrencyChange(field, e.target.value)}
             placeholder={placeholder || '0'}
-            className="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2.5 pl-8 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full bg-white border border-slate-200 rounded-lg px-4 py-3 pl-8 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all"
           />
         </div>
       ) : (
@@ -198,7 +195,7 @@ export default function BalanceSheetForm({
           value={formData[field]}
           onChange={(e) => updateField(field, e.target.value)}
           placeholder={placeholder}
-          className="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full bg-white border border-slate-200 rounded-lg px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all"
         />
       )}
     </div>
@@ -207,7 +204,7 @@ export default function BalanceSheetForm({
   return (
     <div>
       {/* Progress Steps */}
-      <div className="flex justify-between mb-8">
+      <div className="flex justify-between mb-10">
         {steps.map((step, index) => {
           const Icon = step.icon;
           const isActive = index === currentStep;
@@ -221,27 +218,27 @@ export default function BalanceSheetForm({
               }`}
             >
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
                   isActive
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-slate-900 text-white'
                     : isCompleted
-                    ? 'bg-green-500 text-white'
-                    : 'bg-white/10 text-slate-500'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-slate-100 text-slate-400'
                 }`}
               >
-                <Icon className="w-5 h-5" />
+                {isCompleted ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
               </div>
               <span
                 className={`mt-2 text-xs font-medium ${
-                  isActive ? 'text-white' : 'text-slate-500'
+                  isActive ? 'text-slate-900' : 'text-slate-400'
                 }`}
               >
                 {step.title}
               </span>
               {index < steps.length - 1 && (
                 <div
-                  className={`absolute top-5 left-[60%] w-[80%] h-0.5 ${
-                    isCompleted ? 'bg-green-500' : 'bg-white/10'
+                  className={`absolute top-6 left-[60%] w-[80%] h-0.5 ${
+                    isCompleted ? 'bg-emerald-500' : 'bg-slate-200'
                   }`}
                 />
               )}
@@ -252,7 +249,7 @@ export default function BalanceSheetForm({
 
       {/* Error Message */}
       {error && (
-        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
           {error}
         </div>
       )}
@@ -260,7 +257,7 @@ export default function BalanceSheetForm({
       {/* Step Content */}
       <div className="min-h-[320px]">
         {currentStep === 0 && (
-          <div className="space-y-4">
+          <div className="space-y-5">
             <div className="grid grid-cols-2 gap-4">
               {renderInput('First Name', 'firstName', 'text', 'John', true)}
               {renderInput('Last Name', 'lastName', 'text', 'Smith', true)}
@@ -275,40 +272,38 @@ export default function BalanceSheetForm({
         )}
 
         {currentStep === 1 && (
-          <div className="space-y-4">
-            <p className="text-slate-400 text-sm mb-4">
+          <div className="space-y-5">
+            <p className="text-slate-600 text-sm mb-6">
               Enter your annual household income before taxes.
             </p>
             {renderInput('Your Annual Income', 'annualIncome', 'currency', '75,000', true)}
             {renderInput('Spouse Annual Income (if applicable)', 'spouseIncome', 'currency', '0')}
-            <div className="mt-6 pt-6 border-t border-white/10">
-              <p className="text-slate-400 text-sm mb-4">
-                Estimate your monthly expenses.
-              </p>
+            <div className="mt-8 pt-8 border-t border-slate-200">
+              <p className="text-slate-600 text-sm mb-6">Estimate your monthly expenses.</p>
               {renderInput('Total Monthly Expenses', 'monthlyExpenses', 'currency', '5,000')}
-              {renderInput('Housing Cost (rent/mortgage payment)', 'housingCost', 'currency', '2,000')}
+              {renderInput('Housing Cost (rent/mortgage)', 'housingCost', 'currency', '2,000')}
             </div>
           </div>
         )}
 
         {currentStep === 2 && (
-          <div className="space-y-4">
-            <p className="text-slate-400 text-sm mb-4">
+          <div className="space-y-5">
+            <p className="text-slate-600 text-sm mb-6">
               What do you own? Enter approximate values.
             </p>
             {renderInput('Savings & Checking', 'savings', 'currency', '10,000')}
             {renderInput('Retirement Accounts (401k, IRA)', 'retirement', 'currency', '50,000')}
             {renderInput('Home Value (if you own)', 'homeValue', 'currency', '300,000')}
             {renderInput('Other Assets (vehicles, investments)', 'otherAssets', 'currency', '20,000')}
-            <div className="mt-6 pt-6 border-t border-white/10">
+            <div className="mt-8 pt-8 border-t border-slate-200">
               {renderInput('Current Life Insurance Coverage', 'currentLifeInsurance', 'currency', '0')}
             </div>
           </div>
         )}
 
         {currentStep === 3 && (
-          <div className="space-y-4">
-            <p className="text-slate-400 text-sm mb-4">
+          <div className="space-y-5">
+            <p className="text-slate-600 text-sm mb-6">
               What do you owe? Enter current balances.
             </p>
             {renderInput('Mortgage Balance', 'mortgage', 'currency', '250,000')}
@@ -321,14 +316,14 @@ export default function BalanceSheetForm({
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-between mt-8 pt-6 border-t border-white/10">
+      <div className="flex justify-between mt-10 pt-8 border-t border-slate-200">
         <button
           onClick={prevStep}
           disabled={currentStep === 0}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition ${
             currentStep === 0
-              ? 'text-slate-600 cursor-not-allowed'
-              : 'text-slate-300 hover:bg-white/5'
+              ? 'text-slate-300 cursor-not-allowed'
+              : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
           <ChevronLeft className="w-5 h-5" />
@@ -338,7 +333,7 @@ export default function BalanceSheetForm({
         {currentStep < steps.length - 1 ? (
           <button
             onClick={nextStep}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition"
+            className="flex items-center gap-2 px-8 py-3 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-lg transition"
           >
             Continue
             <ChevronRight className="w-5 h-5" />
@@ -347,7 +342,7 @@ export default function BalanceSheetForm({
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="flex items-center gap-2 px-6 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg transition disabled:opacity-50"
+            className="flex items-center gap-2 px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition disabled:opacity-50"
           >
             {isSubmitting ? (
               <>
