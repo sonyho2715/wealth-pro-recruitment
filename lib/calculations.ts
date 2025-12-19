@@ -187,6 +187,24 @@ export function generateInsuranceRecommendations(profile: {
     });
   }
 
+  // IUL - Indexed Universal Life (for wealth building + protection)
+  if (profile.age < 55 && profile.annualIncome > 100000) {
+    const iulAmount = Math.min(500000, profile.annualIncome * 3);
+    const monthlyPremium = Math.max(
+      PREMIUM_ESTIMATES.iul.minPremium,
+      Math.round((iulAmount / 1000) * PREMIUM_ESTIMATES.iul.premiumPer1K)
+    );
+    recommendations.push({
+      type: 'IUL',
+      recommendedCoverage: iulAmount,
+      currentCoverage: 0,
+      gap: iulAmount,
+      priority: 3,
+      reasoning: `Indexed Universal Life (IUL) offers permanent death benefit protection with cash value that grows based on market index performance, with downside protection. Ideal for tax-advantaged retirement income supplementation and wealth transfer.`,
+      estimatedMonthlyPremium: monthlyPremium,
+    });
+  }
+
   // Whole Life (for permanent needs + cash value)
   if (profile.age < 50 && profile.annualIncome > 75000) {
     const wholeLifeAmount = Math.min(250000, profile.annualIncome * 2);
@@ -195,9 +213,25 @@ export function generateInsuranceRecommendations(profile: {
       recommendedCoverage: wholeLifeAmount,
       currentCoverage: 0,
       gap: wholeLifeAmount,
-      priority: 3,
-      reasoning: `Whole life insurance provides permanent coverage and builds cash value. A $${wholeLifeAmount.toLocaleString()} policy can serve as a tax-advantaged savings vehicle and cover final expenses.`,
+      priority: 4,
+      reasoning: `Whole life insurance provides permanent coverage with guaranteed cash value growth. A $${wholeLifeAmount.toLocaleString()} policy builds tax-advantaged savings and covers final expenses with predictable premiums.`,
       estimatedMonthlyPremium: Math.round((wholeLifeAmount / 1000) * PREMIUM_ESTIMATES.wholeLife.premiumPer1K),
+    });
+  }
+
+  // Living Benefits (accelerated death benefit rider)
+  if (protectionGap > 0 || profile.dependents > 0) {
+    const livingBenefitCoverage = Math.max(protectionGap, profile.annualIncome * 5);
+    const basePremium = (livingBenefitCoverage / 500000) * PREMIUM_ESTIMATES.termLife.basePremiumPer500K;
+    const livingBenefitPremium = Math.round(basePremium * (1 + PREMIUM_ESTIMATES.livingBenefits.premiumAddOn));
+    recommendations.push({
+      type: 'LIVING_BENEFITS',
+      recommendedCoverage: livingBenefitCoverage,
+      currentCoverage: 0,
+      gap: livingBenefitCoverage,
+      priority: 5,
+      reasoning: `Living Benefits allow you to access a portion of your death benefit while still alive if diagnosed with a chronic, critical, or terminal illness. This provides financial flexibility during a health crisis without depleting savings.`,
+      estimatedMonthlyPremium: livingBenefitPremium,
     });
   }
 
@@ -209,7 +243,7 @@ export function generateInsuranceRecommendations(profile: {
       recommendedCoverage: ltcBenefit * 36, // 3-year benefit
       currentCoverage: 0,
       gap: ltcBenefit * 36,
-      priority: 4,
+      priority: 6,
       reasoning: `70% of people over 65 will need long-term care. A policy with $${ltcBenefit.toLocaleString()}/month benefit helps protect your assets from nursing home costs.`,
       estimatedMonthlyPremium: Math.round(
         PREMIUM_ESTIMATES.longTermCare.basePremium +

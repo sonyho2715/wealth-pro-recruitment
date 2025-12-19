@@ -303,8 +303,10 @@ export default function ResultsClient({ prospect }: { prospect: Prospect }) {
     TERM_LIFE: { label: 'Term Life Insurance', icon: <Shield className="w-5 h-5" /> },
     WHOLE_LIFE: { label: 'Whole Life Insurance', icon: <Heart className="w-5 h-5" /> },
     UNIVERSAL_LIFE: { label: 'Universal Life Insurance', icon: <Shield className="w-5 h-5" /> },
+    IUL: { label: 'Indexed Universal Life (IUL)', icon: <TrendingUp className="w-5 h-5" /> },
     DISABILITY: { label: 'Disability Insurance', icon: <Users className="w-5 h-5" /> },
     LONG_TERM_CARE: { label: 'Long-Term Care Insurance', icon: <Clock className="w-5 h-5" /> },
+    LIVING_BENEFITS: { label: 'Living Benefits Rider', icon: <Sparkles className="w-5 h-5" /> },
   };
 
   // State A tabs configuration
