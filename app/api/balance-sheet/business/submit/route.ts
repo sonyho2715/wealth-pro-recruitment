@@ -2,6 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/lib/db';
 
+// Helper to parse currency/number strings
+const parseNumber = (v: string | undefined | null) => {
+  if (!v) return 0;
+  const cleaned = String(v).replace(/[^0-9.-]/g, '');
+  return parseFloat(cleaned) || 0;
+};
+
+// Schema for yearly tax data
+const yearlyDataSchema = z.object({
+  taxYear: z.number(),
+  netReceipts: z.string().transform(parseNumber),
+  costOfGoodsSold: z.string().transform(parseNumber),
+  grossProfit: z.string().transform(parseNumber),
+  totalDeductions: z.string().transform(parseNumber),
+  netIncome: z.string().transform(parseNumber),
+  pensionContributions: z.string().transform(parseNumber),
+});
+
 const submitSchema = z.object({
   agentId: z.string(),
   agentCode: z.string(),
@@ -20,45 +38,59 @@ const submitSchema = z.object({
   employeeCount: z.string().transform((v) => parseInt(v) || 1),
 
   // Income
-  annualRevenue: z.string().transform((v) => parseInt(v) || 0),
-  costOfGoodsSold: z.string().transform((v) => parseInt(v) || 0),
-  grossProfit: z.string().transform((v) => parseInt(v) || 0),
-  netIncome: z.string().transform((v) => parseInt(v) || 0),
-  ownerSalary: z.string().transform((v) => parseInt(v) || 0),
+  annualRevenue: z.string().transform(parseNumber),
+  costOfGoodsSold: z.string().optional().transform((v) => parseNumber(v)),
+  grossProfit: z.string().optional().transform((v) => parseNumber(v)),
+  netIncome: z.string().optional().transform((v) => parseNumber(v)),
+  ownerSalary: z.string().optional().transform((v) => parseNumber(v)),
+  ownerDistributions: z.string().optional().transform((v) => parseNumber(v)),
 
   // Assets - Current
-  cashOnHand: z.string().transform((v) => parseInt(v) || 0),
-  accountsReceivable: z.string().transform((v) => parseInt(v) || 0),
-  inventory: z.string().transform((v) => parseInt(v) || 0),
+  cashOnHand: z.string().optional().transform((v) => parseNumber(v)),
+  accountsReceivable: z.string().optional().transform((v) => parseNumber(v)),
+  inventory: z.string().optional().transform((v) => parseNumber(v)),
+  prepaidExpenses: z.string().optional().transform((v) => parseNumber(v)),
 
   // Assets - Fixed
-  equipment: z.string().transform((v) => parseInt(v) || 0),
-  vehicles: z.string().transform((v) => parseInt(v) || 0),
-  realEstate: z.string().transform((v) => parseInt(v) || 0),
+  equipment: z.string().optional().transform((v) => parseNumber(v)),
+  vehicles: z.string().optional().transform((v) => parseNumber(v)),
+  realEstate: z.string().optional().transform((v) => parseNumber(v)),
+  leaseholdImprovements: z.string().optional().transform((v) => parseNumber(v)),
 
-  // Assets - Other
-  investments: z.string().transform((v) => parseInt(v) || 0),
-  otherAssets: z.string().transform((v) => parseInt(v) || 0),
+  // Assets - Intangible & Other
+  intellectualProperty: z.string().optional().transform((v) => parseNumber(v)),
+  goodwill: z.string().optional().transform((v) => parseNumber(v)),
+  investments: z.string().optional().transform((v) => parseNumber(v)),
+  otherAssets: z.string().optional().transform((v) => parseNumber(v)),
 
   // Liabilities - Current
-  accountsPayable: z.string().transform((v) => parseInt(v) || 0),
-  shortTermLoans: z.string().transform((v) => parseInt(v) || 0),
-  creditCards: z.string().transform((v) => parseInt(v) || 0),
-  lineOfCredit: z.string().transform((v) => parseInt(v) || 0),
+  accountsPayable: z.string().optional().transform((v) => parseNumber(v)),
+  accruedExpenses: z.string().optional().transform((v) => parseNumber(v)),
+  shortTermLoans: z.string().optional().transform((v) => parseNumber(v)),
+  creditCards: z.string().optional().transform((v) => parseNumber(v)),
+  lineOfCredit: z.string().optional().transform((v) => parseNumber(v)),
+  currentPortionLTD: z.string().optional().transform((v) => parseNumber(v)),
 
   // Liabilities - Long Term
-  termLoans: z.string().transform((v) => parseInt(v) || 0),
-  sbaLoans: z.string().transform((v) => parseInt(v) || 0),
-  equipmentLoans: z.string().transform((v) => parseInt(v) || 0),
-  commercialMortgage: z.string().transform((v) => parseInt(v) || 0),
+  termLoans: z.string().optional().transform((v) => parseNumber(v)),
+  sbaLoans: z.string().optional().transform((v) => parseNumber(v)),
+  equipmentLoans: z.string().optional().transform((v) => parseNumber(v)),
+  commercialMortgage: z.string().optional().transform((v) => parseNumber(v)),
+  otherLongTermDebt: z.string().optional().transform((v) => parseNumber(v)),
 
   // Insurance
-  keyPersonInsurance: z.string().transform((v) => parseInt(v) || 0),
-  generalLiability: z.string().transform((v) => parseInt(v) || 0),
-  propertyInsurance: z.string().transform((v) => parseInt(v) || 0),
-  businessInterruption: z.string().transform((v) => parseInt(v) || 0),
+  keyPersonInsurance: z.string().optional().transform((v) => parseNumber(v)),
+  generalLiability: z.string().optional().transform((v) => parseNumber(v)),
+  professionalLiability: z.string().optional().transform((v) => parseNumber(v)),
+  propertyInsurance: z.string().optional().transform((v) => parseNumber(v)),
+  workersComp: z.string().optional().transform((v) => parseNumber(v)),
+  businessInterruption: z.string().optional().transform((v) => parseNumber(v)),
+  cyberLiability: z.string().optional().transform((v) => parseNumber(v)),
   buyerSellerAgreement: z.boolean().default(false),
   successionPlan: z.boolean().default(false),
+
+  // Historical Data (optional)
+  yearlyData: z.array(yearlyDataSchema).optional().default([]),
 });
 
 export async function POST(req: NextRequest) {
@@ -76,16 +108,51 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Agent not found' }, { status: 404 });
     }
 
-    // Calculate totals
-    const currentAssets = data.cashOnHand + data.accountsReceivable + data.inventory;
-    const fixedAssets = data.equipment + data.vehicles + data.realEstate;
-    const otherAssets = data.investments + data.otherAssets;
+    // Calculate totals - Current Assets
+    const currentAssets = (
+      data.cashOnHand +
+      data.accountsReceivable +
+      data.inventory +
+      data.prepaidExpenses
+    );
+
+    // Fixed Assets
+    const fixedAssets = (
+      data.equipment +
+      data.vehicles +
+      data.realEstate +
+      data.leaseholdImprovements
+    );
+
+    // Intangible & Other Assets
+    const otherAssets = (
+      data.intellectualProperty +
+      data.goodwill +
+      data.investments +
+      data.otherAssets
+    );
+
     const totalAssets = currentAssets + fixedAssets + otherAssets;
 
-    const currentLiabilities =
-      data.accountsPayable + data.shortTermLoans + data.creditCards + data.lineOfCredit;
-    const longTermLiabilities =
-      data.termLoans + data.sbaLoans + data.equipmentLoans + data.commercialMortgage;
+    // Current Liabilities
+    const currentLiabilities = (
+      data.accountsPayable +
+      data.accruedExpenses +
+      data.shortTermLoans +
+      data.creditCards +
+      data.lineOfCredit +
+      data.currentPortionLTD
+    );
+
+    // Long-Term Liabilities
+    const longTermLiabilities = (
+      data.termLoans +
+      data.sbaLoans +
+      data.equipmentLoans +
+      data.commercialMortgage +
+      data.otherLongTermDebt
+    );
+
     const totalLiabilities = currentLiabilities + longTermLiabilities;
 
     const netWorth = totalAssets - totalLiabilities;
@@ -96,7 +163,8 @@ export async function POST(req: NextRequest) {
 
     // Calculate protection gaps
     // Key person insurance: Recommended = 2x annual revenue or 10x owner salary
-    const recommendedKeyPerson = Math.max(data.annualRevenue * 2, data.ownerSalary * 10);
+    const totalOwnerComp = data.ownerSalary + data.ownerDistributions;
+    const recommendedKeyPerson = Math.max(data.annualRevenue * 2, totalOwnerComp * 10);
     const keyPersonGap = Math.max(0, recommendedKeyPerson - data.keyPersonInsurance);
 
     // Buyout funding gap: Business value minus existing coverage
@@ -146,8 +214,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Create or update business financial profile
-    await db.businessFinancialProfile.upsert({
+    // Create or update business financial profile with all fields
+    const businessProfile = await db.businessFinancialProfile.upsert({
       where: { businessProspectId: businessProspect.id },
       create: {
         businessProspectId: businessProspect.id,
@@ -158,49 +226,49 @@ export async function POST(req: NextRequest) {
         grossProfit: data.grossProfit,
         netIncome: data.netIncome,
         ownerSalary: data.ownerSalary,
-        ownerDistributions: 0,
+        ownerDistributions: data.ownerDistributions,
 
         // Current Assets
         cashOnHand: data.cashOnHand,
         accountsReceivable: data.accountsReceivable,
         inventory: data.inventory,
-        prepaidExpenses: 0,
+        prepaidExpenses: data.prepaidExpenses,
 
         // Fixed Assets
         equipment: data.equipment,
         vehicles: data.vehicles,
         realEstate: data.realEstate,
-        leaseholdImprovements: 0,
+        leaseholdImprovements: data.leaseholdImprovements,
 
-        // Other Assets
-        intellectualProperty: 0,
-        goodwill: 0,
+        // Intangible & Other Assets
+        intellectualProperty: data.intellectualProperty,
+        goodwill: data.goodwill,
         investments: data.investments,
         otherAssets: data.otherAssets,
 
         // Current Liabilities
         accountsPayable: data.accountsPayable,
-        accruedExpenses: 0,
+        accruedExpenses: data.accruedExpenses,
         shortTermLoans: data.shortTermLoans,
         creditCards: data.creditCards,
         lineOfCredit: data.lineOfCredit,
-        currentPortionLTD: 0,
+        currentPortionLTD: data.currentPortionLTD,
 
         // Long-Term Liabilities
         termLoans: data.termLoans,
         sbaLoans: data.sbaLoans,
         equipmentLoans: data.equipmentLoans,
         commercialMortgage: data.commercialMortgage,
-        otherLongTermDebt: 0,
+        otherLongTermDebt: data.otherLongTermDebt,
 
         // Insurance
         keyPersonInsurance: data.keyPersonInsurance,
         generalLiability: data.generalLiability,
-        professionalLiability: 0,
+        professionalLiability: data.professionalLiability,
         propertyInsurance: data.propertyInsurance,
-        workersComp: 0,
+        workersComp: data.workersComp,
         businessInterruption: data.businessInterruption,
-        cyberLiability: 0,
+        cyberLiability: data.cyberLiability,
         buyerSellerAgreement: data.buyerSellerAgreement,
         successionPlan: data.successionPlan,
 
@@ -220,38 +288,49 @@ export async function POST(req: NextRequest) {
         grossProfit: data.grossProfit,
         netIncome: data.netIncome,
         ownerSalary: data.ownerSalary,
+        ownerDistributions: data.ownerDistributions,
 
         // Current Assets
         cashOnHand: data.cashOnHand,
         accountsReceivable: data.accountsReceivable,
         inventory: data.inventory,
+        prepaidExpenses: data.prepaidExpenses,
 
         // Fixed Assets
         equipment: data.equipment,
         vehicles: data.vehicles,
         realEstate: data.realEstate,
+        leaseholdImprovements: data.leaseholdImprovements,
 
-        // Other Assets
+        // Intangible & Other Assets
+        intellectualProperty: data.intellectualProperty,
+        goodwill: data.goodwill,
         investments: data.investments,
         otherAssets: data.otherAssets,
 
         // Current Liabilities
         accountsPayable: data.accountsPayable,
+        accruedExpenses: data.accruedExpenses,
         shortTermLoans: data.shortTermLoans,
         creditCards: data.creditCards,
         lineOfCredit: data.lineOfCredit,
+        currentPortionLTD: data.currentPortionLTD,
 
         // Long-Term Liabilities
         termLoans: data.termLoans,
         sbaLoans: data.sbaLoans,
         equipmentLoans: data.equipmentLoans,
         commercialMortgage: data.commercialMortgage,
+        otherLongTermDebt: data.otherLongTermDebt,
 
         // Insurance
         keyPersonInsurance: data.keyPersonInsurance,
         generalLiability: data.generalLiability,
+        professionalLiability: data.professionalLiability,
         propertyInsurance: data.propertyInsurance,
+        workersComp: data.workersComp,
         businessInterruption: data.businessInterruption,
+        cyberLiability: data.cyberLiability,
         buyerSellerAgreement: data.buyerSellerAgreement,
         successionPlan: data.successionPlan,
 
@@ -265,6 +344,41 @@ export async function POST(req: NextRequest) {
         buyoutFundingGap,
       },
     });
+
+    // Save yearly data if provided
+    if (data.yearlyData && data.yearlyData.length > 0) {
+      for (const yearData of data.yearlyData) {
+        // Only save years with actual data
+        if (yearData.netReceipts > 0 || yearData.netIncome !== 0) {
+          await db.businessYearlyData.upsert({
+            where: {
+              businessProfileId_taxYear: {
+                businessProfileId: businessProfile.id,
+                taxYear: yearData.taxYear,
+              },
+            },
+            create: {
+              businessProfileId: businessProfile.id,
+              taxYear: yearData.taxYear,
+              netReceipts: yearData.netReceipts,
+              costOfGoodsSold: yearData.costOfGoodsSold,
+              grossProfit: yearData.grossProfit,
+              totalDeductions: yearData.totalDeductions,
+              netIncome: yearData.netIncome,
+              pensionContributions: yearData.pensionContributions,
+            },
+            update: {
+              netReceipts: yearData.netReceipts,
+              costOfGoodsSold: yearData.costOfGoodsSold,
+              grossProfit: yearData.grossProfit,
+              totalDeductions: yearData.totalDeductions,
+              netIncome: yearData.netIncome,
+              pensionContributions: yearData.pensionContributions,
+            },
+          });
+        }
+      }
+    }
 
     // Create activity log for the agent
     await db.activity.create({
