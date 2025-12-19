@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { db } from '@/lib/db';
-import { BarChart3, Shield, Clock, Lock, Building2 } from 'lucide-react';
+import { BarChart3, Shield, Clock, Lock, Building2, Users } from 'lucide-react';
 import BusinessBalanceSheetForm from './BusinessBalanceSheetForm';
 
 interface PageProps {
@@ -116,6 +116,23 @@ export default async function BusinessBalanceSheetPage({ params }: PageProps) {
             Get a comprehensive analysis of your business finances, identify protection gaps,
             and discover opportunities to strengthen your business. Takes less than 10 minutes.
           </p>
+
+          {/* Personal / Business Toggle */}
+          <div className="flex justify-center mt-8">
+            <div className="inline-flex bg-slate-100 rounded-xl p-1">
+              <Link
+                href="/prospect"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 font-medium text-sm transition-all"
+              >
+                <Users className="w-4 h-4" />
+                Personal
+              </Link>
+              <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 text-white font-medium text-sm transition-all">
+                <Building2 className="w-4 h-4" />
+                Business
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Form Card */}

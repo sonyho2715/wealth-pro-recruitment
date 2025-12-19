@@ -1388,6 +1388,7 @@ model BusinessFinancialProfile {
 
   // ===== BUSINESS INCOME =====
   annualRevenue       Decimal @db.Decimal(14, 2) @default(0)
+  costOfGoodsSold     Decimal @db.Decimal(14, 2) @default(0)
   grossProfit         Decimal @db.Decimal(14, 2) @default(0)
   netIncome           Decimal @db.Decimal(14, 2) @default(0)
   ownerSalary         Decimal @db.Decimal(12, 2) @default(0)

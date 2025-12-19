@@ -21,6 +21,7 @@ const submitSchema = z.object({
 
   // Income
   annualRevenue: z.string().transform((v) => parseInt(v) || 0),
+  costOfGoodsSold: z.string().transform((v) => parseInt(v) || 0),
   grossProfit: z.string().transform((v) => parseInt(v) || 0),
   netIncome: z.string().transform((v) => parseInt(v) || 0),
   ownerSalary: z.string().transform((v) => parseInt(v) || 0),
@@ -153,6 +154,7 @@ export async function POST(req: NextRequest) {
 
         // Income
         annualRevenue: data.annualRevenue,
+        costOfGoodsSold: data.costOfGoodsSold,
         grossProfit: data.grossProfit,
         netIncome: data.netIncome,
         ownerSalary: data.ownerSalary,
@@ -214,6 +216,7 @@ export async function POST(req: NextRequest) {
       update: {
         // Income
         annualRevenue: data.annualRevenue,
+        costOfGoodsSold: data.costOfGoodsSold,
         grossProfit: data.grossProfit,
         netIncome: data.netIncome,
         ownerSalary: data.ownerSalary,

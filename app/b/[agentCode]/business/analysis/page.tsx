@@ -148,9 +148,12 @@ export default async function BusinessAnalysisPage({ params, searchParams }: Pag
   }));
 
   // Current year data from the financial profile (most recent submission)
+  // Use actual COGS if available, otherwise calculate from revenue - gross profit
+  const actualCOGS = fp.costOfGoodsSold ? Number(fp.costOfGoodsSold) : 0;
+  const calculatedCOGS = Number(fp.annualRevenue) - Number(fp.grossProfit);
   const currentYearData = {
     revenue: Number(fp.annualRevenue),
-    cogs: Number(fp.annualRevenue) - Number(fp.grossProfit), // Approximation
+    cogs: actualCOGS > 0 ? actualCOGS : calculatedCOGS,
     totalDeductions: 0, // Not tracked in basic profile
     netIncome: Number(fp.netIncome),
     currentPension: 0, // Not tracked in basic profile
