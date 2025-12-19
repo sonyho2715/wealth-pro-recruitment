@@ -1,6 +1,10 @@
 import { getIronSession, IronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 
+// ============================================
+// ADMIN/AGENT SESSION (existing)
+// ============================================
+
 export interface SessionData {
   agentId?: string;
   prospectId?: string;
@@ -48,4 +52,49 @@ export async function requireAgent() {
 export async function getProspectSession() {
   const session = await getSession();
   return session.prospectId || null;
+}
+
+// ============================================
+// CLIENT SESSION (Platform-as-a-Template)
+// ============================================
+
+export interface ClientSessionData {
+  clientId?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  prospectId?: string;
+  businessProspectId?: string;
+  isLoggedIn: boolean;
+}
+
+function getClientSessionOptions() {
+  return {
+    password: getSessionPassword(),
+    cookieName: 'client_session',
+    cookieOptions: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      sameSite: 'lax' as const,
+      maxAge: 60 * 60 * 24 * 30, // 30 days for clients
+    },
+  };
+}
+
+export async function getClientSession(): Promise<IronSession<ClientSessionData>> {
+  const cookieStore = await cookies();
+  return getIronSession<ClientSessionData>(cookieStore, getClientSessionOptions());
+}
+
+export async function requireClient() {
+  const session = await getClientSession();
+  if (!session.isLoggedIn || !session.clientId) {
+    throw new Error('Unauthorized');
+  }
+  return session;
+}
+
+export async function clearClientSession() {
+  const session = await getClientSession();
+  session.destroy();
 }

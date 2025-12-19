@@ -5,7 +5,7 @@ import {
   FileText, CheckCircle, ChevronRight, ChevronLeft,
   AlertTriangle, Phone, Mail, Eraser, PenTool
 } from 'lucide-react';
-import { submitSignature } from '@/app/agent/dashboard/disclosures/actions';
+import { submitSignature } from '@/app/(admin)/agent/dashboard/disclosures/actions';
 
 interface Disclosure {
   id: string;

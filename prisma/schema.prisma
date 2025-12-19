@@ -522,6 +522,10 @@ model Prospect {
   contact              Contact?             // Link from warm market
   presentationSessions PresentationSession[]
 
+  // Client Portal relations
+  client               Client?              // Client account for self-service
+  financialSnapshots   FinancialSnapshot[]  // Historical balance sheet snapshots
+
   // Lead Scoring (calculated from DIME analysis)
   leadScore            Int?                 // 0-100 overall score
   leadScoreUpdatedAt   DateTime?            // When score was last calculated
@@ -819,6 +823,16 @@ model Agent {
 
   // Referral system (generated on first access if null)
   referralCode String? @unique
+
+  // ===== WHITE-LABEL BRANDING =====
+  brandName           String?  // Custom platform name (e.g., "Smith Financial")
+  brandLogoUrl        String?  // Logo URL
+  brandPrimaryColor   String?  // Primary brand color (hex)
+  brandSecondaryColor String?  // Secondary brand color (hex)
+  customDomain        String?  // Optional custom domain
+
+  // Instance identification (for Platform-as-a-Template)
+  instanceId          String?  // Vercel project ID
 
   // Team hierarchy
   uplineId     String?
@@ -1386,6 +1400,9 @@ model BusinessProspect {
   // Relations
   financialProfile BusinessFinancialProfile?
 
+  // Client Portal relation
+  client           Client?
+
   @@index([agentId])
   @@index([referredByAgentId])
 }
@@ -1882,4 +1899,65 @@ enum QuickFixStatus {
   IMPLEMENTED
   DECLINED
   NOT_APPLICABLE
+}
+
+// ============================================
+// CLIENT PORTAL SYSTEM (Platform-as-a-Template)
+// ============================================
+
+// Client accounts for prospect self-service portal
+model Client {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  passwordHash      String
+  firstName         String
+  lastName          String
+  phone             String?
+
+  // Link to their prospect data (one-to-one)
+  prospectId        String?   @unique
+  prospect          Prospect? @relation(fields: [prospectId], references: [id], onDelete: SetNull)
+
+  // Business prospect link (one-to-one)
+  businessProspectId String?   @unique
+  businessProspect   BusinessProspect? @relation(fields: [businessProspectId], references: [id], onDelete: SetNull)
+
+  // Activity tracking
+  lastLoginAt       DateTime?
+  emailVerified     Boolean   @default(false)
+  verificationToken String?
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([email])
+}
+
+// Historical financial snapshots for tracking progress over time
+model FinancialSnapshot {
+  id                String   @id @default(cuid())
+  prospectId        String
+  prospect          Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+
+  // Snapshot date
+  snapshotDate      DateTime @default(now())
+
+  // Summary figures
+  totalAssets       Decimal  @db.Decimal(14, 2)
+  totalLiabilities  Decimal  @db.Decimal(14, 2)
+  netWorth          Decimal  @db.Decimal(14, 2)
+
+  // Detailed breakdown (stored as JSON for flexibility)
+  assetsBreakdown       Json?  // { savings, investments, retirement, property, etc. }
+  liabilitiesBreakdown  Json?  // { mortgage, carLoans, studentLoans, etc. }
+  incomeBreakdown       Json?  // { annualIncome, spouseIncome, otherIncome }
+
+  // Optional notes
+  notes             String?
+
+  createdAt         DateTime @default(now())
+
+  @@index([prospectId])
+  @@index([snapshotDate])
+  @@index([prospectId, snapshotDate])
 }
