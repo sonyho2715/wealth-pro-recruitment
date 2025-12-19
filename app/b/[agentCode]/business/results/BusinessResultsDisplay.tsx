@@ -22,6 +22,8 @@ import {
   Scale,
   Calculator,
   ArrowRight,
+  Target,
+  Gauge,
 } from 'lucide-react';
 
 interface BusinessResultsDisplayProps {
@@ -81,6 +83,13 @@ interface BusinessResultsDisplayProps {
     buyerSellerAgreement: boolean;
     successionPlan: boolean;
   };
+  calibration?: {
+    healthScore: number;
+    industryName: string;
+    totalOpportunity: number;
+    grossProfitPercentile: number;
+    netProfitPercentile: number;
+  } | null;
 }
 
 function formatCurrency(amount: number): string {
@@ -129,6 +138,7 @@ export default function BusinessResultsDisplay({
   businessProspect,
   agent,
   financials,
+  calibration,
 }: BusinessResultsDisplayProps) {
   const [showContactForm, setShowContactForm] = useState(false);
   const [contactSubmitted, setContactSubmitted] = useState(false);
@@ -631,6 +641,88 @@ export default function BusinessResultsDisplay({
             </Link>
           </div>
         </div>
+
+        {/* Industry Calibration CTA or Summary */}
+        {calibration ? (
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center shrink-0">
+                  <Target className="w-7 h-7 text-emerald-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900 mb-1">
+                    Industry Calibration Complete
+                  </h3>
+                  <p className="text-slate-500 text-sm mb-3">
+                    Benchmarked against {calibration.industryName} industry peers
+                  </p>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <Gauge className="w-4 h-4 text-slate-400" />
+                      <span className="text-sm text-slate-600">Health Score:</span>
+                      <span
+                        className={`font-semibold ${
+                          calibration.healthScore >= 80
+                            ? 'text-emerald-600'
+                            : calibration.healthScore >= 60
+                            ? 'text-blue-600'
+                            : calibration.healthScore >= 40
+                            ? 'text-amber-600'
+                            : 'text-red-600'
+                        }`}
+                      >
+                        {calibration.healthScore}/100
+                      </span>
+                    </div>
+                    {calibration.totalOpportunity > 0 && (
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-slate-400" />
+                        <span className="text-sm text-slate-600">Opportunity:</span>
+                        <span className="font-semibold text-emerald-600">
+                          {formatCurrency(calibration.totalOpportunity)}/yr
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <Link
+                href={`/b/${agent.referralCode}/business/calibration?id=${prospectId}`}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition shrink-0"
+              >
+                View Full Report
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-6 md:p-8 mb-6 shadow-sm">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center">
+                  <Target className="w-7 h-7 text-white" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-xl font-semibold text-white mb-1">
+                    Industry Calibration
+                  </h3>
+                  <p className="text-emerald-100 text-sm max-w-md">
+                    Compare your business metrics against industry peers. Identify opportunities
+                    for profit improvement, cost optimization, and tax savings.
+                  </p>
+                </div>
+              </div>
+              <Link
+                href={`/b/${agent.referralCode}/business/calibration?id=${prospectId}`}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white hover:bg-emerald-50 text-emerald-600 font-semibold rounded-xl transition shrink-0"
+              >
+                Start Calibration
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* CTA Section */}
         <div className="bg-slate-900 rounded-2xl p-8 md:p-10 text-center">

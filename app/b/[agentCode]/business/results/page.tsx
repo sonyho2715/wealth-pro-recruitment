@@ -11,7 +11,21 @@ async function getBusinessProspectData(prospectId: string) {
   const prospect = await db.businessProspect.findUnique({
     where: { id: prospectId },
     include: {
-      financialProfile: true,
+      financialProfile: {
+        include: {
+          calibration: {
+            include: {
+              industry: {
+                select: {
+                  title: true,
+                  shortTitle: true,
+                  naicsCode: true,
+                },
+              },
+            },
+          },
+        },
+      },
       agent: {
         select: {
           id: true,
@@ -69,6 +83,17 @@ export default async function BusinessResultsPage({ params, searchParams }: Page
   }
 
   const fp = prospect.financialProfile;
+
+  // Build calibration summary if available
+  const calibration = fp.calibration
+    ? {
+        healthScore: fp.calibration.healthScore,
+        industryName: fp.calibration.industry.shortTitle || fp.calibration.industry.title,
+        totalOpportunity: Number(fp.calibration.totalOpportunity),
+        grossProfitPercentile: fp.calibration.grossProfitPercentile,
+        netProfitPercentile: fp.calibration.netProfitPercentile,
+      }
+    : null;
 
   return (
     <BusinessResultsDisplay
@@ -128,6 +153,7 @@ export default async function BusinessResultsPage({ params, searchParams }: Page
         buyerSellerAgreement: fp.buyerSellerAgreement,
         successionPlan: fp.successionPlan,
       }}
+      calibration={calibration}
     />
   );
 }
