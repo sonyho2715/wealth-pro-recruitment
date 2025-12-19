@@ -522,8 +522,15 @@ model Prospect {
   contact              Contact?             // Link from warm market
   presentationSessions PresentationSession[]
 
+  // Lead Scoring (calculated from DIME analysis)
+  leadScore            Int?                 // 0-100 overall score
+  leadScoreUpdatedAt   DateTime?            // When score was last calculated
+  protectionGapTotal   Decimal? @db.Decimal(14, 2)  // Total DIME gap
+  urgencyLevel         UrgencyLevel?        // Based on gaps and life stage
+
   @@index([agentId])
   @@index([referredByAgentId])
+  @@index([leadScore])
   // Composite indexes for pipeline and dashboard queries
   @@index([agentId, status])
   @@index([agentId, stage])
@@ -549,6 +556,14 @@ enum ProspectStage {
   NEGOTIATION      // Discussing terms
   CLOSED_WON       // Successfully converted
   CLOSED_LOST      // Did not convert
+}
+
+// Lead urgency level (based on protection gaps and life stage)
+enum UrgencyLevel {
+  CRITICAL         // Very high gaps, immediate action needed
+  HIGH             // Significant gaps, should address soon
+  MEDIUM           // Moderate gaps, standard follow-up
+  LOW              // Minor gaps or well-protected
 }
 
 // Prospect sharing between agents
@@ -837,6 +852,9 @@ model Agent {
   // Business Balance Sheet relations
   businessProspects         BusinessProspect[] @relation("BusinessProspects")
   referredBusinessProspects BusinessProspect[] @relation("ReferredBusinessProspects")
+
+  // COI Referral Network
+  coiPartners               COIPartner[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1459,6 +1477,7 @@ model BusinessFinancialProfile {
   // Relations
   yearlyData BusinessYearlyData[]
   calibration BusinessCalibration?
+  quickFixes QuickFix[]
 }
 
 // Multi-year tax data for business analysis (Schedule C data)
@@ -1697,4 +1716,170 @@ enum HealthTrend {
   IMPROVING
   STABLE
   DECLINING
+}
+
+// ============================================
+// COI (CENTER OF INFLUENCE) REFERRAL SYSTEM
+// ============================================
+
+model COIPartner {
+  id                  String   @id @default(cuid())
+  agentId             String
+  agent               Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  // Partner info
+  name                String
+  company             String
+  type                COIType
+  email               String?
+  phone               String?
+
+  // Relationship tracking
+  referralsReceived   Int      @default(0)
+  referralsSent       Int      @default(0)
+  lastContactDate     DateTime?
+  relationshipScore   Int?     // 0-100 based on activity
+  nextFollowUpDate    DateTime?
+
+  // Notes
+  notes               String?  @db.Text
+  tags                String[] @default([])
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  referrals           COIReferral[]
+
+  @@index([agentId])
+  @@index([type])
+  @@index([relationshipScore])
+}
+
+enum COIType {
+  CPA
+  ATTORNEY
+  BANKER
+  CFO
+  FINANCIAL_ADVISOR
+  REAL_ESTATE_AGENT
+  INSURANCE_AGENT
+  OTHER
+}
+
+model COIReferral {
+  id                  String           @id @default(cuid())
+  coiPartnerId        String
+  coiPartner          COIPartner       @relation(fields: [coiPartnerId], references: [id], onDelete: Cascade)
+
+  // Referral details
+  direction           ReferralDirection
+  businessName        String?
+  contactName         String
+  contactEmail        String?
+  contactPhone        String?
+
+  // Status tracking
+  status              ReferralStatus   @default(PENDING)
+  estimatedValue      Decimal?         @db.Decimal(12, 2)
+  actualValue         Decimal?         @db.Decimal(12, 2)
+
+  // Conversion tracking
+  convertedToProspect Boolean          @default(false)
+  prospectId          String?
+  businessProspectId  String?
+
+  // Notes and follow-up
+  notes               String?          @db.Text
+  followUpDate        DateTime?
+
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  @@index([coiPartnerId])
+  @@index([status])
+  @@index([direction])
+}
+
+enum ReferralDirection {
+  INBOUND   // Partner referred to you
+  OUTBOUND  // You referred to partner
+}
+
+enum ReferralStatus {
+  PENDING
+  CONTACTED
+  MEETING_SCHEDULED
+  PROPOSAL_SENT
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+// ============================================
+// QUICK FIX RECOMMENDATIONS (Stored)
+// ============================================
+
+model QuickFix {
+  id                  String   @id @default(cuid())
+  businessProfileId   String
+  businessProfile     BusinessFinancialProfile @relation(fields: [businessProfileId], references: [id], onDelete: Cascade)
+
+  // Fix details
+  action              String
+  category            QuickFixCategory
+  currentValue        Decimal  @db.Decimal(14, 2)
+  recommendedValue    Decimal  @db.Decimal(14, 2)
+  annualImpact        Decimal  @db.Decimal(14, 2)
+
+  // Implementation
+  implementation      ImplementationTimeframe
+  complexity          Complexity
+  requiredAction      String   @db.Text
+
+  // Status tracking
+  status              QuickFixStatus @default(RECOMMENDED)
+  implementedAt       DateTime?
+  actualImpact        Decimal? @db.Decimal(14, 2)
+
+  // Priority (calculated)
+  priority            Int      @default(0)
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([businessProfileId])
+  @@index([category])
+  @@index([status])
+}
+
+enum QuickFixCategory {
+  PRICING
+  COST_REDUCTION
+  RETIREMENT_PLAN
+  TAX_STRATEGY
+  CASH_FLOW
+  INSURANCE
+  OTHER
+}
+
+enum ImplementationTimeframe {
+  IMMEDIATE
+  THIRTY_DAYS
+  NINETY_DAYS
+  SIX_MONTHS
+  ONE_YEAR
+}
+
+enum Complexity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum QuickFixStatus {
+  RECOMMENDED
+  IN_PROGRESS
+  IMPLEMENTED
+  DECLINED
+  NOT_APPLICABLE
 }
