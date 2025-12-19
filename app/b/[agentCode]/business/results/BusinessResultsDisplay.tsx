@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import {
   TrendingUp,
@@ -28,7 +28,16 @@ import {
   Lightbulb,
   PieChart,
   Umbrella,
+  Download,
+  PiggyBank,
 } from 'lucide-react';
+import { QuickFixList } from '@/components/calibration/QuickFixCard';
+import { PerformanceTierGauge, HealthScoreGauge } from '@/components/calibration/PerformanceTierGauge';
+import { RetirementPlanCompact } from '@/components/calibration/RetirementPlanMatrix';
+import { PDFExportModal, PDFExportButton } from '@/components/PDFExportModal';
+import { calculateQuickFixes, getQuickFixSummary, type QuickFix } from '@/lib/quick-fix-calculator';
+import { calculateRetirementOptions, getRecommendedPlan } from '@/lib/retirement-plan-calculator';
+import type { BusinessReportData } from '@/lib/pdf-generator';
 
 interface BusinessResultsDisplayProps {
   prospectId: string;
@@ -260,6 +269,133 @@ export default function BusinessResultsDisplay({
 }: BusinessResultsDisplayProps) {
   const [showContactForm, setShowContactForm] = useState(false);
   const [contactSubmitted, setContactSubmitted] = useState(false);
+  const [showPDFModal, setShowPDFModal] = useState(false);
+
+  // Calculate quick fixes using our new calculator
+  const quickFixes = useMemo(() => {
+    const businessData = {
+      // Revenue & Profitability
+      annualRevenue: financials.annualRevenue,
+      costOfGoodsSold: financials.costOfGoodsSold,
+      grossProfit: financials.grossProfit,
+      netIncome: financials.netIncome,
+      ownerSalary: financials.ownerSalary,
+      ownerDistributions: 0, // Could come from form data
+
+      // Balance Sheet
+      totalAssets: financials.totalAssets,
+      totalLiabilities: financials.totalLiabilities,
+      netWorth: financials.netWorth,
+      currentRatio: financials.currentRatio,
+      debtToEquityRatio: financials.debtToEquityRatio,
+
+      // Cash & Liquidity
+      cashOnHand: financials.cashOnHand,
+      accountsReceivable: financials.accountsReceivable,
+      inventory: financials.inventory,
+      accountsPayable: financials.accountsPayable,
+      creditCards: financials.creditCards,
+      lineOfCredit: financials.lineOfCredit,
+
+      // Insurance Coverage
+      keyPersonInsurance: financials.keyPersonInsurance,
+      generalLiability: financials.generalLiability,
+      professionalLiability: 0, // Could be added to form
+      businessInterruption: financials.businessInterruption,
+      cyberLiability: 0, // Could be added to form
+      buyerSellerAgreement: financials.buyerSellerAgreement,
+      successionPlan: financials.successionPlan,
+
+      // Retirement Planning
+      pensionContributions: 0, // Could come from form data
+
+      // Business Info
+      employeeCount: businessProspect.employeeCount,
+      yearsInBusiness: businessProspect.yearsInBusiness,
+      businessType: businessProspect.businessType,
+    };
+
+    // Industry benchmark (placeholder - would come from calibration data)
+    const industryBenchmark = {
+      grossProfitMargin_p50: 0.35,
+      grossProfitMargin_p75: 0.45,
+      netProfitMargin_p50: 0.10,
+      netProfitMargin_p75: 0.15,
+      cogsRatio_p50: 0.55,
+      cogsRatio_p25: 0.45,
+      pensionContributionRate_p75: 0.05,
+    };
+
+    return calculateQuickFixes(businessData, industryBenchmark);
+  }, [financials, businessProspect]);
+
+  const quickFixSummary = useMemo(() => getQuickFixSummary(quickFixes), [quickFixes]);
+
+  // Build owner profile for retirement calculations
+  const ownerProfile = useMemo(() => ({
+    ownerSalary: financials.ownerSalary,
+    ownerDistributions: 0, // Could come from form data
+    netIncome: financials.netIncome,
+    age: 45, // Default - would come from form
+    employeeCount: businessProspect.employeeCount,
+    hasW2Employees: businessProspect.employeeCount > 1,
+    currentPensionContributions: 0, // Could come from form data
+    businessType: businessProspect.businessType,
+    yearsToRetirement: 20, // Default - would come from form (65 - age)
+  }), [financials, businessProspect]);
+
+  // Calculate retirement plan options
+  const retirementOptions = useMemo(() => {
+    return calculateRetirementOptions(ownerProfile, 0.32);
+  }, [ownerProfile]);
+
+  const retirementRecommendation = useMemo(() => {
+    if (financials.ownerSalary <= 0) return null;
+    return getRecommendedPlan(ownerProfile, 0.32);
+  }, [ownerProfile, financials.ownerSalary]);
+
+  const recommendedPlan = retirementRecommendation?.recommended || null;
+
+  // Build PDF report data
+  const pdfReportData: BusinessReportData = useMemo(() => ({
+    // Business Info
+    businessName: businessProspect.businessName,
+    ownerName: `${businessProspect.firstName} ${businessProspect.lastName}`,
+    reportDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+    preparedBy: `${agent.firstName} ${agent.lastName}`,
+
+    // Financial Summary
+    annualRevenue: financials.annualRevenue,
+    grossProfit: financials.grossProfit,
+    netIncome: financials.netIncome,
+    totalAssets: financials.totalAssets,
+    totalLiabilities: financials.totalLiabilities,
+    netWorth: financials.netWorth,
+
+    // Ratios
+    grossProfitMargin: financials.annualRevenue > 0 ? financials.grossProfit / financials.annualRevenue : 0,
+    netProfitMargin: financials.annualRevenue > 0 ? financials.netIncome / financials.annualRevenue : 0,
+    currentRatio: financials.currentRatio,
+    debtToEquityRatio: financials.debtToEquityRatio,
+
+    // Protection
+    keyPersonInsurance: financials.keyPersonInsurance,
+    keyPersonGap: financials.keyPersonGap,
+    buyoutFundingGap: financials.buyoutFundingGap,
+
+    // Recommendations
+    quickFixes: quickFixes.slice(0, 5), // Top 5 for PDF
+    retirementOptions: recommendedPlan ? [recommendedPlan] : undefined,
+
+    // Calibration
+    healthScore: calibration?.healthScore,
+    industryName: calibration?.industryName,
+    percentileRankings: calibration ? {
+      grossProfit: calibration.grossProfitPercentile,
+      netProfit: calibration.netProfitPercentile,
+      currentRatio: 50, // Would come from calibration data
+    } : undefined,
+  }), [businessProspect, agent, financials, quickFixes, recommendedPlan, calibration]);
 
   const isNetWorthPositive = financials.netWorth >= 0;
   const hasKeyPersonGap = financials.keyPersonGap > 0;
@@ -346,6 +482,15 @@ export default function BusinessResultsDisplay({
             {businessProspect.industry && ` • ${businessProspect.industry}`} •{' '}
             {businessProspect.yearsInBusiness} years • {businessProspect.employeeCount} employees
           </p>
+          {/* Export PDF Button */}
+          <div className="mt-4">
+            <PDFExportButton
+              onClick={() => setShowPDFModal(true)}
+              variant="secondary"
+              size="md"
+              label="Export PDF Report"
+            />
+          </div>
         </div>
 
         {/* Health Score Card - Enhanced */}
@@ -457,6 +602,27 @@ export default function BusinessResultsDisplay({
             )}
           </div>
         </div>
+
+        {/* Quick Wins Action Plan */}
+        {quickFixes.length > 0 && (
+          <div className="mb-6">
+            <QuickFixList fixes={quickFixes.slice(0, 5)} showSummary={true} />
+          </div>
+        )}
+
+        {/* Retirement Plan Recommendation */}
+        {recommendedPlan && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+              <PiggyBank className="w-5 h-5 text-purple-500" />
+              Retirement Plan Opportunity
+            </h3>
+            <RetirementPlanCompact
+              recommended={recommendedPlan}
+              currentContribution={0}
+            />
+          </div>
+        )}
 
         {/* Key Metrics Grid */}
         <div className="grid md:grid-cols-4 gap-4 mb-6">
@@ -1021,6 +1187,14 @@ export default function BusinessResultsDisplay({
           <p>&copy; {new Date().getFullYear()} Wealth Pro. All rights reserved.</p>
         </div>
       </footer>
+
+      {/* PDF Export Modal */}
+      <PDFExportModal
+        isOpen={showPDFModal}
+        onClose={() => setShowPDFModal(false)}
+        businessData={pdfReportData}
+        businessName={businessProspect.businessName}
+      />
     </div>
   );
 }

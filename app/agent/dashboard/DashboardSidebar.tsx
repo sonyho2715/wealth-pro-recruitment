@@ -27,6 +27,7 @@ import {
   UserPlus,
   TrendingUp,
   ClipboardList,
+  Handshake,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -44,6 +45,7 @@ const navItems: NavItem[] = [
   { name: 'Production', href: '/agent/dashboard/production', icon: TrendingUp },
   { name: 'Licensing', href: '/agent/dashboard/licensing', icon: ClipboardList },
   { name: 'Contacts', href: '/agent/dashboard/contacts', icon: Contact2 },
+  { name: 'COI Partners', href: '/agent/dashboard/coi', icon: Handshake },
   { name: 'Prospects', href: '/agent/dashboard/prospects', icon: Users },
   { name: 'Balance Sheets', href: '/agent/dashboard/balance-sheets', icon: FileSpreadsheet },
   { name: 'Presentations', href: '/agent/dashboard/presentations', icon: Presentation },
