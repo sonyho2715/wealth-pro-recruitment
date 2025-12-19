@@ -1452,4 +1452,54 @@ model BusinessFinancialProfile {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Relations
+  yearlyData BusinessYearlyData[]
+}
+
+// Multi-year tax data for business analysis (Schedule C data)
+model BusinessYearlyData {
+  id                  String   @id @default(cuid())
+  businessProfileId   String
+  businessProfile     BusinessFinancialProfile @relation(fields: [businessProfileId], references: [id], onDelete: Cascade)
+
+  // Tax Year (2020, 2021, 2022, 2023, 2024, etc.)
+  taxYear             Int
+
+  // Schedule C / Tax Return Data
+  netReceipts         Decimal  @db.Decimal(14, 2) @default(0)  // Line 1: Gross receipts/sales
+  costOfGoodsSold     Decimal  @db.Decimal(14, 2) @default(0)  // Line 4: Cost of goods sold
+  grossProfit         Decimal  @db.Decimal(14, 2) @default(0)  // Line 5: Gross profit
+
+  // Expenses breakdown
+  advertising         Decimal  @db.Decimal(12, 2) @default(0)
+  carAndTruck         Decimal  @db.Decimal(12, 2) @default(0)
+  commissions         Decimal  @db.Decimal(12, 2) @default(0)
+  contractLabor       Decimal  @db.Decimal(12, 2) @default(0)
+  depreciation        Decimal  @db.Decimal(12, 2) @default(0)
+  insurance           Decimal  @db.Decimal(12, 2) @default(0)
+  interest            Decimal  @db.Decimal(12, 2) @default(0)
+  legal               Decimal  @db.Decimal(12, 2) @default(0)
+  officeExpense       Decimal  @db.Decimal(12, 2) @default(0)
+  pensionContributions Decimal @db.Decimal(12, 2) @default(0)  // Line 19: Pension/profit-sharing
+  rent                Decimal  @db.Decimal(12, 2) @default(0)
+  repairs             Decimal  @db.Decimal(12, 2) @default(0)
+  supplies            Decimal  @db.Decimal(12, 2) @default(0)
+  taxes               Decimal  @db.Decimal(12, 2) @default(0)
+  travel              Decimal  @db.Decimal(12, 2) @default(0)
+  meals               Decimal  @db.Decimal(12, 2) @default(0)
+  utilities           Decimal  @db.Decimal(12, 2) @default(0)
+  wages               Decimal  @db.Decimal(12, 2) @default(0)
+  otherExpenses       Decimal  @db.Decimal(12, 2) @default(0)
+
+  // Calculated totals
+  totalDeductions     Decimal  @db.Decimal(14, 2) @default(0)  // Total of all expenses
+  netIncome           Decimal  @db.Decimal(14, 2) @default(0)  // Line 31: Net profit/loss
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([businessProfileId, taxYear])
+  @@index([businessProfileId])
+  @@index([taxYear])
 }
