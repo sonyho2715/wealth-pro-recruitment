@@ -1,13 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
   ArrowRight,
   TrendingUp,
   Shield,
-  Users,
   ChevronRight,
   BarChart3,
   Briefcase,
@@ -15,59 +13,15 @@ import {
   Star,
 } from 'lucide-react';
 import ComplianceDisclaimer from '@/components/ComplianceDisclaimer';
+import Navigation from '@/components/Navigation';
+import AnimatedCounter from '@/components/AnimatedCounter';
+import SocialProofNotification from '@/components/SocialProofNotification';
+import ExitIntentPopup from '@/components/ExitIntentPopup';
 
 export default function HomePage() {
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   return (
     <div className="min-h-screen bg-white">
-      {/* Premium Navigation */}
-      <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled
-            ? 'bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm py-4'
-            : 'bg-transparent py-6'
-        }`}
-      >
-        <div className="max-w-6xl mx-auto px-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
-              <BarChart3 className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-semibold text-slate-900 tracking-tight">
-              Wealth Pro
-            </span>
-          </Link>
-          <div className="hidden md:flex items-center gap-8">
-            <Link
-              href="/prospect"
-              className="text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors"
-            >
-              Financial Review
-            </Link>
-            <Link
-              href="/career"
-              className="text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors"
-            >
-              Advisory Careers
-            </Link>
-            <Link
-              href="/agent/login"
-              className="text-slate-900 text-sm font-medium px-5 py-2.5 border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-slate-400 transition-all"
-            >
-              Advisor Login
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 px-4 overflow-hidden">
@@ -170,19 +124,30 @@ export default function HomePage() {
       <section className="border-y border-slate-200 bg-slate-50/50 py-12 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
-            {[
-              { value: '$2.5B+', label: 'Assets Under Guidance' },
-              { value: '10,000+', label: 'Families Served' },
-              { value: '15+', label: 'Years of Excellence' },
-              { value: '4.9/5', label: 'Client Satisfaction' },
-            ].map((stat, index) => (
-              <div key={index} className="text-center">
-                <p className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">
-                  {stat.value}
-                </p>
-                <p className="text-sm text-slate-500">{stat.label}</p>
-              </div>
-            ))}
+            <div className="text-center">
+              <p className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">
+                $<AnimatedCounter end={2.5} decimals={1} duration={2000} />B+
+              </p>
+              <p className="text-sm text-slate-500">Assets Under Guidance</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">
+                <AnimatedCounter end={10000} duration={2500} />+
+              </p>
+              <p className="text-sm text-slate-500">Families Served</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">
+                <AnimatedCounter end={15} duration={1500} />+
+              </p>
+              <p className="text-sm text-slate-500">Years of Excellence</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">
+                <AnimatedCounter end={4.9} decimals={1} duration={2000} />/5
+              </p>
+              <p className="text-sm text-slate-500">Client Satisfaction</p>
+            </div>
           </div>
         </div>
       </section>
@@ -352,6 +317,10 @@ export default function HomePage() {
                   alt="Family planning their financial future"
                   fill
                   className="object-cover"
+                  placeholder="blur"
+                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAAQABQDAREAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABwgJ/8QAIhAAAQMEAwADAQAAAAAAAAAAAQIDBAUGBxEAEiEIE0FR/8QAGAEAAwEBAAAAAAAAAAAAAAAAAwQFBgL/xAAjEQABBAICAgIDAAAAAAAAAAABAgMEEQASBSETMUFRFGFx/9oADAMBEQACEEEEAKAAABDzpQPjTz9dvO0bqsm7rkxHdNMvuoWy0bTq1OoFVpKn0uKjPIqIkuPfeuU8hKtJCSE/YlZ0lKSSG2+RiZtYIujxLYZrQIFE2b+7I79YwzyPJRscYMhK1gpCj2RoeoIvpvUn8f/Z"
+                  priority={false}
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                 />
               </div>
               {/* Floating stat card */}
@@ -591,6 +560,12 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+
+      {/* Social Proof Notification */}
+      <SocialProofNotification />
+
+      {/* Exit Intent Popup */}
+      <ExitIntentPopup />
     </div>
   );
 }
